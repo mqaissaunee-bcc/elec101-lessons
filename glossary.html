@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Glossary</title>
+<meta name="description" content="Searchable glossary of electronics and simulation terms for the ELEC 101 lab lessons.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+
+.main-sheet{max-width:1240px; margin:0 auto; padding:1rem}
+.panel{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem,.6rem + 2vw,2rem)}
+.search-row{display:flex; flex-wrap:wrap; gap:.75rem; align-items:end; margin:.5rem 0 1rem}
+.search-row input[type=search]{font:inherit; font-size:1rem; min-height:44px; padding:.35rem .6rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); width:min(28rem, 100%)}
+.letters{display:flex; flex-wrap:wrap; gap:.25rem; margin:0 0 1rem; padding:0; list-style:none}
+.letters a{display:inline-grid; place-items:center; min-width:44px; min-height:44px; border:1px solid var(--rule); text-decoration:none; font-family:var(--font-tech); font-weight:700}
+.letters a:hover{background:var(--accent-soft)}
+.gl-group h2{font-size:1.4rem; border-bottom:2px solid var(--ink); margin:1.5rem 0 .25rem; padding-bottom:.15rem}
+.gl{margin:0; max-width:75ch}
+.gl-entry{padding:.6rem 0; border-bottom:1px dashed var(--rule)}
+.gl-entry dt{font-family:var(--font-tech); font-weight:700; font-size:1.05rem}
+.gl-entry dd{margin:.15rem 0 0}
+.gl-labs{font-family:var(--font-tech); font-size:.82rem; color:var(--ink-2); margin-top:.2rem}
+.gl-aka{font-style:italic}
+mark{background:var(--warn-soft); color:inherit; padding:0 .1em}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">ELEC 101 Glossary</h1><span class="tb-k" style="margin-top:.35rem">Electronics and simulation terms used in the lab lessons</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Simulator</span><span class="tb-v">Q Circuits</span></div>
+      <div><span class="tb-k">Terms</span><span class="tb-v">172</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="index.html">All labs</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+    </div>
+  </div>
+</header>
+<main id="main" class="main-sheet">
+  <div class="panel">
+    <div class="search-row" role="search">
+      <div class="field"><label for="gq">Search terms and definitions</label><input type="search" id="gq" autocomplete="off" spellcheck="false"></div>
+      <p id="gcount" class="readout" aria-live="polite" style="margin:0"></p>
+    </div>
+    <nav aria-label="Jump to letter"><ul class="letters"><li><a href="#letter-A">A</a></li><li><a href="#letter-B">B</a></li><li><a href="#letter-C">C</a></li><li><a href="#letter-D">D</a></li><li><a href="#letter-E">E</a></li><li><a href="#letter-F">F</a></li><li><a href="#letter-G">G</a></li><li><a href="#letter-H">H</a></li><li><a href="#letter-I">I</a></li><li><a href="#letter-J">J</a></li><li><a href="#letter-L">L</a></li><li><a href="#letter-M">M</a></li><li><a href="#letter-N">N</a></li><li><a href="#letter-O">O</a></li><li><a href="#letter-P">P</a></li><li><a href="#letter-Q">Q</a></li><li><a href="#letter-R">R</a></li><li><a href="#letter-S">S</a></li><li><a href="#letter-T">T</a></li><li><a href="#letter-U">U</a></li><li><a href="#letter-V">V</a></li><li><a href="#letter-W">W</a></li><li><a href="#letter-X">X</a></li><li><a href="#letter-Z">Z</a></li></ul></nav>
+    <section class="gl-group" aria-labelledby="letter-A"><h2 id="letter-A">A</h2><dl class="gl"><div class="gl-entry" id="ac-alternating-current"><dt>AC (alternating current)</dt><dd>Current or voltage that keeps reversing direction, usually as a smooth sine wave.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">ac, alternating current</span></div></dd></div><div class="gl-entry" id="ac-magnitude"><dt>AC magnitude</dt><dd>The size of the test signal a source supplies during an AC sweep. PSpice&#x27;s VAC source sets it with 1Vac.<div class="gl-labs">Introduced in Lab 5, Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">vac</span></div></dd></div><div class="gl-entry" id="ac-sweep"><dt>AC sweep</dt><dd>An analysis that feeds the circuit a sine wave at many frequencies and plots how the output changes with frequency.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">ac sweep analysis</span></div></dd></div><div class="gl-entry" id="active-low"><dt>Active-low</dt><dd>An input that does its job when it is 0, not 1. Its name usually has a bar or BAR, as in SBAR or CLR̅.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">active low</span></div></dd></div><div class="gl-entry" id="amplifier"><dt>Amplifier</dt><dd>A circuit that makes a signal larger.<div class="gl-labs">Introduced in Lab 5, Lab 12</div><div class="gl-labs">Also: <span class="gl-aka">amplifiers</span></div></dd></div><div class="gl-entry" id="amplitude"><dt>Amplitude</dt><dd>How big a wave is: the distance from its centre line to its peak.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="analysis-panel"><dt>Analysis panel</dt><dd>The Q Circuits panel where you choose what the simulator calculates (Operating point, DC sweep, Transient or AC sweep) and its settings.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="and-gate"><dt>AND gate</dt><dd>A logic gate whose output is 1 only when all of its inputs are 1.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">and</span></div></dd></div><div class="gl-entry" id="anode"><dt>Anode</dt><dd>The terminal of a diode that current enters when the diode conducts. It&#x27;s the triangle side of the symbol.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="axis-ranges"><dt>Axis ranges</dt><dd>The Q Circuits settings under the plot that fix the X and Y limits instead of fitting them automatically. PSpice calls this a User Defined data range.<div class="gl-labs">Introduced in Lab 8, Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">axis range, user defined range</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-B"><h2 id="letter-B">B</h2><dl class="gl"><div class="gl-entry" id="band-pass-filter"><dt>Band-pass filter</dt><dd>A filter that passes a middle range of frequencies and weakens both lower and higher ones. Lab 5A&#x27;s circuit is one.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">band-pass</span></div></dd></div><div class="gl-entry" id="bandwidth"><dt>Bandwidth</dt><dd>The range of frequencies between a circuit&#x27;s two cutoff (−3 dB) points.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="base"><dt>Base</dt><dd>The control lead of a transistor. A small base current controls a much larger collector current.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="bias"><dt>Bias</dt><dd>The DC voltages and currents that put a transistor in its working range, so it can amplify.<div class="gl-labs">Introduced in Lab 12</div><div class="gl-labs">Also: <span class="gl-aka">biasing</span></div></dd></div><div class="gl-entry" id="bias-point"><dt>Bias point</dt><dd>PSpice&#x27;s name for the Operating point analysis: the steady DC voltages and currents in a circuit.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="bit"><dt>Bit</dt><dd>A single binary digit: 0 or 1. It can stand for any two-way choice, such as off/on or false/true.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">bits</span></div></dd></div><div class="gl-entry" id="block-diagram"><dt>Block diagram</dt><dd>A drawing that shows a system as labelled boxes, such as amplifier or filter, rather than individual parts.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="bode-plot"><dt>Bode plot</dt><dd>A graph of gain in decibels against frequency on a logarithmic axis. An AC sweep with a probe in dB mode produces one.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">bode plots</span></div></dd></div><div class="gl-entry" id="boolean-expression"><dt>Boolean expression</dt><dd>A formula for a logic function, such as Q = A + B for OR or Q = A · B for AND.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">boolean</span></div></dd></div><div class="gl-entry" id="branch"><dt>Branch</dt><dd>One of the separate paths current can take between two nodes in a parallel circuit.<div class="gl-labs">Introduced in Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">branches</span></div></dd></div><div class="gl-entry" id="breakdown-voltage"><dt>Breakdown voltage</dt><dd>The reverse voltage at which a diode starts conducting backward. A Zener diode is designed to do this safely; the D1N750&#x27;s is 4.7 V.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="bridge"><dt>Bridge</dt><dd>Two voltage dividers side by side. A small change in one resistor shows up as a small voltage difference between the two junctions.<div class="gl-labs">Introduced in Lab 14</div><div class="gl-labs">Also: <span class="gl-aka">wheatstone bridge</span></div></dd></div><div class="gl-entry" id="bus"><dt>Bus</dt><dd>A group of signals drawn as one thick line. Signals join it by name, through bus entries.<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">buses, busses</span></div></dd></div><div class="gl-entry" id="bus-entry"><dt>Bus entry</dt><dd>The short diagonal line that ties a named wire to a bus.<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">bus entries</span></div></dd></div><div class="gl-entry" id="bypass-capacitor"><dt>Bypass capacitor</dt><dd>A capacitor that acts as a short circuit for AC across a resistor, so the resistor affects DC but not the signal.<div class="gl-labs">Introduced in Lab 12</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-C"><h2 id="letter-C">C</h2><dl class="gl"><div class="gl-entry" id="capacitor"><dt>Capacitor</dt><dd>A part made of two conductors separated by an insulator. It blocks steady DC and passes changing signals, more easily at higher frequencies.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="cascade"><dt>Cascade</dt><dd>Amplifier stages connected one after another. Their gains multiply, so their gains in dB add.<div class="gl-labs">Introduced in Lab 12</div></dd></div><div class="gl-entry" id="cathode"><dt>Cathode</dt><dd>The terminal of a diode that current leaves when the diode conducts. It&#x27;s the bar side of the symbol, and a painted band on a real part.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="circuit-name-box"><dt>Circuit name box</dt><dd>The box at the top of the Q Circuits page where you type the lab name. It does the job of a title block.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="clear"><dt>Clear</dt><dd>A flip-flop input that forces Q to 0 regardless of the clock. On the 7473 it is active-low (CLR̅).<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">clr</span></div></dd></div><div class="gl-entry" id="clipping"><dt>Clipping</dt><dd>When an amplifier&#x27;s output tries to go beyond its supply voltage and is flattened at the limit.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">clips</span></div></dd></div><div class="gl-entry" id="clock"><dt>Clock</dt><dd>A digital signal that switches back and forth at a steady rate to tell sequential circuits when to act.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">clock signal</span></div></dd></div><div class="gl-entry" id="closed-circuit"><dt>Closed circuit</dt><dd>A complete, unbroken loop that current can flow around.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="collector"><dt>Collector</dt><dd>The transistor lead where the main current enters an NPN transistor.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="combinational-logic"><dt>Combinational logic</dt><dd>Logic whose output depends only on its present inputs, with no memory. Every Lab 10 circuit is combinational.<div class="gl-labs">Introduced in Lab 10, Lab 11</div></dd></div><div class="gl-entry" id="common-mode"><dt>Common mode</dt><dd>The voltage both inputs of a differential amplifier share. A good differential amplifier ignores it.<div class="gl-labs">Introduced in Lab 14</div><div class="gl-labs">Also: <span class="gl-aka">common-mode</span></div></dd></div><div class="gl-entry" id="common-emitter-amplifier"><dt>Common-emitter amplifier</dt><dd>A transistor amplifier with the input at the base and the output at the collector.<div class="gl-labs">Introduced in Lab 12</div><div class="gl-labs">Also: <span class="gl-aka">common emitter</span></div></dd></div><div class="gl-entry" id="complement"><dt>Complement</dt><dd>The opposite logic level: the complement of 1 is 0. A NOT gate produces it. Written with a bar, as Q̅ (QBAR).<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">complementation, negation</span></div></dd></div><div class="gl-entry" id="corner-frequency"><dt>Corner frequency</dt><dd>The frequency where a filter&#x27;s output has fallen to 70.7% of its passband value (−3 dB). For an RC filter it&#x27;s 1 ÷ (2πRC).<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">cutoff frequency, cutoff frequencies, corner frequencies, −3 dB point, -3 db point</span></div></dd></div><div class="gl-entry" id="counter"><dt>Counter</dt><dd>A sequential circuit that steps through a sequence of binary numbers, one per clock pulse.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">binary counter</span></div></dd></div><div class="gl-entry" id="coupling"><dt>Coupling</dt><dd>How much of a transformer&#x27;s magnetic field links both windings, from 0 to 1. 1 would be a perfect transformer.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">coupling coefficient</span></div></dd></div><div class="gl-entry" id="coupling-capacitor"><dt>Coupling capacitor</dt><dd>A capacitor that passes an AC signal from one stage to the next while blocking DC.<div class="gl-labs">Introduced in Lab 12</div><div class="gl-labs">Also: <span class="gl-aka">coupling capacitors</span></div></dd></div><div class="gl-entry" id="critical-frequency"><dt>Critical frequency</dt><dd>Another name for the corner (−3 dB) frequency: where the output has fallen 3 dB below its flat level.<div class="gl-labs">Introduced in Lab 8</div></dd></div><div class="gl-entry" id="crossover"><dt>Crossover</dt><dd>A place where two wires cross on a schematic without connecting. There is no dot, and in Q Circuits neither wire ends there.<div class="gl-labs">Introduced in Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">crossovers</span></div></dd></div><div class="gl-entry" id="current"><dt>Current</dt><dd>The flow of electric charge, measured in amperes (A). 1 mA is one thousandth of an ampere.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">current (i)</span></div></dd></div><div class="gl-entry" id="current-source"><dt>Current source</dt><dd>A circuit that supplies a steady current regardless of the voltage across it.<div class="gl-labs">Introduced in Lab 14</div><div class="gl-labs">Also: <span class="gl-aka">current sink</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-D"><h2 id="letter-D">D</h2><dl class="gl"><div class="gl-entry" id="dc-direct-current"><dt>DC (direct current)</dt><dd>Current or voltage that stays steady and flows in one direction.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">dc, direct current</span></div></dd></div><div class="gl-entry" id="dc-sweep"><dt>DC sweep</dt><dd>An analysis that steps a source&#x27;s DC value through a range and plots the results against it.<div class="gl-labs">Introduced in Lab 7</div></dd></div><div class="gl-entry" id="decade"><dt>Decade</dt><dd>A factor of ten in frequency, such as 10 Hz to 100 Hz. On a log axis every decade is the same width.<div class="gl-labs">Introduced in Lab 5, Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">decades</span></div></dd></div><div class="gl-entry" id="decibel-db"><dt>Decibel (dB)</dt><dd>A logarithmic unit for gain: 20 × log₁₀ of the voltage ratio. ×10 is +20 dB, ×1 is 0 dB, ×0.707 is −3 dB.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">decibel, decibels, db</span></div></dd></div><div class="gl-entry" id="decoder"><dt>Decoder</dt><dd>A circuit that turns a binary number into one active output line. The 74154 is a 4-to-16 decoder.<div class="gl-labs">Introduced in Lab 13</div></dd></div><div class="gl-entry" id="demultiplexer"><dt>Demultiplexer</dt><dd>A circuit that routes one input line to one of many outputs, chosen by select lines.<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">demux</span></div></dd></div><div class="gl-entry" id="differential-amplifier"><dt>Differential amplifier</dt><dd>An amplifier built from two matched transistors that responds to the difference between two inputs. Lab 6C draws one.<div class="gl-labs">Introduced in Lab 6</div></dd></div><div class="gl-entry" id="differential-pair"><dt>Differential pair</dt><dd>Two matched transistors sharing a current. The difference between their inputs steers the current from one to the other.<div class="gl-labs">Introduced in Lab 14</div></dd></div><div class="gl-entry" id="differential-probe"><dt>Differential probe</dt><dd>A probe that measures the voltage between two nodes instead of from a node to ground, such as V(A,B). Placed with Diff probe (X).<div class="gl-labs">Introduced in Lab 7</div><div class="gl-labs">Also: <span class="gl-aka">diff probe</span></div></dd></div><div class="gl-entry" id="digclock"><dt>DigClock</dt><dd>The Q Circuits and PSpice digital clock source, set by OFFTIME, ONTIME, DELAY, STARTVAL and OPPVAL.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">digital clock</span></div></dd></div><div class="gl-entry" id="digital-stimulus"><dt>Digital stimulus</dt><dd>A digital source defined by a list of times and logic levels. PSpice calls it STIM1.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">stim1, stimulus</span></div></dd></div><div class="gl-entry" id="diode"><dt>Diode</dt><dd>A part that lets current flow easily in one direction only, from anode to cathode, once about 0.7 V is across it.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="duty-cycle"><dt>Duty cycle</dt><dd>The fraction of each period a pulse spends high: pulse width ÷ period, often given as a percentage.<div class="gl-labs">Introduced in Lab 9</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-E"><h2 id="letter-E">E</h2><dl class="gl"><div class="gl-entry" id="emitter"><dt>Emitter</dt><dd>The transistor lead where current leaves an NPN transistor. It&#x27;s the lead with the arrow.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="emitter-follower"><dt>Emitter follower</dt><dd>A transistor stage whose output (the emitter) follows its input with low output resistance.<div class="gl-labs">Introduced in Lab 14</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-F"><h2 id="letter-F">F</h2><dl class="gl"><div class="gl-entry" id="fall-time"><dt>Fall time</dt><dd>How long a pulse takes to drop from its high level back to its low level (TF).<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">tf</span></div></dd></div><div class="gl-entry" id="falling-edge"><dt>Falling edge</dt><dd>The moment a signal changes from 1 to 0. The 7473 changes its output on the clock&#x27;s falling edge.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">negative edge, falling-edge</span></div></dd></div><div class="gl-entry" id="family-of-curves"><dt>Family of curves</dt><dd>Several traces on one plot, one for each value of a parameter, so you can compare them.<div class="gl-labs">Introduced in Lab 7</div></dd></div><div class="gl-entry" id="feedback"><dt>Feedback</dt><dd>Sending part of an amplifier&#x27;s output back to its input. In an op amp circuit, feedback sets the gain.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="filter"><dt>Filter</dt><dd>A circuit that passes some frequencies and weakens others.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="flip-flop"><dt>Flip-flop</dt><dd>A one-bit memory circuit that changes state only at a clock edge.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">flip-flops</span></div></dd></div><div class="gl-entry" id="floating-node"><dt>Floating node</dt><dd>A node with no DC path to ground. The simulator can&#x27;t work out its voltage.<div class="gl-labs">Introduced in Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">floating</span></div></dd></div><div class="gl-entry" id="forbidden-state"><dt>Forbidden state</dt><dd>An input combination a latch should avoid. In a NAND latch, SBAR and RBAR both 0 drive Q and QBAR both to 1, and releasing both at once leaves the result unpredictable.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">invalid state</span></div></dd></div><div class="gl-entry" id="frequency"><dt>Frequency</dt><dd>How many cycles a wave completes each second, measured in hertz (Hz). 1 kHz is 1,000 cycles per second.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="frequency-response"><dt>Frequency response</dt><dd>A graph of how a circuit&#x27;s gain changes with frequency. An AC sweep produces one.<div class="gl-labs">Introduced in Lab 5</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-G"><h2 id="letter-G">G</h2><dl class="gl"><div class="gl-entry" id="gain"><dt>Gain</dt><dd>How much a circuit multiplies a signal: output divided by input. Often given in decibels.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="gain-bandwidth-product"><dt>Gain-bandwidth product</dt><dd>For an op amp, gain × bandwidth is roughly constant: about 1 MHz for the LM324.<div class="gl-labs">Introduced in Lab 12</div><div class="gl-labs">Also: <span class="gl-aka">gbw</span></div></dd></div><div class="gl-entry" id="ground"><dt>Ground</dt><dd>The reference point defined as 0 V. Every voltage is measured from it. Also called node 0.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">ground (node 0), node 0</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-H"><h2 id="letter-H">H</h2><dl class="gl"><div class="gl-entry" id="high-pass-filter"><dt>High-pass filter</dt><dd>A filter that passes high frequencies and weakens low ones.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">high-pass</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-I"><h2 id="letter-I">I</h2><dl class="gl"><div class="gl-entry" id="inductor"><dt>Inductor</dt><dd>A coil of wire that stores energy in a magnetic field. Its opposition to AC rises with frequency. Measured in henries (H).<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">inductors, inductance</span></div></dd></div><div class="gl-entry" id="input-node"><dt>Input node</dt><dd>The node where the signal enters a circuit. Looking from ground through the source, it&#x27;s the node on the other side.<div class="gl-labs">Introduced in Lab 6</div></dd></div><div class="gl-entry" id="instrumentation-amplifier"><dt>Instrumentation amplifier</dt><dd>An amplifier that boosts a small difference between two inputs and rejects what they have in common.<div class="gl-labs">Introduced in Lab 14</div></dd></div><div class="gl-entry" id="integrated-circuit"><dt>Integrated circuit</dt><dd>A chip containing many components. A 7400-series chip holds several gates, labelled A, B, C, D, as in U1A.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">ic, chip</span></div></dd></div><div class="gl-entry" id="inverter"><dt>Inverter</dt><dd>A NOT gate: its output is the opposite of its input. The 7404 holds six of them.<div class="gl-labs">Introduced in Lab 10</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-J"><h2 id="letter-J">J</h2><dl class="gl"><div class="gl-entry" id="jfet"><dt>JFET</dt><dd>Junction field-effect transistor: the gate voltage controls the current, and the gate draws almost no current.<div class="gl-labs">Introduced in Lab 14</div><div class="gl-labs">Also: <span class="gl-aka">n-channel jfet</span></div></dd></div><div class="gl-entry" id="jk-flip-flop"><dt>JK flip-flop</dt><dd>A flip-flop with inputs J and K: 0 0 holds, 1 0 sets Q to 1, 0 1 resets it to 0, and 1 1 toggles it.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">jk</span></div></dd></div><div class="gl-entry" id="junction"><dt>Junction</dt><dd>A point where three or more connections meet, marked with a dot.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">junction dot</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-L"><h2 id="letter-L">L</h2><dl class="gl"><div class="gl-entry" id="latch"><dt>Latch</dt><dd>A memory circuit that responds to its inputs as soon as they change, with no clock. Two cross-coupled NAND gates make an RS latch.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">rs latch, sr latch</span></div></dd></div><div class="gl-entry" id="linear-circuit"><dt>Linear circuit</dt><dd>A circuit whose output is directly proportional to its input. Its DC sweep plot is a straight line.<div class="gl-labs">Introduced in Lab 7</div><div class="gl-labs">Also: <span class="gl-aka">linear</span></div></dd></div><div class="gl-entry" id="load-line"><dt>Load line</dt><dd>A straight line showing every combination of voltage and current the rest of the circuit allows. Where it crosses a part&#x27;s curve is the operating point.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="loading"><dt>Loading</dt><dd>When connecting more parts to a node draws current from it and lowers its voltage.<div class="gl-labs">Introduced in Lab 7</div><div class="gl-labs">Also: <span class="gl-aka">load</span></div></dd></div><div class="gl-entry" id="logarithmic-scale"><dt>Logarithmic scale</dt><dd>An axis where each factor of ten takes the same space, so 10 to 100 is as wide as 1,000 to 10,000.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">logarithmic, log scale</span></div></dd></div><div class="gl-entry" id="logic-gate"><dt>Logic gate</dt><dd>A circuit that produces a 0 or 1 output from one or more 0/1 inputs according to a fixed rule.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">gate, gates, logic gates</span></div></dd></div><div class="gl-entry" id="logic-lanes"><dt>Logic lanes</dt><dd>The way Q Circuits plots digital signals: one 0/1 strip per probe, top to bottom in the order the probes were placed.<div class="gl-labs">Introduced in Lab 10, Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">logic lane, lanes</span></div></dd></div><div class="gl-entry" id="logic-level"><dt>Logic level</dt><dd>The 0 or 1 a digital signal represents. In Q Circuits, 0 V is 0 and 5 V is 1, with the threshold at 2.5 V.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">logic state, logic levels</span></div></dd></div><div class="gl-entry" id="low-pass-filter"><dt>Low-pass filter</dt><dd>A filter that passes low frequencies and weakens high ones.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">low-pass</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-M"><h2 id="letter-M">M</h2><dl class="gl"><div class="gl-entry" id="master-slave-flip-flop"><dt>Master-slave flip-flop</dt><dd>A flip-flop made of two latches: the master follows the inputs while the clock is high, and the slave copies it when the clock falls.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">master-slave</span></div></dd></div><div class="gl-entry" id="measurements-table"><dt>Measurements table</dt><dd>The table under the Q Circuits plot that lists each trace&#x27;s maximum, minimum and other values over the visible range.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">measurements</span></div></dd></div><div class="gl-entry" id="mid-band-gain"><dt>Mid-band gain</dt><dd>An amplifier&#x27;s flat gain between its lower and upper −3 dB frequencies.<div class="gl-labs">Introduced in Lab 12</div></dd></div><div class="gl-entry" id="minor-gridlines"><dt>Minor gridlines</dt><dd>The fainter lines between the main gridlines of a plot. On a log axis they mark 2, 3, 4 … 9 times each decade.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="mirror"><dt>Mirror</dt><dd>Flip a part left–right or top–bottom, as a reflection, without rotating it.<div class="gl-labs">Introduced in Lab 14</div><div class="gl-labs">Also: <span class="gl-aka">mirrored, mirroring</span></div></dd></div><div class="gl-entry" id="modulus"><dt>Modulus</dt><dd>How many different states a counter steps through before repeating. A 4-bit counter is MOD 16.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">mod</span></div></dd></div><div class="gl-entry" id="multiplexer"><dt>Multiplexer</dt><dd>A circuit that sends one of many inputs to a single output, chosen by select lines. Taking turns, it sends many signals over one line.<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">mux</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-N"><h2 id="letter-N">N</h2><dl class="gl"><div class="gl-entry" id="nand-gate"><dt>NAND gate</dt><dd>NOT AND: the output is 0 only when all inputs are 1.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">nand</span></div></dd></div><div class="gl-entry" id="net-alias"><dt>Net alias</dt><dd>A name attached to a wire, such as IN or OUT. It labels the node, and wires with the same name are connected.<div class="gl-labs">Introduced in Lab 5, Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">net aliases</span></div></dd></div><div class="gl-entry" id="netlist"><dt>Netlist</dt><dd>The text version of a schematic: a list of every part and the nodes it connects to. It&#x27;s what the simulator actually reads.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="node"><dt>Node</dt><dd>All the points joined together by wire. Every point on a node is at the same voltage.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="non-inverting-amplifier"><dt>Non-inverting amplifier</dt><dd>An op amp circuit where the signal enters the + input. Its gain is 1 + RF ÷ RIN, and the output is in step with the input.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">non-inverting amplifiers</span></div></dd></div><div class="gl-entry" id="nonperiodic-waveform"><dt>Nonperiodic waveform</dt><dd>A signal that never repeats in a regular pattern, such as random noise.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">nonperiodic</span></div></dd></div><div class="gl-entry" id="nor-gate"><dt>NOR gate</dt><dd>NOT OR: the output is 1 only when all inputs are 0.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">nor</span></div></dd></div><div class="gl-entry" id="not-gate"><dt>NOT gate</dt><dd>A gate with one input whose output is the opposite level. Also called an inverter.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">not</span></div></dd></div><div class="gl-entry" id="npn-transistor"><dt>NPN transistor</dt><dd>A transistor made of N-type, P-type and N-type layers. Current flows in at the collector and out at the emitter.<div class="gl-labs">Introduced in Lab 4</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-O"><h2 id="letter-O">O</h2><dl class="gl"><div class="gl-entry" id="ohm-s-law"><dt>Ohm&#x27;s law</dt><dd>The link between voltage, current and resistance: I = V ÷ R, or V = I × R.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="op-amp-operational-amplifier"><dt>Op amp (operational amplifier)</dt><dd>A very high-gain amplifier with + and − inputs. Resistors around it set the actual gain.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">op amp, operational amplifier, op amps</span></div></dd></div><div class="gl-entry" id="open-circuit"><dt>Open circuit</dt><dd>A break in the path. No current can flow through it.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="open-end"><dt>Open end</dt><dd>A wire end or pin connected to nothing. Q Circuits marks it with an open circle.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="operating-point"><dt>Operating point</dt><dd>An analysis that calculates the steady DC voltage at every node. PSpice calls it Bias Point.<div class="gl-labs">Introduced in Lab 4, Lab 5</div></dd></div><div class="gl-entry" id="or-gate"><dt>OR gate</dt><dd>A logic gate whose output is 1 when any input is 1.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">or</span></div></dd></div><div class="gl-entry" id="orthogonal-wiring"><dt>Orthogonal wiring</dt><dd>Wires drawn only as horizontal and vertical segments, the professional standard.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">orthogonal</span></div></dd></div><div class="gl-entry" id="output-node"><dt>Output node</dt><dd>The node where you measure a circuit&#x27;s result. Looking from ground through the output part, it&#x27;s the node on the other side.<div class="gl-labs">Introduced in Lab 6</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-P"><h2 id="letter-P">P</h2><dl class="gl"><div class="gl-entry" id="parallel"><dt>Parallel</dt><dd>Parts connected across the same two nodes. They share the same voltage.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="parameter"><dt>Parameter</dt><dd>A named value, such as RVAL, defined by a Parameter part and used in a part value inside curly braces: {RVAL}.<div class="gl-labs">Introduced in Lab 7</div><div class="gl-labs">Also: <span class="gl-aka">parameters, {rval}</span></div></dd></div><div class="gl-entry" id="parametric-sweep"><dt>Parametric sweep</dt><dd>Running the same analysis several times, once for each value of a parameter, and plotting all the results together.<div class="gl-labs">Introduced in Lab 7</div></dd></div><div class="gl-entry" id="period"><dt>Period</dt><dd>The time for one complete cycle of a repeating waveform. Period = 1 ÷ frequency.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">per</span></div></dd></div><div class="gl-entry" id="periodic-waveform"><dt>Periodic waveform</dt><dd>A signal that repeats the same shape at regular intervals.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">periodic</span></div></dd></div><div class="gl-entry" id="phase-shift"><dt>Phase shift</dt><dd>How far one wave is shifted in time relative to another, measured in degrees; a full cycle is 360°.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="plot"><dt>Plot</dt><dd>The Q Circuits graph of probed signals. Volts and amps are drawn in separate panes.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="pn-junction"><dt>PN junction</dt><dd>The boundary where P-type and N-type semiconductor meet. It&#x27;s what makes a diode conduct in one direction.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="port"><dt>Port</dt><dd>A named connection drawn as an arrow (PSpice&#x27;s PORTLEFT and PORTRIGHT).<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">ports</span></div></dd></div><div class="gl-entry" id="power-symbol"><dt>Power symbol</dt><dd>A named supply connection such as VCC or VEE. Every symbol with the same name is the same node.<div class="gl-labs">Introduced in Lab 5, Lab 6</div></dd></div><div class="gl-entry" id="primary"><dt>Primary</dt><dd>The transformer winding connected to the source.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">primary winding</span></div></dd></div><div class="gl-entry" id="probe"><dt>Probe</dt><dd>A marker that tells the simulator what to graph: a wire for its voltage, or a part&#x27;s body for its current. Placed with the Probe tool (B).<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">probe tool, probes</span></div></dd></div><div class="gl-entry" id="propagation-delay"><dt>Propagation delay</dt><dd>The short time between a gate&#x27;s input changing and its output responding, typically nanoseconds.<div class="gl-labs">Introduced in Lab 11</div></dd></div><div class="gl-entry" id="pulse-source"><dt>Pulse source</dt><dd>A source that switches between two voltages with set delay, rise, width, fall and period. PSpice calls it VPULSE.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">pulse, vpulse</span></div></dd></div><div class="gl-entry" id="pulse-width"><dt>Pulse width</dt><dd>How long a pulse stays at its high level (PW).<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">pw</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-Q"><h2 id="letter-Q">Q</h2><dl class="gl"><div class="gl-entry" id="q-circuits"><dt>Q Circuits</dt><dd>The browser-based schematic and simulation tool used for the ELEC 101 labs.<div class="gl-labs">Introduced in Lab 4</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-R"><h2 id="letter-R">R</h2><dl class="gl"><div class="gl-entry" id="ramp"><dt>Ramp</dt><dd>A waveform that rises steadily and then drops quickly, also called a sawtooth.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">sawtooth, ramp wave</span></div></dd></div><div class="gl-entry" id="reactance"><dt>Reactance</dt><dd>A capacitor&#x27;s (or inductor&#x27;s) opposition to AC, in ohms. For a capacitor, Xᴄ = 1 ÷ (2πfC), so it falls as frequency rises.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="rectifier"><dt>Rectifier</dt><dd>A circuit that turns AC into DC. A single diode makes a half-wave rectifier, which passes only one half of each cycle.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">half-wave rectifier</span></div></dd></div><div class="gl-entry" id="reference-designator"><dt>Reference designator</dt><dd>A part&#x27;s name on a schematic, such as R1, C2 or Q1.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="resistance"><dt>Resistance</dt><dd>How strongly a part opposes current, measured in ohms (Ω).<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">resistance (r)</span></div></dd></div><div class="gl-entry" id="resistor"><dt>Resistor</dt><dd>A part that opposes current by a set amount, measured in ohms.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="rise-time"><dt>Rise time</dt><dd>How long a pulse takes to climb from its low level to its high level (TR).<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">tr</span></div></dd></div><div class="gl-entry" id="roll-off"><dt>Roll-off</dt><dd>The part of a frequency response where the gain falls steadily. A simple RC filter rolls off at 20 dB per decade.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">rolloff</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-S"><h2 id="letter-S">S</h2><dl class="gl"><div class="gl-entry" id="schematic"><dt>Schematic</dt><dd>A drawing of a circuit that uses standard symbols to show every part, its value, and how the parts are connected.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="secondary"><dt>Secondary</dt><dd>The transformer winding connected to the load.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">secondary winding</span></div></dd></div><div class="gl-entry" id="select-lines"><dt>Select lines</dt><dd>The inputs of a multiplexer or demultiplexer that choose which line is connected.<div class="gl-labs">Introduced in Lab 13</div><div class="gl-labs">Also: <span class="gl-aka">select line, select inputs</span></div></dd></div><div class="gl-entry" id="sequential-logic"><dt>Sequential logic</dt><dd>Logic whose output depends on past inputs as well as present ones, because it has memory. Latches, flip-flops and counters are sequential.<div class="gl-labs">Introduced in Lab 11</div></dd></div><div class="gl-entry" id="series"><dt>Series</dt><dd>Parts connected end to end with nothing branching off between them. They carry the same current.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="series-parallel"><dt>Series-parallel</dt><dd>A circuit that combines series and parallel connections.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="set-and-reset"><dt>Set and reset</dt><dd>Making a memory circuit&#x27;s output 1 (set) or 0 (reset).<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">set, reset</span></div></dd></div><div class="gl-entry" id="short-circuit"><dt>Short circuit</dt><dd>A path of (almost) zero resistance, such as a wire across a part, so current bypasses the part.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">short</span></div></dd></div><div class="gl-entry" id="simulation"><dt>Simulation</dt><dd>Using a computer to solve a circuit&#x27;s equations and predict what a real circuit would do.<div class="gl-labs">Introduced in Lab 5</div></dd></div><div class="gl-entry" id="sine-source"><dt>Sine source</dt><dd>A voltage source whose value is SIN(offset amplitude frequency), used for transient runs. PSpice calls it VSIN.<div class="gl-labs">Introduced in Lab 5, Lab 6</div><div class="gl-labs">Also: <span class="gl-aka">vsin</span></div></dd></div><div class="gl-entry" id="slope"><dt>Slope</dt><dd>How steep a line is: how much the output changes for each 1 unit change of the input.<div class="gl-labs">Introduced in Lab 7</div></dd></div><div class="gl-entry" id="spice"><dt>SPICE</dt><dd>The family of circuit simulators that Q Circuits and PSpice are based on. It also names the value notation they share, such as 1k and .15u.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="square-wave"><dt>Square wave</dt><dd>A pulse waveform that switches sharply between two levels.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">square waves</span></div></dd></div><div class="gl-entry" id="step"><dt>Step</dt><dd>The spacing between values in a sweep. From −12 to 12 in steps of 0.1 gives 241 points. PSpice calls it Increment.<div class="gl-labs">Introduced in Lab 7</div><div class="gl-labs">Also: <span class="gl-aka">increment</span></div></dd></div><div class="gl-entry" id="step-up-transformer"><dt>Step-up transformer</dt><dd>A transformer whose output voltage is larger than its input. Its secondary inductance is larger than its primary.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">step-down transformer, step-up</span></div></dd></div><div class="gl-entry" id="synchronous-counter"><dt>Synchronous counter</dt><dd>A counter whose flip-flops all share one clock, so every bit changes at the same moment.<div class="gl-labs">Introduced in Lab 11</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-T"><h2 id="letter-T">T</h2><dl class="gl"><div class="gl-entry" id="time-constant"><dt>Time constant</dt><dd>For an RC circuit, τ = R × C. In one time constant a capacitor charges 63% of the way; after about five it is essentially done.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">tau, τ</span></div></dd></div><div class="gl-entry" id="timing-diagram"><dt>Timing diagram</dt><dd>A plot of digital signals against time, one above another, used to read how a circuit behaves.<div class="gl-labs">Introduced in Lab 10, Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">timing diagrams</span></div></dd></div><div class="gl-entry" id="title-block"><dt>Title block</dt><dd>The labelled box on a drawing that identifies it and its author. In Q Circuits the circuit name box does this job.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="toggle"><dt>Toggle</dt><dd>Switch to the opposite state. A JK flip-flop with J = K = 1 toggles at every clock edge.<div class="gl-labs">Introduced in Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">toggles</span></div></dd></div><div class="gl-entry" id="transformer"><dt>Transformer</dt><dd>Two coupled coils that transfer AC from one circuit to another, stepping the voltage up or down and isolating the two sides.<div class="gl-labs">Introduced in Lab 8</div><div class="gl-labs">Also: <span class="gl-aka">transformers</span></div></dd></div><div class="gl-entry" id="transient"><dt>Transient</dt><dd>An analysis that steps through time and plots signals the way an oscilloscope shows them.<div class="gl-labs">Introduced in Lab 5</div><div class="gl-labs">Also: <span class="gl-aka">transient analysis</span></div></dd></div><div class="gl-entry" id="triangle-wave"><dt>Triangle wave</dt><dd>A waveform that rises and falls at equal, steady rates.<div class="gl-labs">Introduced in Lab 9</div><div class="gl-labs">Also: <span class="gl-aka">triangle</span></div></dd></div><div class="gl-entry" id="truth-table"><dt>Truth table</dt><dd>A table listing a logic circuit&#x27;s output for every combination of inputs.<div class="gl-labs">Introduced in Lab 10</div><div class="gl-labs">Also: <span class="gl-aka">truth tables</span></div></dd></div><div class="gl-entry" id="ttl"><dt>TTL</dt><dd>Transistor-transistor logic, the family the 7400-series chips belong to. It uses about 0 V for 0 and 5 V for 1.<div class="gl-labs">Introduced in Lab 10</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-U"><h2 id="letter-U">U</h2><dl class="gl"><div class="gl-entry" id="unknown-state-x"><dt>Unknown state (X)</dt><dd>A logic value the simulator can&#x27;t determine, drawn as X. Flip-flops start in X unless they are initialized.<div class="gl-labs">Introduced in Lab 10, Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">x, unknown</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-V"><h2 id="letter-V">V</h2><dl class="gl"><div class="gl-entry" id="value"><dt>Value</dt><dd>The number that sets a part&#x27;s size, such as 1k for a resistor or DC 12 for a source.<div class="gl-labs">Introduced in Lab 4</div></dd></div><div class="gl-entry" id="voltage"><dt>Voltage</dt><dd>The electrical push that makes charge move, measured in volts (V). Always measured between two points.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">voltage (v)</span></div></dd></div><div class="gl-entry" id="voltage-divider"><dt>Voltage divider</dt><dd>Two or more parts in series that share a voltage in proportion to their resistance (or reactance).<div class="gl-labs">Introduced in Lab 4, Lab 5</div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-W"><h2 id="letter-W">W</h2><dl class="gl"><div class="gl-entry" id="wire"><dt>Wire</dt><dd>A connection with no resistance. Its length and shape don&#x27;t matter, only what it connects.<div class="gl-labs">Introduced in Lab 4</div><div class="gl-labs">Also: <span class="gl-aka">wires</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-X"><h2 id="letter-X">X</h2><dl class="gl"><div class="gl-entry" id="xor-gate"><dt>XOR gate</dt><dd>Exclusive OR: the output is 1 when the inputs differ.<div class="gl-labs">Introduced in Lab 10, Lab 11</div><div class="gl-labs">Also: <span class="gl-aka">xor, exclusive or</span></div></dd></div></dl></section><section class="gl-group" aria-labelledby="letter-Z"><h2 id="letter-Z">Z</h2><dl class="gl"><div class="gl-entry" id="zener-diode"><dt>Zener diode</dt><dd>A diode designed to conduct backward at a precise breakdown voltage. Used as a voltage reference.<div class="gl-labs">Introduced in Lab 5</div></dd></div></dl></section>
+  </div>
+</main>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026.</p></footer>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+  var q=document.getElementById('gq'), count=document.getElementById('gcount');
+  var entries=Array.prototype.slice.call(document.querySelectorAll('.gl-entry'));
+  var groups=Array.prototype.slice.call(document.querySelectorAll('.gl-group'));
+  entries.forEach(function(e){ e._dt=e.querySelector('dt'); e._t=e._dt.textContent; });
+  function esc(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  function mark(el,text,term){
+    while(el.firstChild) el.removeChild(el.firstChild);
+    if(!term){ el.textContent=text; return; }
+    var parts=text.split(new RegExp('('+esc(term)+')','ig'));
+    parts.forEach(function(p){ if(p.toLowerCase()===term.toLowerCase()){ var m=document.createElement('mark'); m.textContent=p; el.appendChild(m);} else el.appendChild(document.createTextNode(p)); });
+  }
+  var timer=null;
+  function run(){
+    var t=q.value.trim(), tl=t.toLowerCase(), n=0;
+    entries.forEach(function(e){ var hit=!tl || e.textContent.toLowerCase().indexOf(tl)>=0; e.hidden=!hit; if(hit) n++; mark(e._dt,e._t,t); });
+    groups.forEach(function(g){ g.hidden=!g.querySelector('.gl-entry:not([hidden])'); });
+    clearTimeout(timer);
+    timer=setTimeout(function(){ count.textContent= t ? (n+' of '+entries.length+' terms match "'+t+'"') : (entries.length+' terms'); }, 250);
+  }
+  q.addEventListener('input',run);
+  var start=(location.hash||'').match(/^#q=(.*)$/); if(start){ q.value=decodeURIComponent(start[1]); }
+  run();
+})();
+</script>
+</body>
+</html>

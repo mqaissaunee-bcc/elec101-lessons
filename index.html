@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Lab Companion Lessons</title>
+<meta name="description" content="Interactive companion lessons for the ELEC 101 schematic capture and simulation labs, used with Q Circuits.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+
+.intro{max-width:70ch}
+.lab-list{list-style:none; margin:1.5rem 0 0; padding:0; display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(min(100%, 300px), 1fr))}
+.lab{border:1.5px solid var(--ink); background:var(--sheet); display:flex; flex-direction:column; min-width:0}
+.lab.soon{border-style:dashed; border-color:var(--rule); background:transparent}
+.lab-head{display:grid; grid-template-columns:auto 1fr; border-bottom:1px solid var(--ink)}
+.lab.soon .lab-head{border-bottom-color:var(--rule)}
+.lab-no{font-family:var(--font-tech); font-weight:700; font-size:2rem; line-height:1; padding:.55rem .75rem; border-right:1px solid var(--ink); min-width:3.6rem; text-align:center; font-variant-numeric:tabular-nums}
+.lab.soon .lab-no{border-right-color:var(--rule); color:var(--ink-2)}
+.lab-head h2{font-size:1.1rem; margin:0; padding:.55rem .75rem; align-self:center}
+.lab-body{padding:.75rem; display:flex; flex-direction:column; gap:.5rem; flex:1}
+.lab-body p{margin:0; font-size:.95rem}
+.meta{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+.status{font-family:var(--font-tech); font-size:.85rem; font-weight:600}
+.status.soon{color:var(--ink-2)}
+.lab-body .btn{margin-top:auto; align-self:flex-start}
+.lab .bar{margin-top:.15rem}
+.main-sheet{max-width:1240px; margin:0 auto; padding:1rem}
+.panel{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem,.6rem + 2vw,2rem)}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">ELEC 101 Lab Companion</h1><span class="tb-k" style="margin-top:.35rem">Lessons that explain the parts, schematics, analyses and results behind each Q Circuits lab</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Simulator</span><span class="tb-v">Q Circuits</span></div>
+      <div><span class="tb-k">Lessons ready</span><span class="tb-v">11 of 11</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="glossary.html" target="_blank" rel="noopener">Glossary (new tab)</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+    </div>
+  </div>
+</header>
+<main id="main" class="main-sheet">
+  <section class="panel" aria-labelledby="labs-h">
+    <h2 id="labs-h" style="margin-top:0">Lab lessons</h2>
+    <div class="intro">
+      <p>Each lesson goes with one lab. Read it before you open the lab in Q Circuits: it explains the parts in the circuit, how to read the schematic, which analysis the lab uses, and what the results mean. No electronics experience is needed.</p>
+      <p>Lessons open in a new tab, so this list stays open. Your progress is saved in this browser only. The <a href="glossary.html" target="_blank" rel="noopener">course glossary (opens in a new tab)</a> defines every key term.</p>
+    </div>
+    <ul class="lab-list">
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">4</span><h2 id="lab4">Lab 4: Drawing and fixing schematics</h2></div>
+  <div class="lab-body">
+    <p>What schematics are for, the basic parts, and how to find and fix wiring errors and messy layouts.</p><p class="meta">Q Circuits exercises: 4A, 4B</p>
+    <div data-progress="4" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 4 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab04-lesson.html" target="_blank" rel="noopener" aria-describedby="lab4">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">5</span><h2 id="lab5">Lab 5: Running your first simulations</h2></div>
+  <div class="lab-body">
+    <p>Analysis types and probes: an AC sweep of an op-amp filter, a transient run of a Zener diode circuit, and an operating point.</p><p class="meta">Q Circuits exercises: 5A, 5B, 5C</p>
+    <div data-progress="5" data-total="8">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 5 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab05-lesson.html" target="_blank" rel="noopener" aria-describedby="lab5">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">6</span><h2 id="lab6">Lab 6: Drawing circuits</h2></div>
+  <div class="lab-body">
+    <p>Series, parallel and series-parallel circuits, drawn from scratch to professional standards, with net aliases, power symbols and crossovers.</p><p class="meta">Q Circuits exercises: 6A, 6B, 6C</p>
+    <div data-progress="6" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 6 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab06-lesson.html" target="_blank" rel="noopener" aria-describedby="lab6">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">7</span><h2 id="lab7">Lab 7: DC sweep analysis</h2></div>
+  <div class="lab-body">
+    <p>Sweep a source from −12 V to +12 V, measure across a part with a differential probe, and step a resistor with a parametric sweep.</p><p class="meta">Q Circuits exercises: 7A, 7B, 7C, 7D</p>
+    <div data-progress="7" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 7 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab07-lesson.html" target="_blank" rel="noopener" aria-describedby="lab7">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">8</span><h2 id="lab8">Lab 8: AC sweep analysis</h2></div>
+  <div class="lab-body">
+    <p>Bode plots of an RC circuit, reactance, framing the plot with axis ranges, stepping a capacitor, and adding a step-up transformer.</p><p class="meta">Q Circuits exercises: 8A, 8B, 8C, 8D</p>
+    <div data-progress="8" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 8 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab08-lesson.html" target="_blank" rel="noopener" aria-describedby="lab8">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">9</span><h2 id="lab9">Lab 9: Transient analysis</h2></div>
+  <div class="lab-body">
+    <p>Pulse, square, triangle and ramp inputs into an RC circuit, time constants, and reading results with the Measurements table.</p><p class="meta">Q Circuits exercises: 9A, 9B, 9C, 9D</p>
+    <div data-progress="9" data-total="6">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 9 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab09-lesson.html" target="_blank" rel="noopener" aria-describedby="lab9">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">10</span><h2 id="lab10">Lab 10: Digital logic gates</h2></div>
+  <div class="lab-body">
+    <p>Bits, logic gates and truth tables: 7400-series gates driven by digital stimuli, read from timing diagrams.</p><p class="meta">Q Circuits exercises: 10A–10E</p>
+    <div data-progress="10" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 10 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab10-lesson.html" target="_blank" rel="noopener" aria-describedby="lab10">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">11</span><h2 id="lab11">Lab 11: Digital circuits</h2></div>
+  <div class="lab-body">
+    <p>Clocks, an XOR gate, an RS latch that remembers, a JK flip-flop, and a four-bit synchronous counter.</p><p class="meta">Q Circuits exercises: 11A–11D</p>
+    <div data-progress="11" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 11 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab11-lesson.html" target="_blank" rel="noopener" aria-describedby="lab11">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">12</span><h2 id="lab12">Lab 12: Transistor circuit analysis</h2></div>
+  <div class="lab-body">
+    <p>One- and two-stage transistor amplifiers and three LM324 op-amp amplifiers, compared by gain and bandwidth.</p><p class="meta">Q Circuits exercises: 12A–12E</p>
+    <div data-progress="12" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 12 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab12-lesson.html" target="_blank" rel="noopener" aria-describedby="lab12">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">13</span><h2 id="lab13">Lab 13: Buses, multiplexers and counters (optional)</h2></div>
+  <div class="lab-body">
+    <p>A 16-line multiplexer and demultiplexer drawn with buses, and a glitchless MOD 10 counter.</p><p class="meta">Q Circuits exercises: 13A–13C</p>
+    <div data-progress="13" data-total="7">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 13 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab13-lesson.html" target="_blank" rel="noopener" aria-describedby="lab13">Open lesson (new tab)</a>
+  </div>
+</li>
+<li class="lab">
+  <div class="lab-head"><span class="lab-no" aria-hidden="true">14</span><h2 id="lab14">Lab 14: Instrumentation and operational amplifiers</h2></div>
+  <div class="lab-body">
+    <p>A three-op-amp instrumentation amplifier, mirrored parts, and a discrete op amp from JFETs and transistors.</p><p class="meta">Q Circuits exercises: 14A–14B</p>
+    <div data-progress="14" data-total="6">
+      <p class="status ptxt">Not started</p>
+      <div class="bar" role="progressbar" aria-label="Lab 14 progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+    </div>
+    <a class="btn primary" href="elec101-lab14-lesson.html" target="_blank" rel="noopener" aria-describedby="lab14">Open lesson (new tab)</a>
+  </div>
+</li>
+    </ul>
+  </section>
+</main>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026.</p></footer>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+  document.querySelectorAll('[data-progress]').forEach(function(el){
+    var lab=el.getAttribute('data-progress'), total=+el.getAttribute('data-total');
+    var done=0;
+    try{ var st=JSON.parse(localStorage.getItem('elec101-lesson-'+lab+'-v1'))||{}; done=Object.keys(st.done||{}).filter(function(k){return st.done[k]}).length; }catch(e){}
+    var txt=el.querySelector('.ptxt'), bar=el.querySelector('.bar'), fill=el.querySelector('.bar span');
+    var pct=Math.round(done/total*100);
+    txt.textContent= done ? (done+' of '+total+' sections complete') : 'Not started';
+    bar.setAttribute('aria-valuenow',pct); fill.style.width=pct+'%';
+  });
+})();
+</script>
+</body>
+</html>

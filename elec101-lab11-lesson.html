@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Lab 11 Companion: Digital circuits</title>
+<meta name="description" content="Companion lesson for ELEC 101 Lab 11 in Q Circuits: DigClock sources, XOR gates, NAND latches, 7473 JK flip-flops, and a four-bit synchronous counter.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+</style>
+</head>
+<body data-lab="11">
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">Lab 11: Digital circuits</h1><span class="tb-k" style="margin-top:.35rem">Clocks, XOR, the RS latch, JK flip-flops and a synchronous counter in Q Circuits</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101 Lab Companion</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Now on</span><span class="tb-v" id="sheet-title">&nbsp;</span></div>
+      <div><span class="tb-k">Sheet</span><span class="tb-v" id="sheet-no">1</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="index.html">All labs</a>
+      <a class="btn" href="glossary.html" target="_blank" rel="noopener">Glossary (new tab)</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+      <button type="button" class="btn" id="reset-btn">Clear my progress</button>
+    </div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Lesson sections">
+    <div class="toc-inner">
+      <h2>Sections</h2>
+      <ol><li><button type="button" data-target="s11-1" aria-current="false"><span class="num">11.1</span><span>Memory and clocks</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-2" aria-current="false"><span class="num">11.2</span><span>Lab 11A: XOR</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-3" aria-current="false"><span class="num">11.3</span><span>Lab 11B: the RS latch</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-4" aria-current="false"><span class="num">11.4</span><span>Flip-flops and the 7473</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-5" aria-current="false"><span class="num">11.5</span><span>Lab 11C: JK flip-flop</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-6" aria-current="false"><span class="num">11.6</span><span>Lab 11D: synchronous counter</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s11-7" aria-current="false"><span class="num">11.7</span><span>Troubleshooting and wrap-up</span><span class="chk" aria-hidden="true"></span></button></li></ol>
+      <div class="progress-wrap">
+        <div class="bar" id="prog" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <p id="prog-txt" style="margin:.35rem 0 0">0 complete</p>
+      </div>
+    </div>
+  </nav>
+  <main id="main" tabindex="-1">
+<section class="lesson" id="s11-1" data-title="Memory and clocks" aria-labelledby="s11-1-h" hidden><p class="sub-num">Section 11.1</p><h2 id="s11-1-h">Memory and clocks</h2><p class="lede prose">From combinational to sequential logic, and the DigClock source.</p>
+<div class="prose">
+<p>Every Lab 10 circuit was <span class="term">combinational logic</span>: the output depended only on the inputs at that moment. Lab 11 adds <span class="term">sequential logic</span>, circuits with memory, whose output also depends on what happened before. Memory is what lets a computer count, store numbers and follow steps in order.</p>
+<h3>Clocks</h3>
+<p>Sequential circuits usually act in step with a <span class="term">clock</span>: a signal that switches back and forth at a steady rate. For repeating inputs the handout switches from STIM1 to the <span class="term">DigClock</span> source, which needs just five settings instead of a long command list.</p>
+</div>
+<div class="table-wrap"><table>
+<caption>DigClock settings (Selected part panel)</caption>
+<thead><tr><th scope="col">Setting</th><th scope="col">Meaning</th></tr></thead>
+<tbody>
+<tr><td>OFFTIME</td><td>Time spent at STARTVAL in each cycle</td></tr>
+<tr><td>ONTIME</td><td>Time spent at OPPVAL in each cycle. <span class="term">Period</span> = ONTIME + OFFTIME</td></tr>
+<tr><td>DELAY</td><td>Extra time at STARTVAL before the first cycle</td></tr>
+<tr><td>STARTVAL</td><td>The level the clock starts at (0 or 1)</td></tr>
+<tr><td>OPPVAL</td><td>The other level</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p>With STARTVAL 0 and OPPVAL 1, equal ONTIME and OFFTIME give a 50% <span class="term">duty cycle</span>; OFFTIME = 3 × ONTIME gives 25%. With STARTVAL 1 and OPPVAL 0 the clock starts high, which matters when a circuit acts on the clock's <span class="term">falling edge</span>.</p>
+</div>
+
+<div class="demo" id="cb">
+<h4>DigClock builder</h4>
+<div class="btn-row" role="group" aria-label="Load a lab clock">
+  <button type="button" class="btn" data-cb='[".2m",".2m","0","0","1"]'>11A DSTM1</button>
+  <button type="button" class="btn" data-cb='[".1m",".1m","0","0","1"]'>11A DSTM2</button>
+  <button type="button" class="btn" data-cb='["75u","75u","0","1","0"]'>11B SBAR</button>
+  <button type="button" class="btn" data-cb='[".75m",".75m","0","1","0"]'>11C Clock</button>
+  <button type="button" class="btn" data-cb='["3m","1m","0","0","1"]'>25% duty example</button>
+</div>
+<div class="controls">
+  <div class="field"><label for="cb-off">OFFTIME</label><input type="text" id="cb-off" value=".2m" style="min-width:4.5rem;width:5.5rem" autocomplete="off" spellcheck="false"></div>
+  <div class="field"><label for="cb-on">ONTIME</label><input type="text" id="cb-on" value=".2m" style="min-width:4.5rem;width:5.5rem" autocomplete="off" spellcheck="false"></div>
+  <div class="field"><label for="cb-del">DELAY</label><input type="text" id="cb-del" value="0" style="min-width:4.5rem;width:5.5rem" autocomplete="off" spellcheck="false"></div>
+  <div class="field"><label for="cb-sv">STARTVAL</label><select id="cb-sv"><option>0</option><option>1</option></select></div>
+  <div class="field"><label for="cb-ov">OPPVAL</label><select id="cb-ov"><option>0</option><option selected>1</option></select></div>
+</div>
+<p class="result" id="cb-status" aria-live="polite"></p>
+<div class="demo-grid">
+  <dl class="readouts" id="cb-read" aria-live="polite"></dl>
+  <p id="cb-say" style="margin:0" aria-live="polite"></p>
+</div>
+<div class="plot-box"><svg id="cb-plot" role="img" aria-label="Clock waveform over three periods"></svg></div>
+</div>
+
+<div class="prose">
+<h3>Names in the handout</h3>
+<p>The handout mixes the names DSTM and DSTIM for the sources. Use the names the Q Circuits tasks give (DSTM1, DSTM2 …, and Clear); the checks look for those.</p>
+</div>
+<div class="pager"><span></span><button type="button" class="btn" data-complete="s11-1" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-2">Next: Lab 11A: XOR</button></div></section>
+<section class="lesson" id="s11-2" data-title="Lab 11A: XOR" aria-labelledby="s11-2-h" hidden><p class="sub-num">Section 11.2</p><h2 id="s11-2-h">Lab 11A: XOR</h2><p class="lede prose">An exclusive-OR gate driven by two clocks.</p>
+<div class="prose">
+<p>Open <strong>11A · XOR with clock inputs</strong>. An <span class="term">XOR gate</span> outputs 1 when its inputs <em>differ</em>, so it's a one-bit difference detector. Because DSTM2 runs twice as fast as DSTM1, every input combination appears within 0.4 ms.</p>
+</div>
+<div class="schem-box">
+  <div class="drawing"><svg class="schem" id="s11a" viewBox="40 20 360 180" role="group" aria-labelledby="s11a-t s11a-d" data-panel="p11a"><title id="s11a-t">Lab 11A XOR circuit</title><desc id="s11a-d">Two DigClocks drive nodes A and B into a 7486 XOR gate U1A, whose output is Q.</desc><g class="part" data-part="CK1" tabindex="0" role="button" aria-label="DSTM1, DigClock driving A"><rect class="hit" x="50" y="34" width="94" height="52" rx="3"/><g transform="translate(140 60)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="56" y="46" text-anchor="start" >DSTM1</text><text class="val" x="56" y="84" text-anchor="start" >.2m / .2m</text></g><g class="part" data-part="CK2" tabindex="0" role="button" aria-label="DSTM2, DigClock driving B"><rect class="hit" x="50" y="134" width="94" height="52" rx="3"/><g transform="translate(140 160)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="56" y="146" text-anchor="start" >DSTM2</text><text class="val" x="56" y="184" text-anchor="start" >.1m / .1m</text></g><polyline class="w" points="140,60 190,60 190,90 220,90"/><text class="net" x="150" y="52" text-anchor="start" >A</text><polyline class="w" points="140,160 190,160 190,130 220,130"/><text class="net" x="150" y="152" text-anchor="start" >B</text><g class="part" data-part="XOR" tabindex="0" role="button" aria-label="U1A, 7486 XOR gate"><rect class="hit" x="214" y="74" width="92" height="72" rx="3"/><g transform="translate(220 110)"><path class="w" d="M16 -30Q31 0 16 30Q47 30 70 0Q47 -30 16 -30Z"/><path class="w" d="M8 -30Q23 0 8 30"/><path class="w" d="M0 -20H22"/><path class="w" d="M0 20H22"/><path class="w" d="M70 0H80"/></g><text class="lbl" x="236" y="72" text-anchor="start" >U1A</text><text class="val" x="236" y="160" text-anchor="start" >7486</text></g><polyline class="w" points="300,110 380,110"/><text class="net" x="336" y="102" text-anchor="start" >Q</text></svg></div>
+  <div class="info-panel" id="p11a" aria-live="polite"><p class="hint">Select a clock or the gate.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 11A</code> in the circuit name box.</li>
+<li>Place a <strong>Gate</strong>, set its Device to <strong>7486 XOR</strong>, and name it <code>U1A</code>. (The handout's text says 7432 in places; the part is the 7486.)</li>
+<li>Place two <strong>DigClock</strong> sources: <code>DSTM1</code> above-left (OFFTIME <code>.2m</code>, ONTIME <code>.2m</code>) and <code>DSTM2</code> below-left (OFFTIME <code>.1m</code>, ONTIME <code>.1m</code>). Leave DELAY 0, STARTVAL 0, OPPVAL 1.</li>
+<li>Wire DSTM1 to the top input and DSTM2 to the bottom input, and run a short wire from the output.</li>
+<li>Net aliases: <code>A</code> on the DSTM1 wire, <code>B</code> on the DSTM2 wire, <code>Q</code> at the end of the output wire.</li>
+<li>In the Analysis panel choose <strong>Transient</strong>: Stop time <code>.5m</code>, Time step <code>1u</code>.</li>
+<li>Probe <strong>A, B, then Q</strong>. Run it, fill in the truth table, and press Check my work.</li>
+</ol>
+<form class="sim-settings dialog" data-spec="spec-11a" data-ok="All settings match Lab 11A." novalidate>
+  <div class="dialog-title">Analysis (Lab 11A)</div>
+  <div class="dialog-body">
+    <div class="controls">
+      <div class="field"><label for="a11-type">Analysis</label><select id="a11-type" name="atype"><option value="op">Operating point</option><option value="dc">DC sweep</option><option value="ac">AC sweep</option><option value="tran">Transient</option></select></div>
+      <div class="field"><label for="a11-stop">Stop time</label><input type="text" id="a11-stop" name="stop" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="a11-step">Time step</label><input type="text" id="a11-step" name="step" autocomplete="off" spellcheck="false"></div>
+      <button type="submit" class="btn primary">Check settings</button>
+    </div>
+    <p class="result" aria-live="polite"></p>
+  </div>
+</form>
+
+<div class="demo" id="xa">
+<h4>Lab 11A timing diagram</h4>
+<div class="plot-box"><svg id="xa-plot" tabindex="0" role="img" aria-label="Timing diagram of A, B and Q over 0.5 ms. Use left and right arrow keys to move the cursor."></svg></div>
+<p class="readout" id="xa-read" aria-live="polite">Cursor: move over the diagram.</p>
+</div>
+
+<div class="tt" data-tt='{"inputs":["A","B"],"out":"Q","gate":"XOR","caption":"11A: 7486 XOR","done":"Q is 1 exactly when A and B differ."}'></div>
+<div class="pager"><button type="button" class="btn" data-goto="s11-1">Previous section</button><button type="button" class="btn" data-complete="s11-2" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-3">Next: Lab 11B: the RS latch</button></div></section>
+<section class="lesson" id="s11-3" data-title="Lab 11B: the RS latch" aria-labelledby="s11-3-h" hidden><p class="sub-num">Section 11.3</p><h2 id="s11-3-h">Lab 11B: the RS latch</h2><p class="lede prose">Two NAND gates that remember, and the state to avoid.</p>
+<div class="prose">
+<p>Open <strong>11B · RS latch</strong>. Two NAND gates, each feeding its output into the other's input, make a <span class="term">latch</span>: the simplest circuit that remembers.</p>
+</div>
+<div class="btn-row" role="group" aria-label="Highlight part of the latch">
+  <button type="button" class="btn" data-ovl-for="s11b" data-ovl="q" aria-pressed="false">Q feedback</button>
+  <button type="button" class="btn" data-ovl-for="s11b" data-ovl="qb" aria-pressed="false">QBAR feedback</button>
+  <button type="button" class="btn" data-ovl-for="s11b" data-ovl="x" aria-pressed="false">The crossover</button>
+  <button type="button" class="btn" data-ovl-for="s11b" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s11b-ovl-desc" aria-live="polite">Choose a path to highlight it, or select a part.</p>
+<div class="schem-box">
+  <div class="drawing"><svg class="schem" id="s11b" viewBox="40 18 370 240" role="group" aria-labelledby="s11b-t s11b-d" data-panel="p11b"><title id="s11b-t">Lab 11B RS latch</title><desc id="s11b-d">Two 7400 NAND gates. U1A&#x27;s inputs are SBAR and QBAR, and its output is Q. U1B&#x27;s inputs are Q and RBAR, and its output is QBAR. The two feedback wires cross once without connecting.</desc><g class="part" data-part="CKS" tabindex="0" role="button" aria-label="DSTM1, DigClock driving SBAR"><rect class="hit" x="50" y="24" width="94" height="52" rx="3"/><g transform="translate(140 50)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="56" y="36" text-anchor="start" >DSTM1</text><text class="val" x="56" y="74" text-anchor="start" >75u / 75u, start 1</text></g><g class="part" data-part="CKR" tabindex="0" role="button" aria-label="DSTM2, DigClock driving RBAR"><rect class="hit" x="50" y="184" width="94" height="52" rx="3"/><g transform="translate(140 210)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="56" y="196" text-anchor="start" >DSTM2</text><text class="val" x="56" y="234" text-anchor="start" >.15m / .15m, start 0</text></g><polyline class="w" points="140,50 220,50"/><text class="net" x="146" y="42" text-anchor="start" >SBAR</text><polyline class="w" points="140,210 220,210"/><text class="net" x="146" y="202" text-anchor="start" >RBAR</text><g class="part" data-part="NA" tabindex="0" role="button" aria-label="U1A, 7400 NAND gate"><rect class="hit" x="214" y="34" width="92" height="72" rx="3"/><g transform="translate(220 70)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M65 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M73 0H80"/></g><text class="lbl" x="236" y="32" text-anchor="start" >U1A</text><text class="val" x="304" y="96" text-anchor="start" >7400</text></g><g class="part" data-part="NB" tabindex="0" role="button" aria-label="U1B, 7400 NAND gate"><rect class="hit" x="214" y="154" width="92" height="72" rx="3"/><g transform="translate(220 190)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M65 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M73 0H80"/></g><text class="lbl" x="236" y="238" text-anchor="start" >U1B</text><text class="val" x="304" y="222" text-anchor="start" >7400</text></g><polyline class="w" points="300,70 390,70"/><text class="net" x="370" y="62" text-anchor="start" >Q</text><circle class="dot" cx="340" cy="70" r="4"/><polyline class="w" points="300,190 390,190"/><text class="net" x="366" y="182" text-anchor="start" >QBAR</text><circle class="dot" cx="360" cy="190" r="4"/><polyline class="w" points="340,70 340,120 200,120 200,170 220,170"/><polyline class="w" points="360,190 360,140 180,140 180,90 220,90"/><g class="ovl" data-ovl="q" hidden aria-hidden="true"><polyline points="300,70 390,70"/><polyline points="340,70 340,120 200,120 200,170 220,170"/></g><g class="ovl alt" data-ovl="qb" hidden aria-hidden="true"><polyline points="300,190 390,190"/><polyline points="360,190 360,140 180,140 180,90 220,90"/></g><g class="ovl" data-ovl="x" hidden aria-hidden="true"><circle cx="200" cy="140" r="12"/></g></svg></div>
+  <div class="info-panel" id="p11b" aria-live="polite"><p class="hint">Select a gate or clock.</p></div>
+</div>
+<div class="table-wrap"><table>
+<caption>NAND latch behaviour</caption>
+<thead><tr><th scope="col">SBAR</th><th scope="col">RBAR</th><th scope="col">Q</th><th scope="col">QBAR</th><th scope="col">Name</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>1</td><td>no change</td><td>no change</td><td>Hold (memory)</td></tr>
+<tr><td>0</td><td>1</td><td>1</td><td>0</td><td><span class="term">Set</span></td></tr>
+<tr><td>1</td><td>0</td><td>0</td><td>1</td><td>Reset</td></tr>
+<tr><td>0</td><td>0</td><td>1</td><td>1</td><td><span class="term">Forbidden state</span></td></tr>
+</tbody></table></div>
+
+<div class="demo" id="la">
+<h4>Try the latch</h4>
+<p class="prose">SBAR and RBAR are <span class="term">active-low</span>: 1 means “not asserted”. Click them to switch between 1 and 0, and watch Q and QBAR.</p>
+<div class="io-row">
+  <div class="io"><button type="button" class="btn bitbtn" id="la-s" aria-pressed="true">1</button><span>SBAR</span></div>
+  <div class="io"><button type="button" class="btn bitbtn" id="la-r" aria-pressed="true">1</button><span>RBAR</span></div>
+  <div class="io"><span class="led" id="la-q">0</span><span>Q</span></div>
+  <div class="io"><span class="led on" id="la-qb">1</span><span>QBAR</span></div>
+  <button type="button" class="btn" id="la-reset">Start again</button>
+</div>
+<p class="result ok" id="la-say" aria-live="polite"></p>
+<div class="table-wrap"><table><caption>What you've done</caption>
+<thead><tr><th scope="col">Step</th><th scope="col">SBAR</th><th scope="col">RBAR</th><th scope="col">Q</th><th scope="col">QBAR</th><th scope="col">Action</th></tr></thead>
+<tbody id="la-log"></tbody></table></div>
+</div>
+<div class="demo" id="lt">
+<h4>Lab 11B timing diagram</h4>
+<p class="prose">The lab's two clocks walk the latch through every state. Hatched stretches are unknown (X): after the forbidden state, the result depends on which gate is faster.</p>
+<div class="plot-box"><svg id="lt-plot" tabindex="0" role="img" aria-label="Timing diagram of SBAR, RBAR, Q and QBAR over 0.5 ms. Use left and right arrow keys to move the cursor."></svg></div>
+<p class="readout" id="lt-read" aria-live="polite">Cursor: move over the diagram.</p>
+</div>
+
+<div class="prose"><h3>Build it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 11B</code> in the circuit name box.</li>
+<li>Place two <strong>Gate</strong> parts, <code>U1A</code> and <code>U1B</code>, both <strong>7400 NAND</strong>, U1B below U1A.</li>
+<li>Place DigClock <code>DSTM1</code> at U1A's top input: OFFTIME <code>75u</code>, ONTIME <code>75u</code>, STARTVAL <code>1</code>, OPPVAL <code>0</code>. Place <code>DSTM2</code> at U1B's bottom input: OFFTIME <code>.15m</code>, ONTIME <code>.15m</code>, STARTVAL <code>0</code>, OPPVAL <code>1</code>.</li>
+<li>Run a wire from each output to the right. Name them <code>Q</code> (U1A) and <code>QBAR</code> (U1B), and name the input wires <code>SBAR</code> and <code>RBAR</code>.</li>
+<li>Cross-couple the gates: Q to U1B's top input, and QBAR to U1A's bottom input. The handout draws diagonals; Q Circuits wires are right-angled, so route them around as in the drawing above. Where they cross there must be <strong>no dot</strong>.</li>
+<li>In the Analysis panel choose <strong>Transient</strong>: Stop time <code>0.5m</code>, Time step <code>1u</code>.</li>
+<li>Probe <strong>SBAR, RBAR, Q, then QBAR</strong>. Run it, answer the questions, and press Check my work.</li>
+</ol>
+<div class="callout prose"><p><strong class="k">About the unknown stretches.</strong> Real gates are never exactly equally fast, so a real latch leaving the forbidden state does settle one way or the other, but you can't predict which. Q Circuits gives its gates slightly different delays for the same reason, so your run will show a definite value there. Don't design circuits that rely on it.</p></div>
+<div class="pager"><button type="button" class="btn" data-goto="s11-2">Previous section</button><button type="button" class="btn" data-complete="s11-3" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-4">Next: Flip-flops and the 7473</button></div></section>
+<section class="lesson" id="s11-4" data-title="Flip-flops and the 7473" aria-labelledby="s11-4-h" hidden><p class="sub-num">Section 11.4</p><h2 id="s11-4-h">Flip-flops and the 7473</h2><p class="lede prose">Edge-triggered memory, the JK table, clear, and initialization.</p>
+<div class="prose">
+<p>A <span class="term">flip-flop</span> is a one-bit memory that changes only at a clock edge. The 7473 is a <span class="term">JK flip-flop</span>. Inside, it's a <span class="term">master-slave flip-flop</span>: one latch (the master) reads J and K while the clock is high, and a second (the slave) copies the result to Q when the clock falls.</p>
+</div>
+<div class="cols-2">
+<div class="drawing small" style="max-width:320px"><svg class="schem" id="jk-sym" viewBox="-60 -76 180 170" role="group" aria-labelledby="jk-sym-t jk-sym-d"><title id="jk-sym-t">7473 JK flip-flop symbol</title><desc id="jk-sym-d">A box with J, CLK and K inputs on the left, Q and Q-bar outputs on the right, and CLR at the bottom. CLK has a triangle and a bubble; CLR and Q-bar have bubbles.</desc><g transform="translate(0 0)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="net" x="-8" y="-36" text-anchor="end" >J</text><text class="net" x="-8" y="4" text-anchor="end" >CLK</text><text class="net" x="-8" y="44" text-anchor="end" >K</text><text class="net" x="88" y="-36" text-anchor="start" >Q</text><text class="net" x="88" y="44" text-anchor="start" >Q̅</text><text class="net" x="48" y="92" text-anchor="start" >CLR̅</text></svg></div>
+<div class="table-wrap"><table>
+<caption>JK flip-flop at a falling clock edge</caption>
+<thead><tr><th scope="col">J</th><th scope="col">K</th><th scope="col">Q after the edge</th><th scope="col">Name</th></tr></thead>
+<tbody>
+<tr><td>0</td><td>0</td><td>Q (unchanged)</td><td>Hold</td></tr>
+<tr><td>1</td><td>0</td><td>1</td><td>Set</td></tr>
+<tr><td>0</td><td>1</td><td>0</td><td>Reset</td></tr>
+<tr><td>1</td><td>1</td><td>Q̅ (opposite)</td><td><span class="term">Toggle</span></td></tr>
+</tbody></table></div>
+</div>
+<div class="prose">
+<h3>Reading the symbol</h3>
+<ul>
+<li><strong>Triangle on CLK</strong>: an edge-triggered input. The <strong>bubble</strong> in front of it means the <em>falling</em> edge (1 to 0).</li>
+<li><strong>Bubble on CLR</strong>: <span class="term">Clear</span> is active-low. While it's 0, Q is forced to 0 regardless of the clock.</li>
+<li><strong>Q̅</strong> is always the opposite of Q. You can leave it unconnected.</li>
+</ul>
+<h3>Starting in a known state</h3>
+<p>A real flip-flop powers up in an unpredictable state, which a simulator shows as the <span class="term">unknown state (X)</span>. The handout sets <strong>Initialize all flip-flops to: 0</strong>. In Q Circuits the same choice is <strong>Initialize flip-flops to</strong> in the Analysis panel, under the transient settings. Labs 11C and 11D check that it's 0.</p>
+</div>
+
+<div class="demo" id="jk">
+<h4>Try a 7473</h4>
+<p class="prose">Set J, K and CLR, then press <strong>Clock pulse</strong>: the clock goes high (the flip-flop reads J and K) and then falls (Q changes).</p>
+<div class="io-row">
+  <div class="io"><button type="button" class="btn bitbtn" id="jk-j" aria-pressed="false">0</button><span>J</span></div>
+  <div class="io"><button type="button" class="btn bitbtn" id="jk-k" aria-pressed="false">0</button><span>K</span></div>
+  <div class="io"><button type="button" class="btn bitbtn" id="jk-c" aria-pressed="true">1</button><span>CLR̅</span></div>
+  <button type="button" class="btn primary" id="jk-pulse">Clock pulse</button>
+  <div class="io"><span class="led x" id="jk-q">X</span><span>Q</span></div>
+  <div class="field"><label for="jk-init">Initialize flip-flops to</label><select id="jk-init"><option value="x">X</option><option value="0" selected>0</option><option value="1">1</option></select></div>
+  <button type="button" class="btn" id="jk-power">Power up again</button>
+</div>
+<p class="result ok" id="jk-say" aria-live="polite"></p>
+<div class="table-wrap"><table><caption>Clock pulses so far</caption>
+<thead><tr><th scope="col">Pulse</th><th scope="col">J</th><th scope="col">K</th><th scope="col">CLR̅</th><th scope="col">Q before</th><th scope="col">Q after</th><th scope="col">Action</th></tr></thead>
+<tbody id="jk-log"></tbody></table></div>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s11-3">Previous section</button><button type="button" class="btn" data-complete="s11-4" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-5">Next: Lab 11C: JK flip-flop</button></div></section>
+<section class="lesson" id="s11-5" data-title="Lab 11C: JK flip-flop" aria-labelledby="s11-5-h" hidden><p class="sub-num">Section 11.5</p><h2 id="s11-5-h">Lab 11C: JK flip-flop</h2><p class="lede prose">Trace Q edge by edge through clocks and a clear line.</p>
+<div class="prose">
+<p>Open <strong>11C · JK flip-flop</strong>. Three clocks and a clear line exercise every row of the JK table.</p>
+</div>
+<div class="schem-box">
+  <div class="drawing"><svg class="schem" id="s11c" viewBox="100 20 400 310" role="group" aria-labelledby="s11c-t s11c-d" data-panel="p11c"><title id="s11c-t">Lab 11C JK flip-flop circuit</title><desc id="s11c-d">Three DigClocks drive J, CLK and K of a 7473 JK flip-flop. A STIM1 named Clear drives the active-low CLR input. The Q output is node Q; Q-bar is left open.</desc><g class="part" data-part="CKJ" tabindex="0" role="button" aria-label="DSTM1, DigClock driving J"><rect class="hit" x="130" y="34" width="94" height="52" rx="3"/><g transform="translate(220 60)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="136" y="46" text-anchor="start" >DSTM1</text><text class="val" x="136" y="84" text-anchor="start" >2.5m / 2.5m, 0→1</text></g><g class="part" data-part="CKC" tabindex="0" role="button" aria-label="DSTM2, DigClock driving Clock"><rect class="hit" x="130" y="134" width="94" height="52" rx="3"/><g transform="translate(220 160)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="136" y="146" text-anchor="start" >DSTM2</text><text class="val" x="136" y="184" text-anchor="start" >.75m / .75m, 1→0</text></g><g class="part" data-part="CKK" tabindex="0" role="button" aria-label="DSTM3, DigClock driving K"><rect class="hit" x="130" y="214" width="94" height="52" rx="3"/><g transform="translate(220 240)"><path class="w" d="M-86 -10H-14L0 0L-14 10H-86Z"/><text class="val" x="-81" y="4">DigClock</text></g><text class="lbl" x="136" y="226" text-anchor="start" >DSTM3</text><text class="val" x="136" y="264" text-anchor="start" >4.5m / 4.5m, 0→1</text></g><g class="part" data-part="CLR" tabindex="0" role="button" aria-label="Clear, digital stimulus"><rect class="hit" x="130" y="294" width="94" height="40" rx="3"/><g transform="translate(220 310)"><path class="w" d="M-80 -10H-14L0 0L-14 10H-80Z"/><text class="val" x="-75" y="4">STIM1</text></g><text class="lbl" x="142" y="296" text-anchor="start" >Clear</text></g><polyline class="w" points="220,60 300,60 300,120 340,120"/><text class="net" x="236" y="52" text-anchor="start" >J</text><polyline class="w" points="220,160 340,160"/><text class="net" x="236" y="152" text-anchor="start" >Clock</text><polyline class="w" points="220,240 300,240 300,200 340,200"/><text class="net" x="236" y="232" text-anchor="start" >K</text><polyline class="w" points="220,310 380,310 380,240"/><text class="net" x="236" y="302" text-anchor="start" >Clear</text><g class="part" data-part="FF" tabindex="0" role="button" aria-label="U1A, 7473 JK flip-flop"><rect class="hit" x="334" y="94" width="92" height="152" rx="3"/><g transform="translate(340 160)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="360" y="92" text-anchor="start" >U1A</text><text class="val" x="430" y="250" text-anchor="start" >7473</text></g><polyline class="w" points="420,120 480,120"/><text class="net" x="446" y="112" text-anchor="start" >Q</text></svg></div>
+  <div class="info-panel" id="p11c" aria-live="polite"><p class="hint">Select a source or the flip-flop.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 11C</code> in the circuit name box.</li>
+<li>Place a <strong>7473</strong> and name it <code>U1A</code>.</li>
+<li>Place three <strong>DigClock</strong>s on the left: <code>DSTM1</code> to J (OFFTIME <code>2.5m</code>, ONTIME <code>2.5m</code>, STARTVAL 0, OPPVAL 1); <code>DSTM2</code> to CLK (<code>.75m</code>, <code>.75m</code>, STARTVAL 1, OPPVAL 0); <code>DSTM3</code> to K (<code>4.5m</code>, <code>4.5m</code>, STARTVAL 0, OPPVAL 1).</li>
+<li>Below them place a <strong>STIM1</strong>, name it <code>Clear</code>, wire it to CLR, and give it the commands <code>0s 1; 2.2m 0; 2.3m 1; 7.9m 0; 8.6m 1</code>.</li>
+<li>Run a short wire from Q. Net aliases: <code>J</code>, <code>Clock</code>, <code>K</code>, <code>Clear</code> on the input wires and <code>Q</code> on the output.</li>
+<li>In the Analysis panel choose <strong>Transient</strong>: Stop time <code>10m</code>, Time step <code>0.1m</code>, and set <strong>Initialize flip-flops to 0</strong>.</li>
+<li>Probe <strong>Clear, Clock, J, K, then Q</strong>. Run it, read Q at the times asked, and press Check my work.</li>
+</ol>
+<form class="sim-settings dialog" data-spec="spec-11c" data-ok="All settings match Lab 11C." novalidate>
+  <div class="dialog-title">Analysis (Lab 11C)</div>
+  <div class="dialog-body">
+    <div class="controls">
+      <div class="field"><label for="c11-type">Analysis</label><select id="c11-type" name="atype"><option value="op">Operating point</option><option value="dc">DC sweep</option><option value="ac">AC sweep</option><option value="tran">Transient</option></select></div>
+      <div class="field"><label for="c11-stop">Stop time</label><input type="text" id="c11-stop" name="stop" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="c11-step">Time step</label><input type="text" id="c11-step" name="step" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="c11-ff">Initialize flip-flops to</label><select id="c11-ff" name="ff"><option value="X">X (unknown)</option><option value="0">0</option><option value="1">1</option></select></div>
+      <button type="submit" class="btn primary">Check settings</button>
+    </div>
+    <p class="result" aria-live="polite"></p>
+  </div>
+</form>
+
+<div class="demo" id="jt">
+<h4>Lab 11C timing diagram</h4>
+<div class="controls">
+  <div class="field"><label for="jt-init">Initialize flip-flops to</label><select id="jt-init"><option value="x">X</option><option value="0" selected>0 (lab)</option><option value="1">1</option></select></div>
+  <label class="radio"><input type="checkbox" id="jt-marks" checked> Mark falling clock edges</label>
+</div>
+<div class="plot-box"><svg id="jt-plot" tabindex="0" role="img" aria-label="Timing diagram of Clear, Clock, J, K and Q over 10 ms. Use left and right arrow keys to move the cursor."></svg></div>
+<p class="readout" id="jt-read" aria-live="polite">Cursor: move over the diagram.</p>
+<div class="table-wrap"><table><caption>What happens at each falling edge</caption>
+<thead><tr><th scope="col">Edge at</th><th scope="col">J</th><th scope="col">K</th><th scope="col">Clear</th><th scope="col">Q after</th><th scope="col">Why</th></tr></thead>
+<tbody id="jt-log"></tbody></table></div>
+</div>
+
+<div class="prose">
+<h3>How to read Q at a given time</h3>
+<ol>
+<li>Find the last <strong>falling clock edge</strong> before that time.</li>
+<li>Look at J and K while the clock was high just before it, and apply the JK table.</li>
+<li>Check <strong>Clear</strong>: if it's 0 at your time, or dropped to 0 since that edge, Q is 0.</li>
+</ol>
+<p>Try it with the diagram, then confirm with your Q Circuits run.</p>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s11-4">Previous section</button><button type="button" class="btn" data-complete="s11-5" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-6">Next: Lab 11D: synchronous counter</button></div></section>
+<section class="lesson" id="s11-6" data-title="Lab 11D: synchronous counter" aria-labelledby="s11-6-h" hidden><p class="sub-num">Section 11.6</p><h2 id="s11-6-h">Lab 11D: synchronous counter</h2><p class="lede prose">Four flip-flops and two AND gates that count in binary.</p>
+<div class="prose">
+<p>Open <strong>11D · Synchronous counter</strong>. Four flip-flops and two AND gates make a <span class="term">counter</span> that steps through binary numbers, one per clock pulse.</p>
+<h3>Counting in binary</h3>
+<p>Read Q3 Q2 Q1 Q0 as a 4-bit number, Q3 on the left. Counting up, each bit flips when <em>all the bits to its right are 1</em>:</p>
+<ul>
+<li>Q0 flips every count.</li>
+<li>Q1 flips when Q0 is 1.</li>
+<li>Q2 flips when Q0 and Q1 are both 1.</li>
+<li>Q3 flips when Q0, Q1 and Q2 are all 1.</li>
+</ul>
+<p>A JK flip-flop with J = K = 1 toggles, and with J = K = 0 holds. So each flip-flop's J and K just need the “flip now” condition, which the AND gates provide. All four share one clock, so they change together: a <span class="term">synchronous counter</span>.</p>
+</div>
+<div class="btn-row" role="group" aria-label="Highlight part of the counter">
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="clk" aria-pressed="false">Clock</button>
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="t0" aria-pressed="false">Bit 0 condition</button>
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="t1" aria-pressed="false">Bit 1</button>
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="t2" aria-pressed="false">Bit 2</button>
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="t3" aria-pressed="false">Bit 3</button>
+  <button type="button" class="btn" data-ovl-for="s11d" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s11d-ovl-desc" aria-live="polite">Choose a path to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing"><svg class="schem" id="s11d" viewBox="30 36 990 420" role="group" aria-labelledby="s11d-t s11d-d" data-panel="p11d"><title id="s11d-t">Lab 11D four-bit synchronous counter</title><desc id="s11d-d">Four 7473 flip-flops, U1A, U1B, U2A and U2B, share one clock. U1A&#x27;s J and K are tied to logic 1. U1B&#x27;s J and K come from Q0. AND gate U3A combines Q0 and Q1 to drive U2A&#x27;s J and K, and U3B combines Q2 with that result to drive U2B&#x27;s J and K. All CLR inputs are tied to logic 1. The outputs are Q0 to Q3.</desc><g class="part" data-part="FFU1A" tabindex="0" role="button" aria-label="U1A, 7473 JK flip-flop"><rect class="hit" x="196" y="176" width="88" height="148" rx="3"/><g transform="translate(200 240)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="220" y="172" text-anchor="start" >U1A</text></g><g class="part" data-part="FFU1B" tabindex="0" role="button" aria-label="U1B, 7473 JK flip-flop"><rect class="hit" x="356" y="176" width="88" height="148" rx="3"/><g transform="translate(360 240)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="380" y="172" text-anchor="start" >U1B</text></g><g class="part" data-part="FFU2A" tabindex="0" role="button" aria-label="U2A, 7473 JK flip-flop"><rect class="hit" x="596" y="176" width="88" height="148" rx="3"/><g transform="translate(600 240)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="620" y="172" text-anchor="start" >U2A</text></g><g class="part" data-part="FFU2B" tabindex="0" role="button" aria-label="U2B, 7473 JK flip-flop"><rect class="hit" x="876" y="176" width="88" height="148" rx="3"/><g transform="translate(880 240)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="900" y="172" text-anchor="start" >U2B</text></g><g class="part" data-part="G3A" tabindex="0" role="button" aria-label="U3A, 7408 AND gate"><rect class="hit" x="476" y="84" width="92" height="72" rx="3"/><g transform="translate(480 120)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="496" y="82" text-anchor="start" >U3A</text></g><g class="part" data-part="G3B" tabindex="0" role="button" aria-label="U3B, 7408 AND gate"><rect class="hit" x="756" y="84" width="92" height="72" rx="3"/><g transform="translate(760 120)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="776" y="82" text-anchor="start" >U3B</text></g><g class="part" data-part="HI" tabindex="0" role="button" aria-label="Logic 1 ($D_HI)"><rect class="hit" x="96" y="188" width="48" height="24" rx="3"/><g transform="translate(140 200)"><path class="w" d="M-40 -9H-12L0 0L-12 9H-40Z"/><text class="val" x="-35" y="4">HI</text></g></g><g class="part" data-part="CKD" tabindex="0" role="button" aria-label="DSTM1, DigClock driving Clock"><rect class="hit" x="30" y="396" width="94" height="52" rx="3"/><g transform="translate(120 420)"><path class="w" d="M-80 -10H-14L0 0L-14 10H-80Z"/><text class="val" x="-75" y="4">DigClock</text></g><text class="val" x="38" y="444" text-anchor="start" >DSTM1  1m / 1m, 1→0</text></g><polyline class="w" points="140,200 200,200"/><polyline class="w" points="160,200 160,280"/><polyline class="w" points="160,280 200,280"/><polyline class="w" points="160,280 160,360"/><polyline class="w" points="160,360 920,360"/><polyline class="w" points="240,320 240,360"/><polyline class="w" points="400,320 400,360"/><polyline class="w" points="640,320 640,360"/><polyline class="w" points="920,320 920,360"/><polyline class="w" points="120,420 840,420"/><polyline class="w" points="180,420 180,240 200,240"/><polyline class="w" points="340,420 340,240 360,240"/><polyline class="w" points="560,420 560,240 600,240"/><polyline class="w" points="840,420 840,240 880,240"/><polyline class="w" points="280,200 360,200"/><polyline class="w" points="300,60 300,200"/><polyline class="w" points="320,200 320,280 360,280"/><polyline class="w" points="300,140 480,140"/><polyline class="w" points="440,200 460,200 460,60"/><polyline class="w" points="460,100 480,100"/><polyline class="w" points="560,120 580,120 580,280 600,280"/><polyline class="w" points="580,200 600,200"/><polyline class="w" points="580,160 740,160 740,140 760,140"/><polyline class="w" points="680,200 700,200 700,60"/><polyline class="w" points="700,100 760,100"/><polyline class="w" points="840,120 860,120 860,280 880,280"/><polyline class="w" points="860,200 880,200"/><polyline class="w" points="960,200 980,200 980,60"/><circle class="dot" cx="160" cy="200" r="4"/><circle class="dot" cx="160" cy="280" r="4"/><circle class="dot" cx="240" cy="360" r="4"/><circle class="dot" cx="400" cy="360" r="4"/><circle class="dot" cx="640" cy="360" r="4"/><circle class="dot" cx="180" cy="420" r="4"/><circle class="dot" cx="340" cy="420" r="4"/><circle class="dot" cx="560" cy="420" r="4"/><circle class="dot" cx="300" cy="200" r="4"/><circle class="dot" cx="320" cy="200" r="4"/><circle class="dot" cx="300" cy="140" r="4"/><circle class="dot" cx="460" cy="100" r="4"/><circle class="dot" cx="580" cy="200" r="4"/><circle class="dot" cx="580" cy="160" r="4"/><circle class="dot" cx="700" cy="100" r="4"/><circle class="dot" cx="860" cy="200" r="4"/><text class="net" x="126" y="412" text-anchor="start" >Clock</text><text class="net" x="306" y="58" text-anchor="start" >Q0</text><text class="net" x="466" y="58" text-anchor="start" >Q1</text><text class="net" x="706" y="58" text-anchor="start" >Q2</text><text class="net" x="986" y="58" text-anchor="start" >Q3</text><text class="val" x="586" y="112" text-anchor="start" >T2</text><text class="val" x="866" y="112" text-anchor="start" >T3</text><text class="val" x="166" y="374" text-anchor="start" >CLR bus (logic 1)</text><g class="ovl" data-ovl="t0" hidden aria-hidden="true"><polyline points="140,200 200,200"/><polyline points="160,200 160,280 200,280"/></g><g class="ovl" data-ovl="t1" hidden aria-hidden="true"><polyline points="300,60 300,200 360,200"/><polyline points="320,200 320,280 360,280"/></g><g class="ovl" data-ovl="t2" hidden aria-hidden="true"><polyline points="300,140 480,140"/><polyline points="460,60 460,100 480,100"/><polyline points="560,120 580,120 580,280 600,280"/><polyline points="580,200 600,200"/></g><g class="ovl" data-ovl="t3" hidden aria-hidden="true"><polyline points="580,160 740,160 740,140 760,140"/><polyline points="700,60 700,100 760,100"/><polyline points="840,120 860,120 860,280 880,280"/><polyline points="860,200 880,200"/></g><g class="ovl alt" data-ovl="clk" hidden aria-hidden="true"><polyline points="120,420 840,420"/><polyline points="180,420 180,240 200,240"/><polyline points="340,420 340,240 360,240"/><polyline points="560,420 560,240 600,240"/><polyline points="840,420 840,240 880,240"/></g></svg></div>
+  <div class="info-panel" id="p11d" aria-live="polite"><p class="hint">Select a part.</p></div>
+</div>
+
+<div class="demo" id="ct">
+<h4>Counter explorer</h4>
+<div class="io-row">
+  <button type="button" class="btn primary" id="ct-step">Clock pulse</button>
+  <button type="button" class="btn" id="ct-run" aria-pressed="false">Run</button>
+  <button type="button" class="btn" id="ct-reset">Reset to 0</button>
+<div class="io"><span class="led" id="ct-q3">0</span><span>Q3</span></div><div class="io"><span class="led" id="ct-q2">0</span><span>Q2</span></div><div class="io"><span class="led" id="ct-q1">0</span><span>Q1</span></div><div class="io"><span class="led" id="ct-q0">0</span><span>Q0</span></div>
+  <div class="io"><span class="led" id="ct-dec" style="border-radius:6px;min-width:4rem">0</span><span>Decimal</span></div>
+</div>
+<p class="result ok" id="ct-say" aria-live="polite"></p>
+<div class="plot-box"><svg id="ct-plot" tabindex="0" role="img" aria-label="Timing diagram of Clock, Q3, Q2, Q1 and Q0 over 32 ms. Use left and right arrow keys to move the cursor."></svg></div>
+<p class="readout" id="ct-read" aria-live="polite">Cursor: move over the diagram.</p>
+</div>
+
+<div class="callout warn prose"><p><strong class="k">MOD 8 or MOD 16?</strong> The handout calls this a MOD 8 counter, but four flip-flops have 2⁴ = 16 states and count 0 to 15: it's MOD 16 (<span class="term">modulus</span> 16). The exercise asks for the highest count, so you'll see this for yourself.</p></div>
+<div class="prose"><h3>Build it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 11D</code> in the circuit name box.</li>
+<li>Place four <strong>7473</strong>s, <code>U1A</code>, <code>U1B</code>, <code>U2A</code>, <code>U2B</code>, left to right, and two <strong>Gate</strong>s, <code>U3A</code> and <code>U3B</code>, set to <strong>7408 AND</strong>, above them.</li>
+<li>Place a <strong>$D_HI</strong> (logic 1) and wire it to U1A's J and K. Wire every CLR to the same logic 1 line.</li>
+<li>Place a <strong>DigClock</strong>, <code>DSTM1</code>: OFFTIME <code>1m</code>, ONTIME <code>1m</code>, STARTVAL <code>1</code>, OPPVAL <code>0</code>. Name its wire <code>Clock</code> and run it to all four CLK inputs. Where it crosses other wires there must be no dot.</li>
+<li>Name the Q outputs <code>Q0</code> (U1A), <code>Q1</code> (U1B), <code>Q2</code> (U2A) and <code>Q3</code> (U2B). Leave the Q̅ outputs open.</li>
+<li>Wire Q0 to U1B's J and K. U3A takes Q1 and Q0; its output goes to U2A's J and K. U3B takes Q2 and U3A's output; its output goes to U2B's J and K.</li>
+<li>Transient: Stop time <code>32m</code>, Time step <code>0.1m</code>, <strong>Initialize flip-flops to 0</strong>.</li>
+<li>Probe <strong>Clock, Q3, Q2, Q1, then Q0</strong>. Run it, read Q3 Q2 Q1 Q0 as a binary number for the questions, and press Check my work.</li>
+</ol>
+<div class="pager"><button type="button" class="btn" data-goto="s11-5">Previous section</button><button type="button" class="btn" data-complete="s11-6" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s11-7">Next: Troubleshooting and wrap-up</button></div></section>
+<section class="lesson" id="s11-7" data-title="Troubleshooting and wrap-up" aria-labelledby="s11-7-h" hidden><p class="sub-num">Section 11.7</p><h2 id="s11-7-h">Troubleshooting and wrap-up</h2><p class="lede prose">Common fixes, a quiz, the submission checklist and the vocabulary.</p>
+<div class="prose"><h3>When something looks wrong</h3></div>
+<div class="table-wrap"><table>
+<caption>Common Lab 11 problems and fixes</caption>
+<thead><tr><th scope="col">What you see</th><th scope="col">Likely cause</th><th scope="col">Fix</th></tr></thead>
+<tbody>
+<tr><td>Q is hatched or unknown at the start</td><td>Flip-flops aren't initialized</td><td>Set Initialize flip-flops to 0 in the Analysis panel</td></tr>
+<tr><td>A clock lane is flat</td><td>OFFTIME or ONTIME is blank or zero</td><td>Enter both, with their units</td></tr>
+<tr><td>The latch outputs don't change</td><td>A feedback wire ends on the other one at the crossover</td><td>Redraw it so it passes straight across; no dot</td></tr>
+<tr><td>11C: Q changes on the rising edge</td><td>The clock's STARTVAL and OPPVAL are swapped</td><td>DSTM2: STARTVAL 1, OPPVAL 0</td></tr>
+<tr><td>11D: the count is wrong or jumps</td><td>A J/K pair is fed from the wrong signal, or the clock joins another wire</td><td>Use the highlight buttons above to compare each path</td></tr>
+<tr><td>11D: a flip-flop stays at 0</td><td>Its CLR isn't on the logic 1 line</td><td>Wire every CLR to $D_HI</td></tr>
+<tr><td>Lanes in the wrong order</td><td>Probes placed out of order</td><td>Remove and re-place them in the handout's order</td></tr>
+</tbody></table></div>
+<div class="prose"><h3>Check your understanding</h3></div>
+<div class="quiz" data-quiz="lab11"></div>
+<div class="prose"><h3>Before you finish</h3><p>Your instructor will tell you how to submit. In Q Circuits, a lab is done when Check my work passes every check and the lab shows ✓ Passed.</p></div>
+<ul class="checklist">
+<li><input type="checkbox" id="c11s1"><label for="c11s1">11A: LAB 11A; 7486; DSTM1 .2m/.2m and DSTM2 .1m/.1m; aliases A, B, Q; transient .5m / 1u; probes A, B, Q; truth table.</label></li>
+<li><input type="checkbox" id="c11s2"><label for="c11s2">11B: LAB 11B; two 7400s cross-coupled with no dot at the crossover; clocks on SBAR and RBAR; transient 0.5m / 1u; probes SBAR, RBAR, Q, QBAR; readings.</label></li>
+<li><input type="checkbox" id="c11s3"><label for="c11s3">11C: LAB 11C; 7473; three clocks and Clear with the handout's settings; transient 10m / 0.1m; flip-flops initialized to 0; probes Clear, Clock, J, K, Q; readings.</label></li>
+<li><input type="checkbox" id="c11s4"><label for="c11s4">11D: LAB 11D; four 7473s and two 7408s wired as shown; $D_HI; clock 1m/1m starting at 1; 32m / 0.1m; initialized to 0; probes Clock, Q3, Q2, Q1, Q0; readings.</label></li>
+<li><input type="checkbox" id="c11s5"><label for="c11s5">All four labs show ✓ Passed.</label></li>
+</ul>
+<div class="prose">
+<h3>Glossary</h3>
+<p>Dotted-underlined words in the lesson show their definition when you point at, tap or tab to them. The <a href="glossary.html" target="_blank" rel="noopener">full course glossary (opens in a new tab)</a> is searchable.</p>
+<dl class="gloss">
+<dt>Sequential logic</dt><dd>Logic with memory.</dd>
+<dt>Clock / DigClock</dt><dd>A steady on-off signal, and the source that makes it.</dd>
+<dt>Active-low</dt><dd>An input that acts when it is 0.</dd>
+<dt>Latch</dt><dd>Memory that responds immediately, with no clock.</dd>
+<dt>Forbidden state</dt><dd>SBAR = RBAR = 0 in a NAND latch.</dd>
+<dt>Flip-flop</dt><dd>Memory that changes only at a clock edge.</dd>
+<dt>JK flip-flop</dt><dd>Hold, set, reset or toggle, chosen by J and K.</dd>
+<dt>Falling edge</dt><dd>A 1-to-0 change, when the 7473 acts.</dd>
+<dt>Clear</dt><dd>Forces Q to 0; active-low on the 7473.</dd>
+<dt>Synchronous counter</dt><dd>A counter whose flip-flops share one clock.</dd>
+<dt>Modulus</dt><dd>The number of states a counter cycles through.</dd>
+</dl>
+</div>
+<div class="callout prose"><p><strong class="k">Next.</strong> <a href="elec101-lab12-lesson.html">Lab 12 lesson: Transistor circuit analysis</a></p></div><div class="pager"><button type="button" class="btn" data-goto="s11-6">Previous section</button><button type="button" class="btn" data-complete="s11-7" aria-pressed="false">Mark this section complete</button><span></span></div></section>
+  </main>
+</div>
+<p id="live" class="visually-hidden" aria-live="polite"></p>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026. This lesson accompanies the Lab 11 handout; follow the handout for exact submission steps.</p></footer>
+<script type="application/json" id="parts-data">{"CK1": {"name": "DSTM1: DigClock", "what": "A repeating digital source.", "props": [["OFFTIME", ".2m"], ["ONTIME", ".2m"], ["DELAY / STARTVAL / OPPVAL", "0 / 0 / 1"]], "here": "Drives A."}, "CK2": {"name": "DSTM2: DigClock", "what": "Twice as fast as DSTM1.", "props": [["OFFTIME", ".1m"], ["ONTIME", ".1m"], ["DELAY / STARTVAL / OPPVAL", "0 / 0 / 1"]], "here": "Drives B."}, "XOR": {"name": "U1A: 7486 XOR gate", "what": "Output 1 when the inputs differ.", "props": [["Toolbar", "Digital \u203a Gate, Device 7486"]], "here": "The handout's text says 7432 in a few places for 11A, but the part is the 7486."}, "CKS": {"name": "DSTM1: DigClock on SBAR", "what": "Starts at 1 and drops to 0 for 75 \u00b5s at a time.", "props": [["OFFTIME / ONTIME", "75u / 75u"], ["STARTVAL / OPPVAL", "1 / 0"]], "here": "SBAR is active-low: pulling it to 0 sets the latch."}, "CKR": {"name": "DSTM2: DigClock on RBAR", "what": "Starts at 0 and switches every 150 \u00b5s.", "props": [["OFFTIME / ONTIME", ".15m / .15m"], ["STARTVAL / OPPVAL", "0 / 1"]], "here": "RBAR is active-low: pulling it to 0 resets the latch."}, "NA": {"name": "U1A: 7400 NAND", "what": "Inputs SBAR and QBAR; output Q.", "props": [["Device", "7400"]]}, "NB": {"name": "U1B: 7400 NAND", "what": "Inputs Q and RBAR; output QBAR.", "props": [["Device", "7400"]]}, "CKJ": {"name": "DSTM1: DigClock on J", "what": "", "props": [["OFFTIME / ONTIME", "2.5m / 2.5m"], ["STARTVAL / OPPVAL", "0 / 1"]], "here": "J is 0 for the first 2.5 ms, then 1 for 2.5 ms, and so on."}, "CKC": {"name": "DSTM2: DigClock on CLK", "what": "The flip-flop's clock.", "props": [["OFFTIME / ONTIME", ".75m / .75m"], ["STARTVAL / OPPVAL", "1 / 0"]], "here": "Starts high, so its first falling edge is at 0.75 ms, then every 1.5 ms."}, "CKK": {"name": "DSTM3: DigClock on K", "what": "", "props": [["OFFTIME / ONTIME", "4.5m / 4.5m"], ["STARTVAL / OPPVAL", "0 / 1"]], "here": "K is 0 until 4.5 ms, then 1 until 9 ms."}, "CLR": {"name": "Clear: digital stimulus (STIM1)", "what": "Rename the STIM1 to Clear.", "props": [["Commands", "0s 1; 2.2m 0; 2.3m 1; 7.9m 0; 8.6m 1"]], "here": "CLR is active-low, so Clear is normally 1. It dips to 0 from 2.2 to 2.3 ms and from 7.9 to 8.6 ms, forcing Q to 0."}, "FF": {"name": "U1A: 7473 JK flip-flop", "what": "Changes Q only when CLK falls from 1 to 0. The triangle and bubble on CLK mark a falling-edge input; the bubble on CLR marks it active-low.", "props": [["Toolbar", "Digital \u203a 7473"], ["Pins", "J, CLK, K on the left; Q and Q\u0305 on the right; CLR at the bottom"]], "here": "Q\u0305 can be left open; Q Circuits doesn't flag an unused output."}, "FFU1A": {"name": "U1A: bit 0", "what": "J and K tied high: it toggles every clock.", "props": [["Output", "Q0"]]}, "FFU1B": {"name": "U1B: bit 1", "what": "J and K from Q0.", "props": [["Output", "Q1"]]}, "FFU2A": {"name": "U2A: bit 2", "what": "J and K from U3A (Q0 AND Q1).", "props": [["Output", "Q2"]]}, "FFU2B": {"name": "U2B: bit 3", "what": "J and K from U3B (Q2 AND Q0 AND Q1).", "props": [["Output", "Q3"]]}, "G3A": {"name": "U3A: 7408 AND", "what": "Inputs Q1 and Q0.", "props": [["Device", "7408"]]}, "G3B": {"name": "U3B: 7408 AND", "what": "Inputs Q2 and U3A's output.", "props": [["Device", "7408"]]}, "HI": {"name": "$D_HI: logic 1", "what": "Ties a digital input permanently to 1.", "props": [["Toolbar", "Digital \u203a $D_HI"]], "here": "Feeds U1A's J and K and the CLR bus, so no flip-flop is ever cleared."}, "CKD": {"name": "DSTM1: DigClock", "what": "The counter's clock.", "props": [["OFFTIME / ONTIME", "1m / 1m"], ["STARTVAL / OPPVAL", "1 / 0"]], "here": "Falling edges at 1, 3, 5 \u2026 ms: one count every 2 ms."}}</script>
+<script type="application/json" id="s11b-ovl">{"q": "Q feeds back to U1B's top input.", "qb": "QBAR feeds back to U1A's bottom input.", "x": "The only place the feedback wires cross. There's no dot, and neither wire ends here, so they aren't connected. A dot here would join Q and QBAR and break the latch.", "none": ""}</script>
+<script type="application/json" id="s11d-ovl">{"t0": "U1A's J and K are tied to logic 1, so Q0 toggles on every falling clock edge.", "t1": "U1B's J and K come from Q0, so Q1 toggles only when Q0 is 1.", "t2": "U3A outputs Q0 AND Q1 (T2), so Q2 toggles only when both are 1.", "t3": "U3B outputs Q2 AND T2 (T3), so Q3 toggles only when Q0, Q1 and Q2 are all 1.", "clk": "One clock drives all four flip-flops at once: that's what makes the counter synchronous. The clock wires cross the CLR bus and K wires without connecting.", "none": ""}</script>
+<script type="application/json" id="spec-11a">[{"name": "atype", "type": "select", "want": "tran", "label": "Analysis", "wantText": "Transient"}, {"name": "stop", "want": 0.0005, "unit": "s", "label": "Stop time", "hint": "Type .5m."}, {"name": "step", "want": 1e-06, "unit": "s", "label": "Time step", "hint": "Type 1u."}]</script>
+<script type="application/json" id="spec-11c">[{"name": "atype", "type": "select", "want": "tran", "label": "Analysis", "wantText": "Transient"}, {"name": "stop", "want": 0.01, "unit": "s", "label": "Stop time", "hint": "Type 10m."}, {"name": "step", "want": 0.0001, "unit": "s", "label": "Time step", "hint": "Type 0.1m."}, {"name": "ff", "type": "select", "want": "0", "label": "Initialize flip-flops to", "wantText": "0"}]</script>
+<script type="application/json" id="quiz-lab11">[{"q": "What makes a circuit sequential rather than combinational?", "choices": ["It has memory: its output depends on past inputs", "It has more than two inputs", "It uses a 7400 chip", "It runs faster"], "answer": 0, "explain": "Latches, flip-flops and counters remember; gates alone don't."}, {"q": "A DigClock has OFFTIME .2m and ONTIME .2m. What is its frequency?", "choices": ["2.5 kHz", "5 kHz", "1 kHz", "200 Hz"], "answer": 0, "explain": "The period is ONTIME + OFFTIME = 0.4 ms, and 1 \u00f7 0.0004 s = 2,500 Hz."}, {"q": "How do you make a DigClock with a 25% duty cycle?", "choices": ["Set OFFTIME to 3 \u00d7 ONTIME", "Set ONTIME to 3 \u00d7 OFFTIME", "Set DELAY to 25%", "Set OPPVAL to 0.25"], "answer": 0, "explain": "It's high for one part in four when OFFTIME is three times ONTIME (with OPPVAL = 1)."}, {"q": "An XOR gate has inputs 1 and 1. What is its output?", "choices": ["0", "1", "X", "It toggles"], "answer": 0, "explain": "XOR is 1 only when the inputs differ."}, {"q": "In the NAND latch, what does SBAR = 0, RBAR = 1 do?", "choices": ["Sets Q to 1", "Resets Q to 0", "Holds Q", "Makes Q unknown"], "answer": 0, "explain": "SBAR is active-low: 0 means \u201cset\u201d."}, {"q": "In the NAND latch, what happens when SBAR and RBAR are both 1?", "choices": ["Q holds its last value", "Q goes to 0", "Q goes to 1", "Q and QBAR are both 1"], "answer": 0, "explain": "That's the memory state. Both inputs inactive means nothing changes."}, {"q": "Why is SBAR = RBAR = 0 called the forbidden state?", "choices": ["Q and QBAR both become 1, and releasing both at once leaves the result unpredictable", "It damages the chip", "The simulator refuses to run", "It resets the latch"], "answer": 0, "explain": "Q and QBAR are supposed to be opposites; here they aren't, and what follows depends on which gate happens to be faster."}, {"q": "When does a 7473's Q output change?", "choices": ["When the clock falls from 1 to 0", "When the clock rises", "Whenever J changes", "Only when CLR is 1"], "answer": 0, "explain": "The bubble and triangle on CLK mark a falling-edge (negative-edge) input."}, {"q": "A JK flip-flop has J = 1 and K = 1 at a clock edge. What happens?", "choices": ["Q toggles", "Q is set to 1", "Q is reset to 0", "Q holds"], "answer": 0, "explain": "J = K = 1 is the toggle row of the JK truth table."}, {"q": "The 7473's CLR is active-low. What does Clear = 0 do?", "choices": ["Forces Q to 0 immediately, whatever the clock", "Nothing until the next clock edge", "Sets Q to 1", "Toggles Q"], "answer": 0, "explain": "Clear overrides everything else while it's low."}, {"q": "Why does Lab 11C set Initialize flip-flops to 0?", "choices": ["Otherwise the flip-flop starts in the unknown state X", "To make the clock start", "To clear the stimulus", "It's required for all transient runs"], "answer": 0, "explain": "A real flip-flop powers up in an unpredictable state; the setting gives the simulation a known start."}, {"q": "In the Lab 11D counter, when does Q2 toggle?", "choices": ["At a clock edge when Q0 and Q1 are both 1", "At every clock edge", "When Q1 changes", "When Q3 is 1"], "answer": 0, "explain": "U3A's AND output drives U2A's J and K."}, {"q": "How many different counts does the four-flip-flop Lab 11D circuit go through?", "choices": ["16 (0 to 15)", "8 (0 to 7)", "4", "32"], "answer": 0, "explain": "Four bits give 2\u2074 = 16 states. The handout calls it MOD 8, but it is MOD 16."}]</script>
+<script type="application/json" id="clear-cmds">"0s 1; 2.2m 0; 2.3m 1; 7.9m 0; 8.6m 1"</script>
+<script type="application/json" id="glossary-data">[{"term": "AC (alternating current)", "def": "Current or voltage that keeps reversing direction, usually as a smooth sine wave.", "labs": [5], "aka": ["ac", "alternating current"]}, {"term": "AC sweep", "def": "An analysis that feeds the circuit a sine wave at many frequencies and plots how the output changes with frequency.", "labs": [5], "aka": ["ac sweep analysis"]}, {"term": "Amplitude", "def": "How big a wave is: the distance from its centre line to its peak.", "labs": [5], "aka": []}, {"term": "Analysis panel", "def": "The Q Circuits panel where you choose what the simulator calculates (Operating point, DC sweep, Transient or AC sweep) and its settings.", "labs": [5], "aka": []}, {"term": "Anode", "def": "The terminal of a diode that current enters when the diode conducts. It's the triangle side of the symbol.", "labs": [5], "aka": []}, {"term": "Band-pass filter", "def": "A filter that passes a middle range of frequencies and weakens both lower and higher ones. Lab 5A's circuit is one.", "labs": [5], "aka": ["band-pass"]}, {"term": "Bandwidth", "def": "The range of frequencies between a circuit's two cutoff (\u22123 dB) points.", "labs": [5], "aka": []}, {"term": "Base", "def": "The control lead of a transistor. A small base current controls a much larger collector current.", "labs": [4], "aka": []}, {"term": "Bias point", "def": "PSpice's name for the Operating point analysis: the steady DC voltages and currents in a circuit.", "labs": [5], "aka": []}, {"term": "Block diagram", "def": "A drawing that shows a system as labelled boxes, such as amplifier or filter, rather than individual parts.", "labs": [4], "aka": []}, {"term": "Breakdown voltage", "def": "The reverse voltage at which a diode starts conducting backward. A Zener diode is designed to do this safely; the D1N750's is 4.7 V.", "labs": [5], "aka": []}, {"term": "Capacitor", "def": "A part made of two conductors separated by an insulator. It blocks steady DC and passes changing signals, more easily at higher frequencies.", "labs": [5], "aka": []}, {"term": "Cathode", "def": "The terminal of a diode that current leaves when the diode conducts. It's the bar side of the symbol, and a painted band on a real part.", "labs": [5], "aka": []}, {"term": "Circuit name box", "def": "The box at the top of the Q Circuits page where you type the lab name. It does the job of a title block.", "labs": [4], "aka": []}, {"term": "Clipping", "def": "When an amplifier's output tries to go beyond its supply voltage and is flattened at the limit.", "labs": [5], "aka": ["clips"]}, {"term": "Closed circuit", "def": "A complete, unbroken loop that current can flow around.", "labs": [4], "aka": []}, {"term": "Collector", "def": "The transistor lead where the main current enters an NPN transistor.", "labs": [4], "aka": []}, {"term": "Corner frequency", "def": "The frequency where a filter's output has fallen to 70.7% of its passband value (\u22123 dB). For an RC filter it's 1 \u00f7 (2\u03c0RC).", "labs": [5], "aka": ["cutoff frequency", "cutoff frequencies", "corner frequencies", "\u22123 dB point", "-3 db point"]}, {"term": "Current", "def": "The flow of electric charge, measured in amperes (A). 1 mA is one thousandth of an ampere.", "labs": [4], "aka": ["current (i)"]}, {"term": "DC (direct current)", "def": "Current or voltage that stays steady and flows in one direction.", "labs": [4], "aka": ["dc", "direct current"]}, {"term": "DC sweep", "def": "An analysis that steps a source's DC value through a range and plots the results against it.", "labs": [7], "aka": []}, {"term": "Decibel (dB)", "def": "A logarithmic unit for gain: 20 \u00d7 log\u2081\u2080 of the voltage ratio. \u00d710 is +20 dB, \u00d71 is 0 dB, \u00d70.707 is \u22123 dB.", "labs": [5], "aka": ["decibel", "decibels", "db"]}, {"term": "Diode", "def": "A part that lets current flow easily in one direction only, from anode to cathode, once about 0.7 V is across it.", "labs": [5], "aka": []}, {"term": "Emitter", "def": "The transistor lead where current leaves an NPN transistor. It's the lead with the arrow.", "labs": [4], "aka": []}, {"term": "Feedback", "def": "Sending part of an amplifier's output back to its input. In an op amp circuit, feedback sets the gain.", "labs": [5], "aka": []}, {"term": "Filter", "def": "A circuit that passes some frequencies and weakens others.", "labs": [5], "aka": []}, {"term": "Frequency", "def": "How many cycles a wave completes each second, measured in hertz (Hz). 1 kHz is 1,000 cycles per second.", "labs": [5], "aka": []}, {"term": "Frequency response", "def": "A graph of how a circuit's gain changes with frequency. An AC sweep produces one.", "labs": [5], "aka": []}, {"term": "Gain", "def": "How much a circuit multiplies a signal: output divided by input. Often given in decibels.", "labs": [5], "aka": []}, {"term": "Ground", "def": "The reference point defined as 0 V. Every voltage is measured from it. Also called node 0.", "labs": [4], "aka": ["ground (node 0)", "node 0"]}, {"term": "High-pass filter", "def": "A filter that passes high frequencies and weakens low ones.", "labs": [5], "aka": ["high-pass"]}, {"term": "Junction", "def": "A point where three or more connections meet, marked with a dot.", "labs": [4], "aka": ["junction dot"]}, {"term": "Load line", "def": "A straight line showing every combination of voltage and current the rest of the circuit allows. Where it crosses a part's curve is the operating point.", "labs": [5], "aka": []}, {"term": "Logarithmic scale", "def": "An axis where each factor of ten takes the same space, so 10 to 100 is as wide as 1,000 to 10,000.", "labs": [5], "aka": ["logarithmic", "log scale"]}, {"term": "Low-pass filter", "def": "A filter that passes low frequencies and weakens high ones.", "labs": [5], "aka": ["low-pass"]}, {"term": "Minor gridlines", "def": "The fainter lines between the main gridlines of a plot. On a log axis they mark 2, 3, 4 \u2026 9 times each decade.", "labs": [5], "aka": []}, {"term": "Net alias", "def": "A name attached to a wire, such as IN or OUT. It labels the node, and wires with the same name are connected.", "labs": [5, 6], "aka": ["net aliases"]}, {"term": "Netlist", "def": "The text version of a schematic: a list of every part and the nodes it connects to. It's what the simulator actually reads.", "labs": [4], "aka": []}, {"term": "Node", "def": "All the points joined together by wire. Every point on a node is at the same voltage.", "labs": [4], "aka": []}, {"term": "Non-inverting amplifier", "def": "An op amp circuit where the signal enters the + input. Its gain is 1 + RF \u00f7 RIN, and the output is in step with the input.", "labs": [5], "aka": ["non-inverting amplifiers"]}, {"term": "NPN transistor", "def": "A transistor made of N-type, P-type and N-type layers. Current flows in at the collector and out at the emitter.", "labs": [4], "aka": []}, {"term": "Ohm's law", "def": "The link between voltage, current and resistance: I = V \u00f7 R, or V = I \u00d7 R.", "labs": [4], "aka": []}, {"term": "Op amp (operational amplifier)", "def": "A very high-gain amplifier with + and \u2212 inputs. Resistors around it set the actual gain.", "labs": [5], "aka": ["op amp", "operational amplifier", "op amps"]}, {"term": "Open circuit", "def": "A break in the path. No current can flow through it.", "labs": [4], "aka": []}, {"term": "Open end", "def": "A wire end or pin connected to nothing. Q Circuits marks it with an open circle.", "labs": [4], "aka": []}, {"term": "Operating point", "def": "An analysis that calculates the steady DC voltage at every node. PSpice calls it Bias Point.", "labs": [4, 5], "aka": []}, {"term": "Orthogonal wiring", "def": "Wires drawn only as horizontal and vertical segments, the professional standard.", "labs": [4], "aka": ["orthogonal"]}, {"term": "Parallel", "def": "Parts connected across the same two nodes. They share the same voltage.", "labs": [4], "aka": []}, {"term": "Phase shift", "def": "How far one wave is shifted in time relative to another, measured in degrees; a full cycle is 360\u00b0.", "labs": [5], "aka": []}, {"term": "Plot", "def": "The Q Circuits graph of probed signals. Volts and amps are drawn in separate panes.", "labs": [5], "aka": []}, {"term": "PN junction", "def": "The boundary where P-type and N-type semiconductor meet. It's what makes a diode conduct in one direction.", "labs": [5], "aka": []}, {"term": "Power symbol", "def": "A named supply connection such as VCC or VEE. Every symbol with the same name is the same node.", "labs": [5, 6], "aka": []}, {"term": "Probe", "def": "A marker that tells the simulator what to graph: a wire for its voltage, or a part's body for its current. Placed with the Probe tool (B).", "labs": [5], "aka": ["probe tool", "probes"]}, {"term": "Reactance", "def": "A capacitor's (or inductor's) opposition to AC, in ohms. For a capacitor, X\u1d04 = 1 \u00f7 (2\u03c0fC), so it falls as frequency rises.", "labs": [5], "aka": []}, {"term": "Rectifier", "def": "A circuit that turns AC into DC. A single diode makes a half-wave rectifier, which passes only one half of each cycle.", "labs": [5], "aka": ["half-wave rectifier"]}, {"term": "Reference designator", "def": "A part's name on a schematic, such as R1, C2 or Q1.", "labs": [4], "aka": []}, {"term": "Resistance", "def": "How strongly a part opposes current, measured in ohms (\u03a9).", "labs": [4], "aka": ["resistance (r)"]}, {"term": "Resistor", "def": "A part that opposes current by a set amount, measured in ohms.", "labs": [4], "aka": []}, {"term": "Schematic", "def": "A drawing of a circuit that uses standard symbols to show every part, its value, and how the parts are connected.", "labs": [4], "aka": []}, {"term": "Series", "def": "Parts connected end to end with nothing branching off between them. They carry the same current.", "labs": [4], "aka": []}, {"term": "Series-parallel", "def": "A circuit that combines series and parallel connections.", "labs": [4], "aka": []}, {"term": "Short circuit", "def": "A path of (almost) zero resistance, such as a wire across a part, so current bypasses the part.", "labs": [4], "aka": ["short"]}, {"term": "Simulation", "def": "Using a computer to solve a circuit's equations and predict what a real circuit would do.", "labs": [5], "aka": []}, {"term": "SPICE", "def": "The family of circuit simulators that Q Circuits and PSpice are based on. It also names the value notation they share, such as 1k and .15u.", "labs": [4], "aka": []}, {"term": "Title block", "def": "The labelled box on a drawing that identifies it and its author. In Q Circuits the circuit name box does this job.", "labs": [4], "aka": []}, {"term": "Transient", "def": "An analysis that steps through time and plots signals the way an oscilloscope shows them.", "labs": [5], "aka": ["transient analysis"]}, {"term": "Value", "def": "The number that sets a part's size, such as 1k for a resistor or DC 12 for a source.", "labs": [4], "aka": []}, {"term": "Voltage", "def": "The electrical push that makes charge move, measured in volts (V). Always measured between two points.", "labs": [4], "aka": ["voltage (v)"]}, {"term": "Voltage divider", "def": "Two or more parts in series that share a voltage in proportion to their resistance (or reactance).", "labs": [4, 5], "aka": []}, {"term": "Wire", "def": "A connection with no resistance. Its length and shape don't matter, only what it connects.", "labs": [4], "aka": ["wires"]}, {"term": "Zener diode", "def": "A diode designed to conduct backward at a precise breakdown voltage. Used as a voltage reference.", "labs": [5], "aka": []}, {"term": "Branch", "def": "One of the separate paths current can take between two nodes in a parallel circuit.", "labs": [6], "aka": ["branches"]}, {"term": "Crossover", "def": "A place where two wires cross on a schematic without connecting. There is no dot, and in Q Circuits neither wire ends there.", "labs": [6], "aka": ["crossovers"]}, {"term": "Differential amplifier", "def": "An amplifier built from two matched transistors that responds to the difference between two inputs. Lab 6C draws one.", "labs": [6], "aka": []}, {"term": "Differential probe", "def": "A probe that measures the voltage between two nodes instead of from a node to ground, such as V(A,B). Placed with Diff probe (X).", "labs": [7], "aka": ["diff probe"]}, {"term": "Family of curves", "def": "Several traces on one plot, one for each value of a parameter, so you can compare them.", "labs": [7], "aka": []}, {"term": "Floating node", "def": "A node with no DC path to ground. The simulator can't work out its voltage.", "labs": [6], "aka": ["floating"]}, {"term": "Input node", "def": "The node where the signal enters a circuit. Looking from ground through the source, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Linear circuit", "def": "A circuit whose output is directly proportional to its input. Its DC sweep plot is a straight line.", "labs": [7], "aka": ["linear"]}, {"term": "Loading", "def": "When connecting more parts to a node draws current from it and lowers its voltage.", "labs": [7], "aka": ["load"]}, {"term": "Output node", "def": "The node where you measure a circuit's result. Looking from ground through the output part, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Parameter", "def": "A named value, such as RVAL, defined by a Parameter part and used in a part value inside curly braces: {RVAL}.", "labs": [7], "aka": ["parameters", "{rval}"]}, {"term": "Parametric sweep", "def": "Running the same analysis several times, once for each value of a parameter, and plotting all the results together.", "labs": [7], "aka": []}, {"term": "Slope", "def": "How steep a line is: how much the output changes for each 1 unit change of the input.", "labs": [7], "aka": []}, {"term": "Step", "def": "The spacing between values in a sweep. From \u221212 to 12 in steps of 0.1 gives 241 points. PSpice calls it Increment.", "labs": [7], "aka": ["increment"]}, {"term": "Sine source", "def": "A voltage source whose value is SIN(offset amplitude frequency), used for transient runs. PSpice calls it VSIN.", "labs": [5, 6], "aka": ["vsin"]}, {"term": "AC magnitude", "def": "The size of the test signal a source supplies during an AC sweep. PSpice's VAC source sets it with 1Vac.", "labs": [5, 6], "aka": ["vac"]}, {"term": "Q Circuits", "def": "The browser-based schematic and simulation tool used for the ELEC 101 labs.", "labs": [4], "aka": []}, {"term": "Axis ranges", "def": "The Q Circuits settings under the plot that fix the X and Y limits instead of fitting them automatically. PSpice calls this a User Defined data range.", "labs": [8, 9], "aka": ["axis range", "user defined range"]}, {"term": "Bode plot", "def": "A graph of gain in decibels against frequency on a logarithmic axis. An AC sweep with a probe in dB mode produces one.", "labs": [8], "aka": ["bode plots"]}, {"term": "Coupling", "def": "How much of a transformer's magnetic field links both windings, from 0 to 1. 1 would be a perfect transformer.", "labs": [8], "aka": ["coupling coefficient"]}, {"term": "Critical frequency", "def": "Another name for the corner (\u22123 dB) frequency: where the output has fallen 3 dB below its flat level.", "labs": [8], "aka": []}, {"term": "Decade", "def": "A factor of ten in frequency, such as 10 Hz to 100 Hz. On a log axis every decade is the same width.", "labs": [5, 8], "aka": ["decades"]}, {"term": "Duty cycle", "def": "The fraction of each period a pulse spends high: pulse width \u00f7 period, often given as a percentage.", "labs": [9], "aka": []}, {"term": "Fall time", "def": "How long a pulse takes to drop from its high level back to its low level (TF).", "labs": [9], "aka": ["tf"]}, {"term": "Inductor", "def": "A coil of wire that stores energy in a magnetic field. Its opposition to AC rises with frequency. Measured in henries (H).", "labs": [8], "aka": ["inductors", "inductance"]}, {"term": "Measurements table", "def": "The table under the Q Circuits plot that lists each trace's maximum, minimum and other values over the visible range.", "labs": [9], "aka": ["measurements"]}, {"term": "Nonperiodic waveform", "def": "A signal that never repeats in a regular pattern, such as random noise.", "labs": [9], "aka": ["nonperiodic"]}, {"term": "Period", "def": "The time for one complete cycle of a repeating waveform. Period = 1 \u00f7 frequency.", "labs": [9], "aka": ["per"]}, {"term": "Periodic waveform", "def": "A signal that repeats the same shape at regular intervals.", "labs": [9], "aka": ["periodic"]}, {"term": "Primary", "def": "The transformer winding connected to the source.", "labs": [8], "aka": ["primary winding"]}, {"term": "Pulse source", "def": "A source that switches between two voltages with set delay, rise, width, fall and period. PSpice calls it VPULSE.", "labs": [9], "aka": ["pulse", "vpulse"]}, {"term": "Pulse width", "def": "How long a pulse stays at its high level (PW).", "labs": [9], "aka": ["pw"]}, {"term": "Ramp", "def": "A waveform that rises steadily and then drops quickly, also called a sawtooth.", "labs": [9], "aka": ["sawtooth", "ramp wave"]}, {"term": "Rise time", "def": "How long a pulse takes to climb from its low level to its high level (TR).", "labs": [9], "aka": ["tr"]}, {"term": "Roll-off", "def": "The part of a frequency response where the gain falls steadily. A simple RC filter rolls off at 20 dB per decade.", "labs": [8], "aka": ["rolloff"]}, {"term": "Secondary", "def": "The transformer winding connected to the load.", "labs": [8], "aka": ["secondary winding"]}, {"term": "Square wave", "def": "A pulse waveform that switches sharply between two levels.", "labs": [9], "aka": ["square waves"]}, {"term": "Step-up transformer", "def": "A transformer whose output voltage is larger than its input. Its secondary inductance is larger than its primary.", "labs": [8], "aka": ["step-down transformer", "step-up"]}, {"term": "Time constant", "def": "For an RC circuit, \u03c4 = R \u00d7 C. In one time constant a capacitor charges 63% of the way; after about five it is essentially done.", "labs": [9], "aka": ["tau", "\u03c4"]}, {"term": "Transformer", "def": "Two coupled coils that transfer AC from one circuit to another, stepping the voltage up or down and isolating the two sides.", "labs": [8], "aka": ["transformers"]}, {"term": "Triangle wave", "def": "A waveform that rises and falls at equal, steady rates.", "labs": [9], "aka": ["triangle"]}, {"term": "Active-low", "def": "An input that does its job when it is 0, not 1. Its name usually has a bar or BAR, as in SBAR or CLR\u0305.", "labs": [11], "aka": ["active low"]}, {"term": "AND gate", "def": "A logic gate whose output is 1 only when all of its inputs are 1.", "labs": [10], "aka": ["and"]}, {"term": "Bit", "def": "A single binary digit: 0 or 1. It can stand for any two-way choice, such as off/on or false/true.", "labs": [10], "aka": ["bits"]}, {"term": "Boolean expression", "def": "A formula for a logic function, such as Q = A + B for OR or Q = A \u00b7 B for AND.", "labs": [10], "aka": ["boolean"]}, {"term": "Clear", "def": "A flip-flop input that forces Q to 0 regardless of the clock. On the 7473 it is active-low (CLR\u0305).", "labs": [11], "aka": ["clr"]}, {"term": "Clock", "def": "A digital signal that switches back and forth at a steady rate to tell sequential circuits when to act.", "labs": [11], "aka": ["clock signal"]}, {"term": "Combinational logic", "def": "Logic whose output depends only on its present inputs, with no memory. Every Lab 10 circuit is combinational.", "labs": [10, 11], "aka": []}, {"term": "Complement", "def": "The opposite logic level: the complement of 1 is 0. A NOT gate produces it. Written with a bar, as Q\u0305 (QBAR).", "labs": [10], "aka": ["complementation", "negation"]}, {"term": "Counter", "def": "A sequential circuit that steps through a sequence of binary numbers, one per clock pulse.", "labs": [11], "aka": ["binary counter"]}, {"term": "DigClock", "def": "The Q Circuits and PSpice digital clock source, set by OFFTIME, ONTIME, DELAY, STARTVAL and OPPVAL.", "labs": [11], "aka": ["digital clock"]}, {"term": "Digital stimulus", "def": "A digital source defined by a list of times and logic levels. PSpice calls it STIM1.", "labs": [10], "aka": ["stim1", "stimulus"]}, {"term": "Falling edge", "def": "The moment a signal changes from 1 to 0. The 7473 changes its output on the clock's falling edge.", "labs": [11], "aka": ["negative edge", "falling-edge"]}, {"term": "Flip-flop", "def": "A one-bit memory circuit that changes state only at a clock edge.", "labs": [11], "aka": ["flip-flops"]}, {"term": "Forbidden state", "def": "An input combination a latch should avoid. In a NAND latch, SBAR and RBAR both 0 drive Q and QBAR both to 1, and releasing both at once leaves the result unpredictable.", "labs": [11], "aka": ["invalid state"]}, {"term": "Integrated circuit", "def": "A chip containing many components. A 7400-series chip holds several gates, labelled A, B, C, D, as in U1A.", "labs": [10], "aka": ["ic", "chip"]}, {"term": "Inverter", "def": "A NOT gate: its output is the opposite of its input. The 7404 holds six of them.", "labs": [10], "aka": []}, {"term": "JK flip-flop", "def": "A flip-flop with inputs J and K: 0 0 holds, 1 0 sets Q to 1, 0 1 resets it to 0, and 1 1 toggles it.", "labs": [11], "aka": ["jk"]}, {"term": "Latch", "def": "A memory circuit that responds to its inputs as soon as they change, with no clock. Two cross-coupled NAND gates make an RS latch.", "labs": [11], "aka": ["rs latch", "sr latch"]}, {"term": "Logic gate", "def": "A circuit that produces a 0 or 1 output from one or more 0/1 inputs according to a fixed rule.", "labs": [10], "aka": ["gate", "gates", "logic gates"]}, {"term": "Logic lanes", "def": "The way Q Circuits plots digital signals: one 0/1 strip per probe, top to bottom in the order the probes were placed.", "labs": [10, 11], "aka": ["logic lane", "lanes"]}, {"term": "Logic level", "def": "The 0 or 1 a digital signal represents. In Q Circuits, 0 V is 0 and 5 V is 1, with the threshold at 2.5 V.", "labs": [10], "aka": ["logic state", "logic levels"]}, {"term": "Master-slave flip-flop", "def": "A flip-flop made of two latches: the master follows the inputs while the clock is high, and the slave copies it when the clock falls.", "labs": [11], "aka": ["master-slave"]}, {"term": "Modulus", "def": "How many different states a counter steps through before repeating. A 4-bit counter is MOD 16.", "labs": [11], "aka": ["mod"]}, {"term": "NAND gate", "def": "NOT AND: the output is 0 only when all inputs are 1.", "labs": [10], "aka": ["nand"]}, {"term": "NOR gate", "def": "NOT OR: the output is 1 only when all inputs are 0.", "labs": [10], "aka": ["nor"]}, {"term": "NOT gate", "def": "A gate with one input whose output is the opposite level. Also called an inverter.", "labs": [10], "aka": ["not"]}, {"term": "OR gate", "def": "A logic gate whose output is 1 when any input is 1.", "labs": [10], "aka": ["or"]}, {"term": "Propagation delay", "def": "The short time between a gate's input changing and its output responding, typically nanoseconds.", "labs": [11], "aka": []}, {"term": "Sequential logic", "def": "Logic whose output depends on past inputs as well as present ones, because it has memory. Latches, flip-flops and counters are sequential.", "labs": [11], "aka": []}, {"term": "Set and reset", "def": "Making a memory circuit's output 1 (set) or 0 (reset).", "labs": [11], "aka": ["set", "reset"]}, {"term": "Synchronous counter", "def": "A counter whose flip-flops all share one clock, so every bit changes at the same moment.", "labs": [11], "aka": []}, {"term": "Timing diagram", "def": "A plot of digital signals against time, one above another, used to read how a circuit behaves.", "labs": [10, 11], "aka": ["timing diagrams"]}, {"term": "Toggle", "def": "Switch to the opposite state. A JK flip-flop with J = K = 1 toggles at every clock edge.", "labs": [11], "aka": ["toggles"]}, {"term": "Truth table", "def": "A table listing a logic circuit's output for every combination of inputs.", "labs": [10], "aka": ["truth tables"]}, {"term": "TTL", "def": "Transistor-transistor logic, the family the 7400-series chips belong to. It uses about 0 V for 0 and 5 V for 1.", "labs": [10], "aka": []}, {"term": "Unknown state (X)", "def": "A logic value the simulator can't determine, drawn as X. Flip-flops start in X unless they are initialized.", "labs": [10, 11], "aka": ["x", "unknown"]}, {"term": "XOR gate", "def": "Exclusive OR: the output is 1 when the inputs differ.", "labs": [10, 11], "aka": ["xor", "exclusive or"]}, {"term": "Amplifier", "def": "A circuit that makes a signal larger.", "labs": [5, 12], "aka": ["amplifiers"]}, {"term": "Bias", "def": "The DC voltages and currents that put a transistor in its working range, so it can amplify.", "labs": [12], "aka": ["biasing"]}, {"term": "Bridge", "def": "Two voltage dividers side by side. A small change in one resistor shows up as a small voltage difference between the two junctions.", "labs": [14], "aka": ["wheatstone bridge"]}, {"term": "Bus", "def": "A group of signals drawn as one thick line. Signals join it by name, through bus entries.", "labs": [13], "aka": ["buses", "busses"]}, {"term": "Bus entry", "def": "The short diagonal line that ties a named wire to a bus.", "labs": [13], "aka": ["bus entries"]}, {"term": "Bypass capacitor", "def": "A capacitor that acts as a short circuit for AC across a resistor, so the resistor affects DC but not the signal.", "labs": [12], "aka": []}, {"term": "Cascade", "def": "Amplifier stages connected one after another. Their gains multiply, so their gains in dB add.", "labs": [12], "aka": []}, {"term": "Common mode", "def": "The voltage both inputs of a differential amplifier share. A good differential amplifier ignores it.", "labs": [14], "aka": ["common-mode"]}, {"term": "Common-emitter amplifier", "def": "A transistor amplifier with the input at the base and the output at the collector.", "labs": [12], "aka": ["common emitter"]}, {"term": "Coupling capacitor", "def": "A capacitor that passes an AC signal from one stage to the next while blocking DC.", "labs": [12], "aka": ["coupling capacitors"]}, {"term": "Current source", "def": "A circuit that supplies a steady current regardless of the voltage across it.", "labs": [14], "aka": ["current sink"]}, {"term": "Decoder", "def": "A circuit that turns a binary number into one active output line. The 74154 is a 4-to-16 decoder.", "labs": [13], "aka": []}, {"term": "Demultiplexer", "def": "A circuit that routes one input line to one of many outputs, chosen by select lines.", "labs": [13], "aka": ["demux"]}, {"term": "Differential pair", "def": "Two matched transistors sharing a current. The difference between their inputs steers the current from one to the other.", "labs": [14], "aka": []}, {"term": "Emitter follower", "def": "A transistor stage whose output (the emitter) follows its input with low output resistance.", "labs": [14], "aka": []}, {"term": "Gain-bandwidth product", "def": "For an op amp, gain \u00d7 bandwidth is roughly constant: about 1 MHz for the LM324.", "labs": [12], "aka": ["gbw"]}, {"term": "Instrumentation amplifier", "def": "An amplifier that boosts a small difference between two inputs and rejects what they have in common.", "labs": [14], "aka": []}, {"term": "JFET", "def": "Junction field-effect transistor: the gate voltage controls the current, and the gate draws almost no current.", "labs": [14], "aka": ["n-channel jfet"]}, {"term": "Mid-band gain", "def": "An amplifier's flat gain between its lower and upper \u22123 dB frequencies.", "labs": [12], "aka": []}, {"term": "Mirror", "def": "Flip a part left\u2013right or top\u2013bottom, as a reflection, without rotating it.", "labs": [14], "aka": ["mirrored", "mirroring"]}, {"term": "Multiplexer", "def": "A circuit that sends one of many inputs to a single output, chosen by select lines. Taking turns, it sends many signals over one line.", "labs": [13], "aka": ["mux"]}, {"term": "Port", "def": "A named connection drawn as an arrow (PSpice's PORTLEFT and PORTRIGHT).", "labs": [13], "aka": ["ports"]}, {"term": "Select lines", "def": "The inputs of a multiplexer or demultiplexer that choose which line is connected.", "labs": [13], "aka": ["select line", "select inputs"]}]</script>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var NS='http://www.w3.org/2000/svg';
+var LAB=document.body.getAttribute('data-lab');
+var KEY='elec101-lesson-'+LAB+'-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function readJSON(id){var n=document.getElementById(id); if(!n) return null; try{return JSON.parse(n.textContent)}catch(e){return null}}
+var state=load(); state.done=state.done||{}; state.checks=state.checks||{};
+
+/* ---------------- navigation ---------------- */
+var sections=$$('main section.lesson');
+var navBtns=$$('#toc button[data-target]');
+var live=$('#live');
+function announce(msg){ if(live){ live.textContent=''; setTimeout(function(){live.textContent=msg},30);} }
+function show(id,focus){
+  var idx=-1;
+  sections.forEach(function(s,i){ var on=s.id===id; s.hidden=!on; if(on) idx=i; });
+  if(idx<0){ return show(sections[0].id,false); }
+  navBtns.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-target')===id ? 'step':'false'); });
+  var sn=$('#sheet-no'); if(sn) sn.textContent=(idx+1)+' of '+sections.length;
+  var st=$('#sheet-title'); if(st) st.textContent=sections[idx].getAttribute('data-title');
+  state.current=id; save();
+  if(focus){ var h=$('h2',sections[idx]); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});}
+    var m=$('#main'); if(m) window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + window.pageYOffset - 12)); }
+  if(history.replaceState){ try{history.replaceState(null,'','#'+id)}catch(e){} }
+  document.dispatchEvent(new CustomEvent('lesson:show',{detail:id}));
+}
+navBtns.forEach(function(b,i){
+  b.addEventListener('click',function(){show(b.getAttribute('data-target'),true)});
+  b.addEventListener('keydown',function(e){
+    var j=null; if(e.key==='ArrowDown') j=Math.min(i+1,navBtns.length-1); if(e.key==='ArrowUp') j=Math.max(i-1,0);
+    if(e.key==='Home') j=0; if(e.key==='End') j=navBtns.length-1;
+    if(j!==null){ e.preventDefault(); navBtns[j].focus(); }
+  });
+});
+$$('[data-goto]').forEach(function(b){ b.addEventListener('click',function(){show(b.getAttribute('data-goto'),true)}); });
+
+function refreshProgress(){
+  var n=0; sections.forEach(function(s){ var d=!!state.done[s.id]; if(d) n++;
+    var c=$('#toc button[data-target="'+s.id+'"] .chk'); if(c){ c.textContent=d?'\u2713':''; }
+    var btn=$('[data-complete="'+s.id+'"]'); if(btn){ btn.setAttribute('aria-pressed', d?'true':'false'); btn.textContent=d?'Completed \u2713':'Mark this section complete'; }
+  });
+  var pct=Math.round(n/sections.length*100);
+  var bar=$('#prog'); if(bar){ bar.setAttribute('aria-valuenow',pct); var sp=$('span',bar); if(sp) sp.style.width=pct+'%'; }
+  var pt=$('#prog-txt'); if(pt) pt.textContent=n+' of '+sections.length+' sections complete';
+}
+$$('[data-complete]').forEach(function(b){ b.addEventListener('click',function(){
+  var id=b.getAttribute('data-complete'); state.done[id]=!state.done[id]; save(); refreshProgress();
+  announce(state.done[id]?'Section marked complete.':'Section marked not complete.');
+});});
+var reset=$('#reset-btn');
+if(reset){ reset.addEventListener('click',function(){ state.done={}; state.checks={}; save(); refreshProgress();
+  $$('.checklist input').forEach(function(c){c.checked=false}); announce('Progress cleared.'); }); }
+
+/* persistent checklists */
+$$('.checklist input[type=checkbox]').forEach(function(c){
+  if(state.checks[c.id]) c.checked=true;
+  c.addEventListener('change',function(){ state.checks[c.id]=c.checked; save(); });
+});
+
+/* reveal buttons */
+$$('[data-reveal]').forEach(function(b){
+  var t=document.getElementById(b.getAttribute('data-reveal')); if(!t) return;
+  b.setAttribute('aria-controls',t.id); b.setAttribute('aria-expanded', t.hidden?'false':'true');
+  var shown=b.getAttribute('data-shown-label'), hid=b.textContent;
+  b.addEventListener('click',function(){ t.hidden=!t.hidden; b.setAttribute('aria-expanded', t.hidden?'false':'true'); if(shown) b.textContent=t.hidden?hid:shown; });
+});
+
+/* ---------------- SPICE numbers ---------------- */
+var SUFFIX=[['meg',1e6],['mil',25.4e-6],['f',1e-15],['p',1e-12],['n',1e-9],['u',1e-6],['m',1e-3],['k',1e3],['g',1e9],['t',1e12]];
+function parseSpice(raw){
+  var s=String(raw==null?'':raw);
+  var t=s.trim();
+  if(!t) return {ok:false,msg:'Nothing entered. Type a value such as 1k or 15.9k.'};
+  if(/\s/.test(t)) return {ok:false,msg:'This value contains a space. The simulator stops reading at the space, so the value is rejected when you run the simulation. Delete the space.'};
+  var m=t.match(/^([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5]*)$/);
+  if(!m) return {ok:false,msg:'A value has to start with a number and can only be followed by letters (a scale suffix and, optionally, a unit).'};
+  var num=parseFloat(m[1]); var tail=m[2].replace('\u00b5','u'); var low=tail.toLowerCase();
+  var mult=1, suf='';
+  for(var i=0;i<SUFFIX.length;i++){ if(low.indexOf(SUFFIX[i][0])===0){ mult=SUFFIX[i][1]; suf=SUFFIX[i][0]; break; } }
+  var r={ok:true,value:num*mult,num:num,suffix:suf,ignored:tail.slice(suf.length),notes:[]};
+  if(suf==='m' && tail.charAt(0)==='M') r.notes.push('Capital M still means milli (\u00d70.001) in SPICE. For mega (\u00d71,000,000) type MEG.');
+  if(m[2].charAt(0)==='\u00b5') r.notes.push('The \u00b5 symbol is not reliable in SPICE. Type u for micro.');
+  if(r.ignored) r.notes.push('The letters "'+r.ignored+'" are ignored. They are just a label for people reading the schematic.');
+  return r;
+}
+var ENG=[[1e12,'T'],[1e9,'G'],[1e6,'MEG'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'u'],[1e-9,'n'],[1e-12,'p'],[1e-15,'f']];
+function eng(v,unit,digits){
+  if(v===0) return '0 '+(unit||'');
+  var a=Math.abs(v);
+  for(var i=0;i<ENG.length;i++){ if(a>=ENG[i][0]*0.9995){ var x=v/ENG[i][0]; var d=digits==null?3:digits;
+      var str=Number(x.toPrecision(d)).toString(); var p=ENG[i][1]; if(p==='u') p='\u00b5'; if(p==='MEG') p='M';
+      return str+' '+p+(unit||''); } }
+  return v.toExponential(2)+' '+(unit||'');
+}
+function fmtHz(f){ if(f>=1000){ var k=f/1000; return (k<10? k.toFixed(2): k<100? k.toFixed(1) : Math.round(k))+' kHz'; } return Math.round(f)+' Hz'; }
+
+/* ---------------- tiny SVG plotter ---------------- */
+function el(tag,attrs,parent,text){ var e=document.createElementNS(NS,tag); for(var k in attrs){ if(attrs.hasOwnProperty(k)) e.setAttribute(k,attrs[k]); } if(text!=null) e.textContent=text; if(parent) parent.appendChild(e); return e; }
+var clipN=0;
+function plot(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var W=cfg.w||640, H=cfg.h||290, L=68, R=34, T=12, B=cfg.xlabel===false?26:52;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-L-R, ph=H-T-B;
+  var lg=function(v){return Math.log(v)/Math.LN10};
+  var X= cfg.xlog ? function(v){return L+(lg(v)-lg(cfg.xmin))/(lg(cfg.xmax)-lg(cfg.xmin))*pw} : function(v){return L+(v-cfg.xmin)/(cfg.xmax-cfg.xmin)*pw};
+  var Y= function(v){return T+(1-(v-cfg.ymin)/(cfg.ymax-cfg.ymin))*ph};
+  el('rect',{x:L,y:T,width:pw,height:ph,'class':'pl-bg'},svg);
+  var g=el('g',{'aria-hidden':'true'},svg);
+  (cfg.xminor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-minor'},g); });
+  (cfg.yminor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-minor'},g); });
+  (cfg.xmajor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-major'},g);
+    el('text',{x:X(v),y:T+ph+15,'text-anchor':'middle','class':'pl-tick'},g,cfg.xfmt?cfg.xfmt(v):v); });
+  (cfg.ymajor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-major'},g);
+    el('text',{x:L-6,y:Y(v)+4,'text-anchor':'end','class':'pl-tick'},g,cfg.yfmt?cfg.yfmt(v):v); });
+  if(cfg.xlabel) el('text',{x:L+pw,y:H-6,'text-anchor':'end','class':'pl-axis'},g,cfg.xlabel);
+  var cid='pc'+(++clipN);
+  var cp=el('clipPath',{id:cid},svg); el('rect',{x:L,y:T,width:pw,height:ph},cp);
+  var tg=el('g',{'clip-path':'url(#'+cid+')'},svg);
+  (cfg.hlines||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-hline'},tg); });
+  (cfg.traces||[]).forEach(function(tr){
+    var d=''; for(var i=0;i<tr.pts.length;i++){ var yy=Y(tr.pts[i][1]); if(yy<-2000) yy=-2000; if(yy>4000) yy=4000; d+=(i?'L':'M')+X(tr.pts[i][0]).toFixed(1)+' '+yy.toFixed(1); }
+    el('path',{d:d,'class':'pl-trace '+(tr.cls||'')},tg);
+  });
+  var lx=L+4;
+  (cfg.traces||[]).forEach(function(tr){ if(!tr.name) return; var t=el('text',{x:lx,y:H-6,'class':'pl-leg '+(tr.cls||'')},g,'\u25a0 '+tr.name); lx+=tr.name.length*7.4+26; });
+  var over=el('g',{},svg);
+  return {X:X,Y:Y,L:L,T:T,pw:pw,ph:ph,over:over,svg:svg,
+    invX: cfg.xlog ? function(px){ return Math.pow(10, lg(cfg.xmin)+(px-L)/pw*(lg(cfg.xmax)-lg(cfg.xmin))); } : function(px){ return cfg.xmin+(px-L)/pw*(cfg.xmax-cfg.xmin); }};
+}
+function svgPoint(svg,evt){ var r=svg.getBoundingClientRect(); var vb=svg.viewBox.baseVal; return {x:(evt.clientX-r.left)/r.width*vb.width, y:(evt.clientY-r.top)/r.height*vb.height}; }
+function logGrid(xmin,xmax,mode){
+  var maj=[],min=[]; var d0=Math.floor(Math.log(xmin)/Math.LN10), d1=Math.ceil(Math.log(xmax)/Math.LN10);
+  for(var d=d0; d<=d1; d++){ var b=Math.pow(10,d);
+    if(mode==='auto'){ [1,3].forEach(function(k){ var v=k*b; if(v>=xmin*0.999&&v<=xmax*1.001) maj.push(v); }); }
+    else { if(b>=xmin*0.999&&b<=xmax*1.001) maj.push(b); for(var k=2;k<10;k++){ var v=k*b; if(v>xmin&&v<xmax) min.push(v);} }
+  }
+  return {maj:maj,min:min};
+}
+function linTicks(a,b,step){ var o=[]; for(var v=Math.ceil(a/step-1e-9)*step; v<=b+1e-9; v+=step) o.push(Math.round(v/step)*step); return o; }
+
+/* ---------------- clickable schematic parts ---------------- */
+var PARTS=readJSON('parts-data')||{};
+function showPart(panel,id){
+  var p=PARTS[id]; if(!p||!panel) return;
+  while(panel.firstChild) panel.removeChild(panel.firstChild);
+  var h=document.createElement('h4'); h.textContent=p.name; panel.appendChild(h);
+  if(p.what){ var w=document.createElement('p'); w.textContent=p.what; panel.appendChild(w); }
+  if(p.props){ var dl=document.createElement('dl'); dl.className='kv';
+    p.props.forEach(function(kv){ var dt=document.createElement('dt'); dt.textContent=kv[0]; var dd=document.createElement('dd'); dd.textContent=kv[1]; dl.appendChild(dt); dl.appendChild(dd); });
+    panel.appendChild(dl); }
+  if(p.here){ var q=document.createElement('p'); var b=document.createElement('strong'); b.textContent='In this circuit: '; q.appendChild(b); q.appendChild(document.createTextNode(p.here)); panel.appendChild(q); }
+}
+$$('svg.schem').forEach(function(svg){
+  var panel=document.getElementById(svg.getAttribute('data-panel'));
+  $$('.part',svg).forEach(function(g){
+    var act=function(){ $$('.part',svg).forEach(function(o){o.classList.remove('sel')}); g.classList.add('sel'); showPart(panel,g.getAttribute('data-part')); };
+    g.addEventListener('click',act);
+    g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } });
+  });
+});
+/* stage highlighter: buttons with data-stage-for=svgId data-stage=name */
+$$('[data-stage-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var svg=document.getElementById(b.getAttribute('data-stage-for')); var st=b.getAttribute('data-stage');
+    $$('[data-stage-for="'+svg.id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('[data-stages]',svg).forEach(function(n){ var list=n.getAttribute('data-stages').split(' ');
+      if(st==='all' || list.indexOf(st)>=0) n.classList.remove('dimmed'); else n.classList.add('dimmed'); });
+    var d=document.getElementById(svg.id+'-stage-desc'); var S=readJSON(svg.id+'-stages');
+    if(d&&S&&S[st]){ d.textContent=S[st]; }
+  });
+});
+
+/* ---------------- quiz engine ---------------- */
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildQuiz(box){
+  var data=readJSON('quiz-'+box.getAttribute('data-quiz')); if(!data) return;
+  while(box.firstChild) box.removeChild(box.firstChild);
+  var score=0, answered=0;
+  var sc=document.createElement('p'); sc.className='score'; sc.setAttribute('aria-live','polite');
+  data.forEach(function(item,qi){
+    var q=document.createElement('div'); q.className='q'; q.setAttribute('role','group');
+    var qt=document.createElement('p'); qt.className='qt'; qt.id=box.getAttribute('data-quiz')+'-q'+qi; qt.textContent=(qi+1)+'. '+item.q; q.appendChild(qt);
+    q.setAttribute('aria-labelledby',qt.id);
+    var ch=document.createElement('div'); ch.className='choices'; q.appendChild(ch);
+    var fb=document.createElement('p'); fb.className='fb'; fb.setAttribute('aria-live','polite');
+    var idx=item.choices.map(function(_,i){return i});
+    var order=item.keepOrder? idx : shuffle(idx);
+    var btns=[];
+    order.forEach(function(ci){
+      var b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=item.choices[ci];
+      b.setAttribute('data-ci',ci);
+      b.addEventListener('click',function(){
+        var right= ci===item.answer;
+        btns.forEach(function(x){ x.disabled=true;
+          if(+x.getAttribute('data-ci')===item.answer){ x.classList.add('right'); x.textContent=item.choices[item.answer]+'  \u2713 correct answer'; } });
+        if(!right){ b.classList.add('wrong'); b.textContent=item.choices[ci]+'  \u2717 your answer'; }
+        fb.textContent=(right?'Correct. ':'Not quite. ')+item.explain;
+        answered++; if(right) score++;
+        sc.textContent='Score: '+score+' of '+answered+' answered ('+data.length+' questions total)';
+      });
+      btns.push(b); ch.appendChild(b);
+    });
+    q.appendChild(fb); box.appendChild(q);
+  });
+  box.appendChild(sc);
+  var again=document.createElement('button'); again.type='button'; again.className='btn'; again.textContent='Reset quiz and shuffle';
+  again.addEventListener('click',function(){ buildQuiz(box); var f=box.querySelector('.choice'); if(f) f.focus(); });
+  box.appendChild(again);
+}
+$$('.quiz[data-quiz]').forEach(buildQuiz);
+
+/* ---------------- SPICE value checker widgets ---------------- */
+$$('[data-spice-check]').forEach(function(w){
+  var inp=$('input',w), btn=$('button',w), out=$('.result',w);
+  var run=function(){ var r=parseSpice(inp.value); out.className='result '+(r.ok?'ok':'no');
+    if(!r.ok){ out.textContent='Error: '+r.msg; return; }
+    var plain=Number(r.value.toPrecision(6)); var s='The simulator reads "'+inp.value.trim()+'" as '+(r.suffix? eng(r.value,'',4).trim()+', which is '+plain : plain)+'.';
+    if(r.suffix) s+=' Suffix "'+r.suffix+'" multiplies '+r.num+' by '+(SUFFIX.filter(function(x){return x[0]===r.suffix})[0][1]).toExponential(0).replace('e',' \u00d7 10^').replace('+','')+'.';
+    if(r.notes.length) s+=' Note: '+r.notes.join(' ');
+    out.textContent=s; };
+  btn.addEventListener('click',run);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+  $$('[data-try]',w).forEach(function(t){ t.addEventListener('click',function(){ inp.value=t.getAttribute('data-try'); run(); }); });
+});
+
+/* ---------------- settings-form checkers ---------------- */
+$$('form.sim-settings').forEach(function(f){
+  var spec=readJSON(f.getAttribute('data-spec')); var out=$('.result',f);
+  f.addEventListener('submit',function(e){
+    e.preventDefault(); var bad=[];
+    spec.forEach(function(s){
+      var n=f.elements[s.name]; if(!n) return; var v=n.value;
+      if(s.type==='select'){ if(v!==s.want) bad.push(s.label+': choose '+s.wantText+'.'); return; }
+      if(s.type==='check'){ if(n.checked!==s.want) bad.push(s.label+': '+(s.want?'tick it.':'leave it unticked.')); return; }
+      if(s.type==='text'){ if(v.trim().toLowerCase()!==String(s.want).toLowerCase()) bad.push(s.label+': "'+v.trim()+'" should be '+s.want+'. '+(s.hint||'')); return; }
+      var r=parseSpice(v); if(!r.ok){ bad.push(s.label+': '+r.msg); return; }
+      if(Math.abs(r.value-s.want)>Math.abs(s.want)*1e-6) bad.push(s.label+': "'+v.trim()+'" is '+eng(r.value,s.unit||'',4).trim()+', but the lab asks for '+eng(s.want,s.unit||'',4).trim()+'. '+(s.hint||''));
+    });
+    out.className='result '+(bad.length?'no':'ok');
+    out.textContent= bad.length ? ('Check these: '+bad.join(' ')) : (f.getAttribute('data-ok')||'All settings match the lab.');
+  });
+});
+
+/* ---------------- glossary tooltips ---------------- */
+var GL=readJSON('glossary-data')||[], GMAP={};
+GL.forEach(function(g){ [g.term].concat(g.aka||[]).forEach(function(k){ GMAP[k.toLowerCase()]=g; }); });
+function lookup(t){
+  t=String(t).toLowerCase().replace(/\s+/g,' ').trim();
+  var c=[t, t.replace(/\s*\(.*\)$/,''), t.replace(/'s$/,'')];
+  for(var i=0;i<c.length;i++){ var k=c[i]; if(GMAP[k]) return GMAP[k]; if(/s$/.test(k)&&GMAP[k.slice(0,-1)]) return GMAP[k.slice(0,-1)]; if(/es$/.test(k)&&GMAP[k.slice(0,-2)]) return GMAP[k.slice(0,-2)]; }
+  return null;
+}
+var tip=document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+var tipFor=null, hideTimer=null;
+function placeTip(el){
+  var r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight, vw=document.documentElement.clientWidth;
+  var left=Math.max(8, Math.min(r.left, vw-tw-8));
+  var top=r.bottom+6; if(top+th>window.innerHeight-8 && r.top-th-6>8) top=r.top-th-6;
+  tip.style.left=(left+window.pageXOffset)+'px'; tip.style.top=(top+window.pageYOffset)+'px';
+}
+function showTip(el){
+  var g=lookup(el.textContent); if(!g) return;
+  clearTimeout(hideTimer);
+  if(tipFor&&tipFor!==el) tipFor.removeAttribute('aria-describedby');
+  tipFor=el;
+  while(tip.firstChild) tip.removeChild(tip.firstChild);
+  var b=document.createElement('strong'); b.textContent=g.term+': '; tip.appendChild(b);
+  tip.appendChild(document.createTextNode(g.def));
+  tip.hidden=false; el.setAttribute('aria-describedby','tip'); placeTip(el);
+}
+function hideTip(now){
+  clearTimeout(hideTimer);
+  var go=function(){ tip.hidden=true; if(tipFor){ tipFor.removeAttribute('aria-describedby'); tipFor=null; } };
+  if(now) go(); else hideTimer=setTimeout(go,180);
+}
+$$('.term').forEach(function(el){
+  if(!lookup(el.textContent)) return;
+  el.classList.add('has-tip'); el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',function(){showTip(el)});
+  el.addEventListener('mouseleave',function(){hideTip(false)});
+  el.addEventListener('focus',function(){showTip(el)});
+  el.addEventListener('blur',function(){hideTip(true)});
+  el.addEventListener('click',function(e){ e.stopPropagation(); if(tipFor===el&&!tip.hidden) hideTip(true); else showTip(el); });
+});
+tip.addEventListener('mouseenter',function(){clearTimeout(hideTimer)});
+tip.addEventListener('mouseleave',function(){hideTip(false)});
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!tip.hidden) hideTip(true); });
+document.addEventListener('click',function(){ if(!tip.hidden) hideTip(true); });
+window.addEventListener('resize',function(){ if(tipFor&&!tip.hidden) placeTip(tipFor); });
+
+/* ---------------- overlay highlighter ----------------
+   Buttons: data-ovl-for="svgId" data-ovl="name" ("none" clears).
+   Overlays inside the svg: <g class="ovl" data-ovl="name" hidden>.
+   Descriptions: JSON script id "svgId-ovl" {name: text}. */
+$$('[data-ovl-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var id=b.getAttribute('data-ovl-for'), svg=document.getElementById(id), name=b.getAttribute('data-ovl');
+    if(!svg) return;
+    $$('[data-ovl-for="'+id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('.ovl',svg).forEach(function(g){ var list=(g.getAttribute('data-ovl')||'').split(' ');
+      if(name!=='none' && (name==='all'||list.indexOf(name)>=0)) g.removeAttribute('hidden'); else g.setAttribute('hidden',''); });
+    var d=document.getElementById(id+'-ovl-desc'), S=readJSON(id+'-ovl');
+    if(d&&S) d.textContent=S[name]||'';
+  });
+});
+
+/* ---------------- predict-then-check boxes ----------------
+   <div class="predict" data-answer="5.14" data-tol="0.03" data-unit="V" data-reveal-after="2">
+     ...<input> <button class="chk"> <p class="result"> <button class="show" hidden> <div class="worked" hidden> */
+$$('.predict').forEach(function(box){
+  var inp=$('input',box), chk=$('button.chk',box), out=$('.result',box), show=$('button.show',box), worked=$('.worked',box);
+  var ans=parseFloat(box.getAttribute('data-answer')), tol=parseFloat(box.getAttribute('data-tol')||'0.02'), unit=box.getAttribute('data-unit')||'';
+  var after=parseInt(box.getAttribute('data-reveal-after')||'2',10), tries=0;
+  var go=function(){
+    var r=parseSpice(inp.value);
+    if(!r.ok){ out.className='result no'; out.textContent=r.msg; return; }
+    tries++;
+    var ok=Math.abs(r.value-ans)<=Math.abs(ans)*tol+1e-12;
+    out.className='result '+(ok?'ok':'no');
+    out.textContent= ok ? ('Yes: '+eng(r.value,unit,4)+' is right. Now confirm it with your simulation.')
+      : ('Not yet: '+eng(r.value,unit,4)+' doesn\u2019t match. '+(r.value>ans?'Your value is too high.':'Your value is too low.')+' Check each step and try again.');
+    if((ok||tries>=after)&&show) show.hidden=false;
+  };
+  chk.addEventListener('click',go);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); go(); } });
+  if(show&&worked){ show.addEventListener('click',function(){ worked.hidden=!worked.hidden; show.setAttribute('aria-expanded',worked.hidden?'false':'true'); show.textContent=worked.hidden?'Show the worked answer':'Hide the worked answer'; }); show.setAttribute('aria-expanded','false'); }
+});
+
+window.LESSON={$:$, $$:$$, el:el, plot:plot, logGrid:logGrid, linTicks:linTicks, parseSpice:parseSpice, eng:eng, fmtHz:fmtHz, svgPoint:svgPoint, readJSON:readJSON, announce:announce, state:state, save:save};
+
+refreshProgress();
+window.addEventListener('hashchange',function(){ var h=(location.hash||'').slice(1); if(h && sections.some(function(x){return x.id===h;})) show(h,true); });
+var start=(location.hash||'').slice(1);
+if(!document.getElementById(start)) start=state.current;
+show(start && document.getElementById(start) ? start : sections[0].id, false);
+})();
+</script>
+<script>
+window.DIGI=(function(){
+var L=window.LESSON, el=L.el;
+function sigFromFn(fn,tmax,n){ var out=[], prev=null; n=n||2000;
+  for(var i=0;i<=n;i++){ var t=tmax*i/n, v=fn(t); if(v!==prev){ out.push([t,v]); prev=v; } } return out; }
+function valAt(sig,t){ var v=sig[0][1]; for(var i=0;i<sig.length;i++){ if(sig[i][0]<=t) v=sig[i][1]; else break; } return v; }
+function stimFn(text){ /* returns {fn, err, pts} */
+  var items=String(text||'').split(/[;,\n]+/).map(function(s){return s.trim();}).filter(Boolean), pts=[];
+  for(var i=0;i<items.length;i++){
+    var m=items[i].match(/^(\S+)\s+([01])$/);
+    if(!m) return {err:'"'+items[i]+'" should be a time and a 0 or 1, like 2m 1.'};
+    var r=L.parseSpice(m[1].replace(/s$/i,'')||'0');
+    if(!r.ok||r.value<0) return {err:'"'+m[1]+'" is not a time.'};
+    if(pts.length&&r.value<=pts[pts.length-1][0]) return {err:'The times must increase: '+m[1]+' comes after '+pts[pts.length-1][2]+'.'};
+    pts.push([r.value,+m[2],m[1]]);
+  }
+  if(!pts.length) return {err:'There are no commands.'};
+  return {pts:pts, fn:function(t){ var v=pts[0][1]; for(var k=0;k<pts.length;k++){ if(pts[k][0]<=t) v=pts[k][1]; } return v; }};
+}
+function clockFn(c){ /* c: {offtime, ontime, delay, startval, oppval} numbers */
+  return function(t){ var per=c.offtime+c.ontime, tt=t-c.delay; if(tt<c.offtime) return c.startval;
+    var ph=(tt-c.offtime)%per; return ph<c.ontime ? c.oppval : c.startval; };
+}
+var GATES={
+  AND:function(v){ return v.every(function(x){return x===1;})?1:0; },
+  NAND:function(v){ return v.every(function(x){return x===1;})?0:1; },
+  OR:function(v){ return v.some(function(x){return x===1;})?1:0; },
+  NOR:function(v){ return v.some(function(x){return x===1;})?0:1; },
+  XOR:function(v){ return v.reduce(function(a,b){return a^b;},0); },
+  NOT:function(v){ return v[0]?0:1; }
+};
+/* timing lanes. sigs: [{name, sig:[[t,v]], cls}] ; v may be 0, 1 or 'x' */
+function lanes(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var n=cfg.sigs.length, LH=30, G=10, Lm=78, Rm=18, T=8, B=40, W=640, H=T+n*(LH+G)+B;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-Lm-Rm, sc=cfg.unit[0];
+  var X=function(t){ return Lm+(t/cfg.tmax)*pw; };
+  var grid=el('g',{'aria-hidden':'true'},svg);
+  var st=cfg.tick||cfg.tmax/10;
+  for(var t=0;t<=cfg.tmax*1.0001;t+=st){ el('line',{x1:X(t),x2:X(t),y1:T,y2:T+n*(LH+G)-G,'class':'pl-major'},grid);
+    el('text',{x:X(t),y:T+n*(LH+G)+8,'text-anchor':'middle','class':'pl-tick'},grid,+(t/sc).toPrecision(4)+cfg.unit[1]); }
+  el('text',{x:Lm+pw/2,y:H-6,'text-anchor':'middle','class':'pl-axis'},grid,'Time');
+  (cfg.marks||[]).forEach(function(t){ el('line',{x1:X(t),x2:X(t),y1:T,y2:T+n*(LH+G)-G,'class':'pl-vline'},grid); });
+  cfg.sigs.forEach(function(s,i){
+    var y0=T+i*(LH+G), yH=y0+5, yL=y0+LH-5;
+    el('rect',{x:Lm,y:y0,width:pw,height:LH,'class':'pl-bg'},svg);
+    el('text',{x:Lm-18,y:y0+LH/2+4,'text-anchor':'end','class':'pl-leg '+(s.cls||'')},svg,s.name);
+    el('text',{x:Lm-5,y:yH+4,'text-anchor':'end','class':'pl-note'},svg,'1'); el('text',{x:Lm-5,y:yL+4,'text-anchor':'end','class':'pl-note'},svg,'0');
+    var d='', sig=s.sig;
+    for(var k=0;k<sig.length;k++){
+      var t0=sig[k][0], t1=k+1<sig.length?sig[k+1][0]:cfg.tmax, v=sig[k][1];
+      if(t0>cfg.tmax) break; t1=Math.min(t1,cfg.tmax);
+      if(v==='x'){ el('rect',{x:X(t0),y:yH,width:Math.max(0.5,X(t1)-X(t0)),height:yL-yH,'class':'lane-x'},svg); d+='M'+X(t1).toFixed(1)+' '+yL; continue; }
+      var y=v?yH:yL;
+      d+=(k===0||sig[k-1][1]==='x'?'M':'L')+X(t0).toFixed(1)+' '+y+'L'+X(t1).toFixed(1)+' '+y;
+    }
+    el('path',{d:d,'class':'pl-trace lane '+(s.cls||'')},svg);
+  });
+  var over=el('g',{},svg);
+  return {X:X,L:Lm,pw:pw,T:T,bottom:T+n*(LH+G)-G,over:over,invX:function(px){ return (px-Lm)/pw*cfg.tmax; }};
+}
+function attachCursor(svg,getP,read,sigs,unit,extra){
+  var cur=null;
+  function show(t){ var P=getP(); if(!P) return; t=Math.max(0,Math.min(P.tmax,t)); cur=t;
+    var old=svg.querySelector('.cur'); if(old) old.parentNode.removeChild(old);
+    var g=el('g',{'class':'cur'},P.over); el('line',{x1:P.X(t),x2:P.X(t),y1:P.T,y2:P.bottom,'class':'pl-cursor'},g);
+    read.textContent='Cursor: t = '+ +(t/unit()[0]).toPrecision(4)+' '+unit()[1]+'   '+sigs().map(function(s){ var v=valAt(s.sig,t); return s.name+' = '+(v==='x'?'X':v); }).join('   ')+(extra?extra(t):''); }
+  svg.addEventListener('pointermove',function(e){ var P=getP(); if(!P) return; var p=L.svgPoint(svg,e); if(p.x<P.L||p.x>P.L+P.pw) return; show(P.invX(p.x)); });
+  svg.addEventListener('keydown',function(e){ var P=getP(); if(!P) return; var s=P.tmax/100, c=cur==null?0:cur;
+    if(e.key==='ArrowRight'){ e.preventDefault(); show(c+s); } if(e.key==='ArrowLeft'){ e.preventDefault(); show(c-s); } });
+  return { refresh:function(){ if(cur!=null) show(cur); }, reset:function(){ cur=null; } };
+}
+/* truth-table exercises: <div class="tt" data-tt='{"inputs":["A","B"],"out":"Q","gate":"OR"}'> */
+function buildTT(box){
+  var cfg=JSON.parse(box.getAttribute('data-tt')), n=cfg.inputs.length, rows=1<<n;
+  var fn=cfg.fn ? cfg.fn : function(v){ return GATES[cfg.gate](v); };
+  var tb=document.createElement('table'), cap=document.createElement('caption'); cap.textContent=cfg.caption||('Truth table for '+cfg.out); tb.appendChild(cap);
+  var th=document.createElement('tr'); cfg.inputs.concat([cfg.out,'']).forEach(function(h,i){ var c=document.createElement('th'); c.setAttribute('scope','col'); c.textContent=h||'Check'; th.appendChild(c); });
+  var thead=document.createElement('thead'); thead.appendChild(th); tb.appendChild(thead);
+  var body=document.createElement('tbody'), sels=[];
+  for(var m=0;m<rows;m++){
+    var bits=[]; for(var i=0;i<n;i++) bits.push((m>>(n-1-i))&1);
+    var tr=document.createElement('tr');
+    bits.forEach(function(b){ var c=document.createElement('td'); c.textContent=b; tr.appendChild(c); });
+    var td=document.createElement('td'), sel=document.createElement('select');
+    sel.setAttribute('aria-label',cfg.out+' when '+cfg.inputs.map(function(x,i){return x+' = '+bits[i];}).join(', '));
+    ['?','0','1'].forEach(function(o){ var op=document.createElement('option'); op.value=o; op.textContent=o; sel.appendChild(op); });
+    td.appendChild(sel); tr.appendChild(td);
+    var mk=document.createElement('td'); tr.appendChild(mk);
+    sels.push({sel:sel,mk:mk,want:fn(bits)}); body.appendChild(tr);
+  }
+  tb.appendChild(body);
+  var wrap=document.createElement('div'); wrap.className='table-wrap'; wrap.appendChild(tb); box.appendChild(wrap);
+  var btn=document.createElement('button'); btn.type='button'; btn.className='btn primary'; btn.textContent='Check my table';
+  var out=document.createElement('p'); out.className='result'; out.setAttribute('aria-live','polite');
+  btn.addEventListener('click',function(){ var right=0, blank=0;
+    sels.forEach(function(s){ if(s.sel.value==='?'){ blank++; s.mk.textContent=''; return; } var ok=+s.sel.value===s.want; if(ok) right++; s.mk.textContent=ok?'\u2713':'\u2717 try again'; });
+    out.className='result '+(right===rows?'ok':'no');
+    out.textContent= right===rows ? 'All '+rows+' rows are right. '+(cfg.done||'') : right+' of '+rows+' right'+(blank?', '+blank+' still blank':'')+'. Read the timing diagram again for the rows marked \u2717.'; });
+  var row=document.createElement('div'); row.className='btn-row'; row.appendChild(btn); box.appendChild(row); box.appendChild(out);
+}
+L.$$('.tt[data-tt]').forEach(buildTT);
+return {sigFromFn:sigFromFn, valAt:valAt, stimFn:stimFn, clockFn:clockFn, GATES:GATES, lanes:lanes, attachCursor:attachCursor};
+})();
+
+(function(){
+var L=window.LESSON, D=window.DIGI, $=L.$, $$=L.$$, el=L.el;
+function rows(dl,list){ while(dl.firstChild) dl.removeChild(dl.firstChild); list.forEach(function(r){ var dt=document.createElement('dt'); dt.textContent=r[0]; var dd=document.createElement('dd'); dd.textContent=r[1]; dl.appendChild(dt); dl.appendChild(dd); }); }
+function num(s){ var r=L.parseSpice(String(s)); return r.ok?r.value:NaN; }
+function led(id,v){ var e=$(id); e.textContent=(v==='x'?'X':v); e.className='led'+(v==='x'?' x':v?' on':''); }
+function bit(btn,v){ btn.textContent=v; btn.setAttribute('aria-pressed',v?'true':'false'); }
+function cell(tr,t){ var c=document.createElement('td'); c.textContent=t; tr.appendChild(c); }
+var MS=[1e-3,' ms'], US=[1e-6,' \u00b5s'];
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- clock builder ---------- */
+function cbDraw(){
+  var c={offtime:num($('#cb-off').value), ontime:num($('#cb-on').value), delay:num($('#cb-del').value||'0'), startval:+$('#cb-sv').value, oppval:+$('#cb-ov').value};
+  var st=$('#cb-status'), bad=[];
+  if(!(c.offtime>0)) bad.push('OFFTIME has to be a time above zero.'); if(!(c.ontime>0)) bad.push('ONTIME has to be a time above zero.'); if(!(c.delay>=0)) bad.push('DELAY must be 0 or more.');
+  if(bad.length){ st.className='result no'; st.textContent=bad.join(' '); return; }
+  st.className='result'; st.textContent= c.startval===c.oppval ? 'STARTVAL and OPPVAL are the same, so the clock never changes.' : '';
+  var per=c.ontime+c.offtime, T=c.delay+3*per, u=T>=1e-3?MS:US;
+  var sig=D.sigFromFn(D.clockFn(c),T,2400);
+  D.lanes($('#cb-plot'),{tmax:T,unit:u,sigs:[{name:'CLK',sig:sig,cls:'c0'}],tick:T/6});
+  var high= c.oppval===1 ? c.ontime : c.offtime;
+  rows($('#cb-read'),[['Period',L.eng(per,'s',3)],['Frequency',L.fmtHz(1/per)],['Duty cycle (time at 1)',(high/per*100).toFixed(0)+'%'],['First change at',L.eng(c.delay+c.offtime,'s',3)]]);
+  $('#cb-say').textContent='The clock holds '+c.startval+' for DELAY + OFFTIME, then alternates: '+c.oppval+' for ONTIME, '+c.startval+' for OFFTIME. '
+    +(c.startval===1&&c.oppval===0?'Because it starts high, its first falling edge is at '+L.eng(c.delay+c.offtime,'s',3)+'.':'');
+}
+['#cb-off','#cb-on','#cb-del'].forEach(function(k){ $(k).addEventListener('input',cbDraw); });
+['#cb-sv','#cb-ov'].forEach(function(k){ $(k).addEventListener('change',cbDraw); });
+$$('[data-cb]').forEach(function(b){ b.addEventListener('click',function(){ var v=JSON.parse(b.getAttribute('data-cb'));
+  $('#cb-off').value=v[0]; $('#cb-on').value=v[1]; $('#cb-del').value=v[2]; $('#cb-sv').value=v[3]; $('#cb-ov').value=v[4]; cbDraw(); }); });
+cbDraw();
+
+/* ---------- 11A ---------- */
+var xa={};
+(function(){
+  var T=0.5e-3, a=D.clockFn({offtime:.2e-3,ontime:.2e-3,delay:0,startval:0,oppval:1}), b=D.clockFn({offtime:.1e-3,ontime:.1e-3,delay:0,startval:0,oppval:1});
+  xa.sigs=[{name:'A',sig:D.sigFromFn(a,T),cls:'c0'},{name:'B',sig:D.sigFromFn(b,T),cls:'c1'},{name:'Q',sig:D.sigFromFn(function(t){return a(t)^b(t);},T),cls:'c2'}];
+  var P=D.lanes($('#xa-plot'),{tmax:T,unit:US,sigs:xa.sigs,tick:50e-6}); P.tmax=T; xa.P=P;
+  D.attachCursor($('#xa-plot'),function(){return xa.P;},$('#xa-read'),function(){return xa.sigs;},function(){return US;});
+})();
+
+/* ---------- latch ---------- */
+var la={s:1,r:1,q:0,qb:1,forb:false,n:0};
+function laApply(){
+  var act;
+  if(la.s===0&&la.r===0){ la.q=1; la.qb=1; la.forb=true; act='Forbidden: Q and QBAR are both 1'; }
+  else if(la.s===0){ la.q=1; la.qb=0; la.forb=false; act='Set'; }
+  else if(la.r===0){ la.q=0; la.qb=1; la.forb=false; act='Reset'; }
+  else if(la.forb){ la.q='x'; la.qb='x'; la.forb=false; act='Released together: unpredictable'; }
+  else act='Hold';
+  led('#la-q',la.q); led('#la-qb',la.qb); bit($('#la-s'),la.s); bit($('#la-r'),la.r);
+  var say={ 'Set':'SBAR is low, so U1A\u2019s output Q is forced to 1; U1B then sees Q = 1 and RBAR = 1 and makes QBAR 0.',
+    'Reset':'RBAR is low, so QBAR is forced to 1; U1A then sees QBAR = 1 and SBAR = 1 and makes Q 0.',
+    'Hold':'Both inputs are inactive, so each gate just keeps the other where it is: the latch remembers.'}[act]
+    || (act.indexOf('Forbidden')===0 ? 'Both NAND gates have a 0 input, so both outputs are 1. Q and QBAR should always be opposites, so this state is avoided.'
+    : 'Both inputs went back to 1 at the same time. Each gate now waits for the other; which one wins depends on tiny differences in speed.');
+  $('#la-say').textContent=act+'. '+say;
+  if(la.n>0){ var tr=document.createElement('tr'); [la.n,la.s,la.r,la.q==='x'?'X':la.q,la.qb==='x'?'X':la.qb,act].forEach(function(v){ cell(tr,v); });
+    var lg=$('#la-log'); lg.insertBefore(tr,lg.firstChild); while(lg.children.length>8) lg.removeChild(lg.lastChild); }
+}
+$('#la-s').addEventListener('click',function(){ la.s=1-la.s; la.n++; laApply(); });
+$('#la-r').addEventListener('click',function(){ la.r=1-la.r; la.n++; laApply(); });
+$('#la-reset').addEventListener('click',function(){ la={s:1,r:1,q:0,qb:1,forb:false,n:0}; var lg=$('#la-log'); while(lg.firstChild) lg.removeChild(lg.firstChild); laApply(); $('#la-say').textContent='Latch reset: Q = 0. Try setting it, then releasing SBAR.'; });
+laApply(); $('#la-say').textContent='The latch starts reset: Q = 0, QBAR = 1. Click SBAR to set it.';
+
+var lt={};
+(function(){
+  var T=0.5e-3, s=D.clockFn({offtime:75e-6,ontime:75e-6,delay:0,startval:1,oppval:0}), r=D.clockFn({offtime:.15e-3,ontime:.15e-3,delay:0,startval:0,oppval:1});
+  var N=2000, q=[], qb=[], st={q:0,qb:1,f:false}, pq=null, pqb=null;
+  for(var i=0;i<=N;i++){ var t=T*i/N, sv=s(t), rv=r(t);
+    if(sv===0&&rv===0){ st.q=1; st.qb=1; st.f=true; } else if(sv===0){ st.q=1; st.qb=0; st.f=false; } else if(rv===0){ st.q=0; st.qb=1; st.f=false; } else if(st.f){ st.q='x'; st.qb='x'; st.f=false; }
+    if(st.q!==pq){ q.push([t,st.q]); pq=st.q; } if(st.qb!==pqb){ qb.push([t,st.qb]); pqb=st.qb; } }
+  lt.sigs=[{name:'SBAR',sig:D.sigFromFn(s,T),cls:'c0'},{name:'RBAR',sig:D.sigFromFn(r,T),cls:'c1'},{name:'Q',sig:q,cls:'c2'},{name:'QBAR',sig:qb,cls:'c3'}];
+  var P=D.lanes($('#lt-plot'),{tmax:T,unit:US,sigs:lt.sigs,tick:50e-6}); P.tmax=T; lt.P=P;
+  D.attachCursor($('#lt-plot'),function(){return lt.P;},$('#lt-read'),function(){return lt.sigs;},function(){return US;});
+})();
+
+/* ---------- JK flip-flop core ---------- */
+function jkStep(st,j,k){ /* master update from current Q during clock high */
+  var m=st.q;
+  if(st.q==='x'){ if(j&&!k) m=1; else if(k&&!j) m=0; else m='x'; }
+  else if(j&&k) m=1-st.q; else if(j) m=1; else if(k) m=0;
+  return m;
+}
+var jk={j:0,k:0,c:1,q:0,n:0};
+function jkShow(){ bit($('#jk-j'),jk.j); bit($('#jk-k'),jk.k); bit($('#jk-c'),jk.c); led('#jk-q',jk.q); }
+function jkLog(before,act){ var tr=document.createElement('tr'); [jk.n,jk.j,jk.k,jk.c,before==='x'?'X':before,jk.q==='x'?'X':jk.q,act].forEach(function(v){ cell(tr,v); });
+  var lg=$('#jk-log'); lg.insertBefore(tr,lg.firstChild); while(lg.children.length>8) lg.removeChild(lg.lastChild); }
+$('#jk-j').addEventListener('click',function(){ jk.j=1-jk.j; jkShow(); });
+$('#jk-k').addEventListener('click',function(){ jk.k=1-jk.k; jkShow(); });
+$('#jk-c').addEventListener('click',function(){ jk.c=1-jk.c; if(!jk.c){ jk.q=0; $('#jk-say').textContent='CLR\u0305 is 0: Q is forced to 0 straight away, without waiting for the clock. Clock pulses do nothing until CLR\u0305 returns to 1.'; } else $('#jk-say').textContent='CLR\u0305 is back at 1: the flip-flop responds to the clock again.'; jkShow(); });
+$('#jk-pulse').addEventListener('click',function(){
+  jk.n++; var before=jk.q, act;
+  if(!jk.c){ jk.q=0; act='Cleared (CLR\u0305 low)'; }
+  else { jk.q=jkStep({q:jk.q},jk.j,jk.k); act= jk.j&&jk.k ? 'Toggle' : jk.j ? 'Set' : jk.k ? 'Reset' : 'Hold'; if(before==='x'&&jk.q==='x') act+=' (still unknown)'; }
+  jkShow(); jkLog(before,act);
+  $('#jk-say').textContent='Clock went 1 then 0. With J = '+jk.j+' and K = '+jk.k+', that\u2019s \u201c'+act+'\u201d, so Q is now '+(jk.q==='x'?'unknown':jk.q)+'.'
+    +(before==='x'&&jk.q==='x'?' Hold and toggle keep an unknown state unknown; only set, reset or clear make it definite.':'');
+});
+function jkPower(){ var v=$('#jk-init').value; jk.q= v==='x'?'x':+v; jk.n=0; var lg=$('#jk-log'); while(lg.firstChild) lg.removeChild(lg.firstChild); jkShow();
+  $('#jk-say').textContent='Powered up with Q = '+(jk.q==='x'?'X (unknown)':jk.q)+'. Set J and K, then press Clock pulse.'; }
+$('#jk-power').addEventListener('click',jkPower); $('#jk-init').addEventListener('change',jkPower);
+jkPower();
+
+/* ---------- 11C timing ---------- */
+var jt={};
+function jtRun(){
+  var T=10e-3, N=4000, init=$('#jt-init').value;
+  var J=D.clockFn({offtime:2.5e-3,ontime:2.5e-3,delay:0,startval:0,oppval:1});
+  var CK=D.clockFn({offtime:.75e-3,ontime:.75e-3,delay:0,startval:1,oppval:0});
+  var K=D.clockFn({offtime:4.5e-3,ontime:4.5e-3,delay:0,startval:0,oppval:1});
+  var CL=D.stimFn(L.readJSON('clear-cmds')).fn;
+  var st={q: init==='x'?'x':+init}, m=st.q, prev=CK(0), q=[[0,st.q]], edges=[], rowsOut=[], hiJ=0, hiK=0;
+  for(var i=1;i<=N;i++){ var t=T*i/N, c=CK(t), cl=CL(t), j=J(t), k=K(t);
+    if(cl===0){ if(st.q!==0){ st.q=0; q.push([t,0]); } m=0; }
+    else if(c===1){ m=jkStep({q:st.q},j,k); hiJ=j; hiK=k; }
+    if(prev===1&&c===0){ edges.push(t);
+      var before=st.q, why;
+      if(cl===0){ why='Clear is low, so Q stays 0'; }
+      else { st.q=m; why = hiJ&&hiK ? 'J = K = 1: toggle' : hiJ ? 'J = 1: set' : hiK ? 'K = 1: reset' : 'J = K = 0: hold'; if(st.q!==q[q.length-1][1]) q.push([t,st.q]); }
+      rowsOut.push([t,hiJ,hiK,cl,st.q,why]); }
+    prev=c; }
+  // clear dips are also events worth listing
+  jt.sigs=[{name:'Clear',sig:D.sigFromFn(CL,T),cls:'c3'},{name:'Clock',sig:D.sigFromFn(CK,T),cls:'c1'},{name:'J',sig:D.sigFromFn(J,T),cls:'c0'},{name:'K',sig:D.sigFromFn(K,T),cls:'c4'},{name:'Q',sig:q,cls:'c2'}];
+  var P=D.lanes($('#jt-plot'),{tmax:T,unit:MS,sigs:jt.sigs,tick:1e-3,marks:$('#jt-marks').checked?edges:[]}); P.tmax=T; jt.P=P; jtCur.refresh();
+  var tb=$('#jt-log'); while(tb.firstChild) tb.removeChild(tb.firstChild);
+  rowsOut.forEach(function(r){ var tr=document.createElement('tr'); [(r[0]*1000).toFixed(2)+' ms',r[1],r[2],r[3],r[4]==='x'?'X':r[4],r[5]].forEach(function(v){ cell(tr,v); }); tb.appendChild(tr); });
+}
+var jtCur=D.attachCursor($('#jt-plot'),function(){return jt.P;},$('#jt-read'),function(){return jt.sigs;},function(){return MS;});
+$('#jt-init').addEventListener('change',jtRun); $('#jt-marks').addEventListener('change',jtRun);
+jtRun();
+
+/* ---------- counter ---------- */
+var ct={q:[0,0,0,0],timer:null};
+function ctConds(q){ return [1, q[0], q[0]&q[1], q[0]&q[1]&q[2]]; }
+function ctShow(msg){ for(var i=0;i<4;i++) led('#ct-q'+i,ct.q[i]); var d=ct.q[0]+2*ct.q[1]+4*ct.q[2]+8*ct.q[3]; $('#ct-dec').textContent=d; $('#ct-dec').className='led';
+  if(msg) $('#ct-say').textContent=msg; }
+function ctPulse(){ var t=ctConds(ct.q), before=ct.q[3]+''+ct.q[2]+ct.q[1]+ct.q[0];
+  var flips=[]; for(var i=0;i<4;i++) if(t[i]){ ct.q[i]=1-ct.q[i]; flips.push('Q'+i); }
+  var d=ct.q[0]+2*ct.q[1]+4*ct.q[2]+8*ct.q[3];
+  var why= flips.length===1 ? 'Only Q0 toggles (it flips on every pulse); Q1 holds because Q0 was 0.'
+    : flips.join(', ')+' toggle: Q0 always flips, and each other bit flips because every bit to its right was 1.';
+  ctShow(before+' \u2192 '+ct.q[3]+ct.q[2]+ct.q[1]+ct.q[0]+' (decimal '+d+'). '+why+(d===0?' It wrapped around from 15 to 0: this counter is MOD 16.':'')); }
+$('#ct-step').addEventListener('click',ctPulse);
+$('#ct-reset').addEventListener('click',function(){ ct.q=[0,0,0,0]; ctShow('Reset to 0000. Press Clock pulse to count.'); });
+var runBtn=$('#ct-run');
+function ctStop(){ if(ct.timer){ clearInterval(ct.timer); ct.timer=null; } runBtn.setAttribute('aria-pressed','false'); runBtn.textContent='Run'; }
+runBtn.addEventListener('click',function(){ if(ct.timer){ ctStop(); return; } runBtn.setAttribute('aria-pressed','true'); runBtn.textContent='Pause';
+  ct.timer=setInterval(ctPulse, reduce?1500:700); });
+ctShow('Starts at 0000 (flip-flops initialized to 0). Press Clock pulse to count.');
+var cd={};
+(function(){
+  var T=32e-3, N=6400, CK=D.clockFn({offtime:1e-3,ontime:1e-3,delay:0,startval:1,oppval:0});
+  var q=[0,0,0,0], m=[0,0,0,0], prev=CK(0), sig=[[[0,0]],[[0,0]],[[0,0]],[[0,0]]];
+  for(var i=1;i<=N;i++){ var t=T*i/N, c=CK(t);
+    if(c===1){ var tc=ctConds(q); for(var k=0;k<4;k++) m[k]= tc[k]?1-q[k]:q[k]; }
+    if(prev===1&&c===0){ for(var k2=0;k2<4;k2++){ if(m[k2]!==q[k2]){ q[k2]=m[k2]; sig[k2].push([t,q[k2]]); } } }
+    prev=c; }
+  cd.sigs=[{name:'Clock',sig:D.sigFromFn(CK,T,6400),cls:'c1'},{name:'Q3',sig:sig[3],cls:'c4'},{name:'Q2',sig:sig[2],cls:'c3'},{name:'Q1',sig:sig[1],cls:'c0'},{name:'Q0',sig:sig[0],cls:'c2'}];
+  var P=D.lanes($('#ct-plot'),{tmax:T,unit:MS,sigs:cd.sigs,tick:4e-3}); P.tmax=T; cd.P=P;
+  D.attachCursor($('#ct-plot'),function(){return cd.P;},$('#ct-read'),function(){return cd.sigs;},function(){return MS;},
+    function(t){ var v=[1,2,3,4].map(function(i){ return D.valAt(cd.sigs[i].sig,t); }); return '   count = '+(8*v[0]+4*v[1]+2*v[2]+v[3]); });
+})();
+})();
+</script>
+</body>
+</html>

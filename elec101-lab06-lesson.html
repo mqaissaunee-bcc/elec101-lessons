@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Lab 6 Companion: Drawing circuits</title>
+<meta name="description" content="Companion lesson for ELEC 101 Lab 6 in Q Circuits: identifying series, parallel and series-parallel circuits, input and output nodes, netlists, and drawing schematics to professional standards.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+</style>
+</head>
+<body data-lab="6">
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">Lab 6: Drawing circuits</h1><span class="tb-k" style="margin-top:.35rem">Series, parallel and series-parallel circuits, net aliases, power symbols and crossovers in Q Circuits</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101 Lab Companion</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Now on</span><span class="tb-v" id="sheet-title">&nbsp;</span></div>
+      <div><span class="tb-k">Sheet</span><span class="tb-v" id="sheet-no">1</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="index.html">All labs</a>
+      <a class="btn" href="glossary.html" target="_blank" rel="noopener">Glossary (new tab)</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+      <button type="button" class="btn" id="reset-btn">Clear my progress</button>
+    </div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Lesson sections">
+    <div class="toc-inner">
+      <h2>Sections</h2>
+      <ol><li><button type="button" data-target="s6-1" aria-current="false"><span class="num">6.1</span><span>Series, parallel and series-parallel</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-2" aria-current="false"><span class="num">6.2</span><span>Input, output, ground and netlists</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-3" aria-current="false"><span class="num">6.3</span><span>Drawing to professional standards</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-4" aria-current="false"><span class="num">6.4</span><span>Lab 6A: a series circuit</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-5" aria-current="false"><span class="num">6.5</span><span>Lab 6B: a series-parallel circuit</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-6" aria-current="false"><span class="num">6.6</span><span>Lab 6C: crossovers and power symbols</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s6-7" aria-current="false"><span class="num">6.7</span><span>Wrap-up</span><span class="chk" aria-hidden="true"></span></button></li></ol>
+      <div class="progress-wrap">
+        <div class="bar" id="prog" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <p id="prog-txt" style="margin:.35rem 0 0">0 complete</p>
+      </div>
+    </div>
+  </nav>
+  <main id="main" tabindex="-1">
+<section class="lesson" id="s6-1" data-title="Series, parallel and series-parallel" aria-labelledby="s6-1-h" hidden><p class="sub-num">Section 6.1</p><h2 id="s6-1-h">Series, parallel and series-parallel</h2><p class="lede prose">How to recognise each arrangement by tracing the paths current can take.</p>
+<div class="prose">
+<p>Every circuit you draw from now on is built from two basic ways of connecting parts: <span class="term">series</span> and <span class="term">parallel</span>. Most real circuits mix the two, which makes them <span class="term">series-parallel</span>. You don't need to do calculations in this course, but you do need to recognise each arrangement, because the lab tasks say things like "place R3 in series with R2".</p>
+<h3>Follow the current</h3>
+<p>The easiest test is to trace every path current can take from the + terminal of the source back to the − terminal.</p>
+<ul>
+<li><strong>Only one path?</strong> Every part on it is in <strong>series</strong>, and they all carry the same current.</li>
+<li><strong>The path splits?</strong> The separate routes are <span class="term">branches</span>. Parts on different branches between the same two nodes are in <strong>parallel</strong>, and they all have the same voltage across them.</li>
+<li><strong>A part on every path</strong> is in series with the rest of the circuit.</li>
+</ul>
+</div>
+<div class="demo" id="cfg">
+<h4>Path tracer</h4>
+<p class="prose">Choose a circuit, then show each path. Every resistor is 1k and the source is 10 V, as on the slides.</p>
+<div class="controls">
+  <fieldset><legend>Circuit</legend>
+    <label class="radio"><input type="radio" name="cfg" value="series" checked> Series</label>
+    <label class="radio"><input type="radio" name="cfg" value="parallel"> Parallel</label>
+    <label class="radio"><input type="radio" name="cfg" value="sp2"> Series-parallel 1</label>
+    <label class="radio"><input type="radio" name="cfg" value="sp1"> Series-parallel 2</label>
+  </fieldset>
+</div>
+<div class="btn-row" role="group" aria-label="Show a path">
+  <button type="button" class="btn" data-cfg-path="p1" aria-pressed="false">Path 1</button>
+  <button type="button" class="btn" data-cfg-path="p2" aria-pressed="false">Path 2</button>
+  <button type="button" class="btn" data-cfg-path="all" aria-pressed="false">All paths</button>
+  <button type="button" class="btn" data-cfg-path="none" aria-pressed="true">Clear</button>
+</div>
+<div class="demo-grid">
+  <div class="drawing small">
+    <div data-cfg-svg="series"><svg class="schem" id="cfg-series" viewBox="0 0 300 240" role="group" aria-labelledby="cfg-series-t cfg-series-d"><title id="cfg-series-t">Series circuit</title><desc id="cfg-series-d">A 10 volt source, R1 on the top wire, and R2 down the right side: one loop.</desc><path class="w" d="M50 95 v24 M34 119 h32 M50 127 v28"/><rect class="fill" x="42" y="125" width="16" height="4"/><text class="val" x="26" y="115" text-anchor="start" >+</text><text class="val" x="26" y="143" text-anchor="start" >−</text><text class="lbl" x="66" y="120" text-anchor="start" >VS</text><text class="val" x="66" y="136" text-anchor="start" >DC 10</text><polyline class="w" points="50,95 50,40 120,40"/><path class="w" d="M120 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="140" y="28" text-anchor="start" >R1</text><text class="val" x="140" y="62" text-anchor="start" >1k</text><polyline class="w" points="180,40 250,40 250,95"/><path class="w" d="M250 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="264" y="120" text-anchor="start" >R2</text><text class="val" x="264" y="136" text-anchor="start" >1k</text><polyline class="w" points="250,155 250,210 50,210 50,155"/><circle class="dot" cx="100" cy="210" r="4"/><path class="w" d="M100 210 v10 M86 220 h28 M91 225 h18 M96 230 h8"/><g class="ovl" data-ovl="p1" hidden aria-hidden="true"><polyline points="50,95 50,40 250,40 250,210 50,210 50,155"/></g></svg></div>
+    <div data-cfg-svg="parallel" hidden><svg class="schem" id="cfg-parallel" viewBox="0 0 300 240" role="group" aria-labelledby="cfg-parallel-t cfg-parallel-d"><title id="cfg-parallel-t">Parallel circuit</title><desc id="cfg-parallel-d">A 10 volt source with R1 and R2 each connected directly across it: two branches.</desc><path class="w" d="M50 95 v24 M34 119 h32 M50 127 v28"/><rect class="fill" x="42" y="125" width="16" height="4"/><text class="val" x="26" y="115" text-anchor="start" >+</text><text class="val" x="26" y="143" text-anchor="start" >−</text><text class="lbl" x="66" y="120" text-anchor="start" >VS</text><text class="val" x="66" y="136" text-anchor="start" >DC 10</text><polyline class="w" points="50,95 50,40 250,40"/><circle class="dot" cx="150" cy="40" r="4"/><polyline class="w" points="150,40 150,95"/><path class="w" d="M150 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="164" y="120" text-anchor="start" >R1</text><text class="val" x="164" y="136" text-anchor="start" >1k</text><polyline class="w" points="150,155 150,210"/><polyline class="w" points="250,40 250,95"/><path class="w" d="M250 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="264" y="120" text-anchor="start" >R2</text><text class="val" x="264" y="136" text-anchor="start" >1k</text><polyline class="w" points="250,155 250,210"/><polyline class="w" points="250,210 50,210 50,155"/><circle class="dot" cx="150" cy="210" r="4"/><path class="w" d="M100 210 v10 M86 220 h28 M91 225 h18 M96 230 h8"/><circle class="dot" cx="100" cy="210" r="4"/><g class="ovl" data-ovl="p1" hidden aria-hidden="true"><polyline points="50,95 50,40 150,40 150,210 50,210 50,155"/></g><g class="ovl alt" data-ovl="p2" hidden aria-hidden="true"><polyline points="50,95 50,40 250,40 250,210 50,210 50,155"/></g></svg></div>
+    <div data-cfg-svg="sp1" hidden><svg class="schem" id="cfg-sp1" viewBox="0 0 300 240" role="group" aria-labelledby="cfg-sp1-t cfg-sp1-d"><title id="cfg-sp1-t">Series-parallel circuit, form 2</title><desc id="cfg-sp1-d">R1 and R3 are stacked in one branch; R2 is a second branch across the source.</desc><path class="w" d="M50 95 v24 M34 119 h32 M50 127 v28"/><rect class="fill" x="42" y="125" width="16" height="4"/><text class="val" x="26" y="115" text-anchor="start" >+</text><text class="val" x="26" y="143" text-anchor="start" >−</text><text class="lbl" x="66" y="120" text-anchor="start" >VS</text><text class="val" x="66" y="136" text-anchor="start" >DC 10</text><polyline class="w" points="50,95 50,40 250,40"/><circle class="dot" cx="150" cy="40" r="4"/><polyline class="w" points="150,40 150,50"/><path class="w" d="M150 50 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="164" y="76" text-anchor="start" >R1</text><text class="val" x="164" y="92" text-anchor="start" >1k</text><polyline class="w" points="150,110 150,130"/><path class="w" d="M150 130 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="164" y="156" text-anchor="start" >R3</text><text class="val" x="164" y="172" text-anchor="start" >1k</text><polyline class="w" points="150,190 150,210"/><polyline class="w" points="250,40 250,95"/><path class="w" d="M250 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="264" y="120" text-anchor="start" >R2</text><text class="val" x="264" y="136" text-anchor="start" >1k</text><polyline class="w" points="250,155 250,210"/><polyline class="w" points="250,210 50,210 50,155"/><circle class="dot" cx="150" cy="210" r="4"/><path class="w" d="M100 210 v10 M86 220 h28 M91 225 h18 M96 230 h8"/><circle class="dot" cx="100" cy="210" r="4"/><g class="ovl" data-ovl="p1" hidden aria-hidden="true"><polyline points="50,95 50,40 150,40 150,210 50,210 50,155"/></g><g class="ovl alt" data-ovl="p2" hidden aria-hidden="true"><polyline points="50,95 50,40 250,40 250,210 50,210 50,155"/></g></svg></div>
+    <div data-cfg-svg="sp2" hidden><svg class="schem" id="cfg-sp2" viewBox="0 0 300 240" role="group" aria-labelledby="cfg-sp2-t cfg-sp2-d"><title id="cfg-sp2-t">Series-parallel circuit, form 1</title><desc id="cfg-sp2-d">R1 is on the top wire, then R2 and R3 each drop from the same node to the bottom wire.</desc><path class="w" d="M50 95 v24 M34 119 h32 M50 127 v28"/><rect class="fill" x="42" y="125" width="16" height="4"/><text class="val" x="26" y="115" text-anchor="start" >+</text><text class="val" x="26" y="143" text-anchor="start" >−</text><text class="lbl" x="66" y="120" text-anchor="start" >VS</text><text class="val" x="66" y="136" text-anchor="start" >DC 10</text><polyline class="w" points="50,95 50,40 90,40"/><path class="w" d="M90 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="110" y="28" text-anchor="start" >R1</text><text class="val" x="110" y="62" text-anchor="start" >1k</text><polyline class="w" points="150,40 260,40"/><circle class="dot" cx="180" cy="40" r="4"/><polyline class="w" points="180,40 180,95"/><path class="w" d="M180 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="194" y="120" text-anchor="start" >R2</text><text class="val" x="194" y="136" text-anchor="start" >1k</text><polyline class="w" points="180,155 180,210"/><polyline class="w" points="260,40 260,95"/><path class="w" d="M260 95 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="274" y="120" text-anchor="start" >R3</text><text class="val" x="274" y="136" text-anchor="start" >1k</text><polyline class="w" points="260,155 260,210"/><polyline class="w" points="260,210 50,210 50,155"/><circle class="dot" cx="180" cy="210" r="4"/><path class="w" d="M110 210 v10 M96 220 h28 M101 225 h18 M106 230 h8"/><circle class="dot" cx="110" cy="210" r="4"/><g class="ovl" data-ovl="p1" hidden aria-hidden="true"><polyline points="50,95 50,40 180,40 180,210 50,210 50,155"/></g><g class="ovl alt" data-ovl="p2" hidden aria-hidden="true"><polyline points="50,95 50,40 260,40 260,210 50,210 50,155"/></g></svg></div>
+  </div>
+  <div>
+    <dl class="readouts" id="cfg-read" aria-live="polite"></dl>
+    <p id="cfg-say" aria-live="polite"></p>
+  </div>
+</div>
+</div>
+
+<div class="prose">
+<h3>The rules in numbers</h3>
+<p>The two arrangements behave in opposite ways. Compare them with the same two resistors.</p>
+</div>
+<div class="demo" id="sp">
+<div class="controls">
+  <fieldset><legend>Connection</legend>
+    <label class="radio"><input type="radio" name="sp-mode" value="s" checked> Series</label>
+    <label class="radio"><input type="radio" name="sp-mode" value="p"> Parallel</label>
+  </fieldset>
+  <div class="field"><label for="sp-r1">R1</label><select id="sp-r1"><option value="100">100 Ω</option><option value="300">300 Ω</option><option value="1000" selected>1 kΩ</option><option value="2200">2.2 kΩ</option><option value="4700">4.7 kΩ</option></select></div>
+  <div class="field"><label for="sp-r2">R2</label><select id="sp-r2"><option value="100">100 Ω</option><option value="300">300 Ω</option><option value="1000">1 kΩ</option><option value="2200">2.2 kΩ</option><option value="4700" selected>4.7 kΩ</option></select></div>
+  <p class="readout" style="margin:0">Source: 10 V</p>
+</div>
+<div class="table-wrap"><table>
+<caption>Voltage and current for each resistor</caption>
+<thead><tr><th scope="col">Part</th><th scope="col">Voltage across it</th><th scope="col">Current through it</th></tr></thead>
+<tbody id="sp-body"></tbody>
+</table></div>
+<p class="result ok" id="sp-say" aria-live="polite"></p>
+</div>
+<div class="table-wrap"><table>
+<caption>Series and parallel at a glance</caption>
+<thead><tr><th scope="col"></th><th scope="col">Series</th><th scope="col">Parallel</th></tr></thead>
+<tbody>
+<tr><th scope="row">Paths for current</th><td>One</td><td>Two or more (branches)</td></tr>
+<tr><th scope="row">Current</th><td>Same through every part</td><td>Splits between branches; lower resistance takes more</td></tr>
+<tr><th scope="row">Voltage</th><td>Shared between parts; bigger resistance takes more</td><td>Same across every branch</td></tr>
+<tr><th scope="row">Total resistance</th><td>Adds up: R1 + R2</td><td>Less than the smallest: (R1 × R2) ÷ (R1 + R2)</td></tr>
+<tr><th scope="row">Adding a part</th><td>Break a wire; adds a node</td><td>Connect across existing nodes; no new node</td></tr>
+</tbody></table></div>
+<div class="pager"><span></span><button type="button" class="btn" data-complete="s6-1" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-2">Next: Input, output, ground and netlists</button></div></section>
+<section class="lesson" id="s6-2" data-title="Input, output, ground and netlists" aria-labelledby="s6-2-h" hidden><p class="sub-num">Section 6.2</p><h2 id="s6-2-h">Input, output, ground and netlists</h2><p class="lede prose">Finding the input and output nodes, and how net aliases name them.</p>
+<div class="prose">
+<p>To describe what a circuit does, you need to know where the signal goes in, where you measure it, and what everything is measured from. That's the job of the <span class="term">input node</span>, the <span class="term">output node</span> and <span class="term">ground</span>.</p>
+<h3>Finding the input and output</h3>
+<p>The handout's method works for any circuit:</p>
+</div>
+<ol class="steps">
+<li>Find the node shared by the input part (usually the source) and the output part. That's the natural place for ground.</li>
+<li>Stand at ground and look <em>through the input part</em>. The node on its other side is the <strong>input node</strong>.</li>
+<li>Stand at ground and look <em>through the output part</em>. The node on its other side is the <strong>output node</strong>.</li>
+</ol>
+<div class="prose"><p>Try it on Lab 6A's circuit, where VS is the input part and R2 is the output part.</p></div>
+<div class="btn-row" role="group" aria-label="Highlight a node">
+  <button type="button" class="btn" data-ovl-for="s6a-n" data-ovl="gnd" aria-pressed="false">Ground</button>
+  <button type="button" class="btn" data-ovl-for="s6a-n" data-ovl="in" aria-pressed="false">Input node A</button>
+  <button type="button" class="btn" data-ovl-for="s6a-n" data-ovl="out" aria-pressed="false">Output node B</button>
+  <button type="button" class="btn" data-ovl-for="s6a-n" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s6a-n-ovl-desc" aria-live="polite">Choose a node to highlight it.</p>
+<div class="drawing" style="max-width:560px"><svg class="schem" id="s6a-n" viewBox="20 10 310 220" role="group" aria-labelledby="s6a-n-t s6a-n-d"><title id="s6a-n-t">Lab 6A series circuit</title><desc id="s6a-n-d">VS on the left with its + end at node A. R1 runs along the top from A to node B. R2 runs down the right side from B to the bottom wire, which is grounded.</desc><g class="part-static" data-part="VS6a" aria-hidden="true" aria-label="VS, voltage source, DC 12"><rect class="hit" x="26" y="86" width="80" height="74" rx="3"/><path class="w" d="M60 90 v24 M44 114 h32 M60 122 v28"/><rect class="fill" x="52" y="120" width="16" height="4"/><text class="val" x="36" y="110" text-anchor="start" >+</text><text class="val" x="36" y="138" text-anchor="start" >−</text><text class="lbl" x="80" y="116" text-anchor="start" >VS</text><text class="val" x="80" y="134" text-anchor="start" >DC 12</text></g><polyline class="w" points="60,90 60,40 120,40"/><text class="net" x="46" y="32" text-anchor="start" >A</text><g class="part-static" data-part="R1_6a" aria-hidden="true" aria-label="R1, resistor, 100 ohms"><rect class="hit" x="114" y="16" width="72" height="56" rx="3"/><path class="w" d="M120 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="140" y="28" text-anchor="start" >R1</text><text class="val" x="140" y="62" text-anchor="start" >100</text></g><polyline class="w" points="180,40 260,40 260,90"/><text class="net" x="262" y="32" text-anchor="start" >B</text><g class="part-static" data-part="R2_6a" aria-hidden="true" aria-label="R2, resistor, 300 ohms"><rect class="hit" x="244" y="86" width="64" height="72" rx="3"/><path class="w" d="M260 90 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="276" y="116" text-anchor="start" >R2</text><text class="val" x="276" y="134" text-anchor="start" >300</text></g><polyline class="w" points="260,150 260,190 60,190 60,150"/><circle class="dot" cx="160" cy="190" r="4"/><g class="part-static" data-part="G6a" aria-hidden="true" aria-label="Ground"><rect class="hit" x="144" y="190" width="32" height="28" rx="3"/><path class="w" d="M160 190 v10 M146 200 h28 M151 205 h18 M156 210 h8"/></g><g class="ovl" data-ovl="in" hidden aria-hidden="true"><polyline points="60,90 60,40 120,40"/></g><g class="ovl alt" data-ovl="out" hidden aria-hidden="true"><polyline points="180,40 260,40 260,90"/></g><g class="ovl" data-ovl="gnd" hidden aria-hidden="true"><polyline points="260,150 260,190 60,190 60,150"/><polyline points="160,190 160,200"/></g></svg></div>
+
+<div class="prose">
+<h3>Naming nodes: net aliases and the netlist</h3>
+<p>Q Circuits turns your drawing into a <span class="term">netlist</span>: one line per part, listing the nodes it connects to and its value. You can read it in the Netlist panel. Ground is always node <code>0</code>. Other nodes get a <span class="term">net alias</span> name if you placed one, or a number if you didn't.</p>
+</div>
+<div class="demo" id="nl">
+<div class="btn-row" role="group" aria-label="Netlist version">
+  <button type="button" class="btn" data-nl="alias" aria-pressed="true">With aliases A and B</button>
+  <button type="button" class="btn" data-nl="num" aria-pressed="false">Without aliases</button>
+  <button type="button" class="btn" data-nl="nognd" aria-pressed="false">Without a ground</button>
+</div>
+<pre class="netlist" id="nl-text" aria-live="polite"></pre>
+<p id="nl-say" aria-live="polite"></p>
+</div>
+<div class="prose">
+<p>Reading a line: <code>R1 A B 100</code> means "R1 connects node A to node B and is 100 Ω". The source line lists its + node first. The panel also shows a title line and the analysis command, and your node numbers may differ from the ones here.</p>
+<div class="callout"><p><strong class="k">Why names help.</strong> Numbers are handed out by the program and can change whenever you rewire. A name like <code>OUT</code> stays put, so plots, probes and checks that refer to it keep working. The Lab 6 checks look for your aliases by name.</p></div>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s6-1">Previous section</button><button type="button" class="btn" data-complete="s6-2" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-3">Next: Drawing to professional standards</button></div></section>
+<section class="lesson" id="s6-3" data-title="Drawing to professional standards" aria-labelledby="s6-3-h" hidden><p class="sub-num">Section 6.3</p><h2 id="s6-3-h">Drawing to professional standards</h2><p class="lede prose">The order of work and the layout habits that make schematics easy to read.</p>
+<div class="prose">
+<p>From Lab 6 on you draw every circuit yourself, starting from a blank sheet. The handout is strict: a cramped or messy drawing loses credit. These habits make drawings quick to build and easy to read.</p>
+<h3>A reliable order of work</h3>
+</div>
+<ol class="steps">
+<li><strong>Name the sheet</strong> in the circuit name box (LAB 06A, LAB 06B …).</li>
+<li><strong>Place all the parts first</strong>, spaced out roughly where the handout shows them. Press <kbd>O</kbd> before placing to stand a part upright.</li>
+<li><strong>Set names and values.</strong> Double-click a name to rename it (V1 becomes VS) and a value to change it.</li>
+<li><strong>Wire them together.</strong> Start at a pin and end on a pin or on another wire.</li>
+<li><strong>Add the ground</strong> to the bottom wire.</li>
+<li><strong>Add net aliases</strong> to the input and output nodes.</li>
+<li><strong>Check</strong> Parts and connections for warnings and open circles, then press Check my work.</li>
+</ol>
+<div class="prose">
+<h3>Drawing standards</h3>
+</div>
+<ul class="checklist">
+<li><input type="checkbox" id="c6d1"><label for="c6d1">Leave room: parts a few grid squares apart, never crammed together. (The handout's "one inch" is about five grid dots.)</label></li>
+<li><input type="checkbox" id="c6d2"><label for="c6d2">Sources stand with + up; ground goes at the bottom.</label></li>
+<li><input type="checkbox" id="c6d3"><label for="c6d3">Signal flows left to right: input on the left, output on the right.</label></li>
+<li><input type="checkbox" id="c6d4"><label for="c6d4">Wires never run through a part's body, and use only horizontal and vertical segments.</label></li>
+<li><input type="checkbox" id="c6d5"><label for="c6d5">Every junction of three wires has a dot; wires that merely cross don't.</label></li>
+<li><input type="checkbox" id="c6d6"><label for="c6d6">Names and values sit clearly beside their own part.</label></li>
+</ul>
+<div class="prose">
+<h3>Orientation: when it matters</h3>
+</div>
+<div class="table-wrap"><table>
+<caption>Does the direction a part faces change the circuit?</caption>
+<thead><tr><th scope="col">Part</th><th scope="col">Direction matters?</th><th scope="col">Why</th></tr></thead>
+<tbody>
+<tr><td>Resistor</td><td>No</td><td>It behaves the same either way round (it's <em>bilateral</em>). Rotate it only for a neat layout.</td></tr>
+<tr><td>Voltage source</td><td>Yes</td><td>Flipping it reverses every voltage. The Lab 6 checks catch a source placed + down.</td></tr>
+<tr><td>Transistor</td><td>Yes</td><td>Base, collector and emitter must connect to the right wires.</td></tr>
+<tr><td>Capacitor (ceramic)</td><td>No</td><td>The simulated capacitor has no polarity.</td></tr>
+</tbody></table></div>
+<div class="callout prose"><p><strong class="k">Joining a wire.</strong> In Q Circuits a wire connects where it <em>ends</em>. To tee into a wire, end the new wire on it; a dot appears. To cross a wire without connecting, keep going past it.</p></div>
+<div class="pager"><button type="button" class="btn" data-goto="s6-2">Previous section</button><button type="button" class="btn" data-complete="s6-3" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-4">Next: Lab 6A: a series circuit</button></div></section>
+<section class="lesson" id="s6-4" data-title="Lab 6A: a series circuit" aria-labelledby="s6-4-h" hidden><p class="sub-num">Section 6.4</p><h2 id="s6-4-h">Lab 6A: a series circuit</h2><p class="lede prose">Draw a two-resistor series circuit from scratch and read its netlist.</p>
+<div class="prose">
+<p>Open <strong>6A · Draw a series circuit</strong>. The sheet is blank: you'll draw the handout's two-resistor series circuit, name its nodes, and look at the netlist.</p>
+</div>
+<div class="schem-box">
+  <div class="drawing"><svg class="schem" id="s6a" viewBox="20 10 310 220" role="group" aria-labelledby="s6a-t s6a-d" data-panel="p6a"><title id="s6a-t">Lab 6A series circuit</title><desc id="s6a-d">VS on the left with its + end at node A. R1 runs along the top from A to node B. R2 runs down the right side from B to the bottom wire, which is grounded.</desc><g class="part" data-part="VS6a" tabindex="0" role="button" aria-label="VS, voltage source, DC 12"><rect class="hit" x="26" y="86" width="80" height="74" rx="3"/><path class="w" d="M60 90 v24 M44 114 h32 M60 122 v28"/><rect class="fill" x="52" y="120" width="16" height="4"/><text class="val" x="36" y="110" text-anchor="start" >+</text><text class="val" x="36" y="138" text-anchor="start" >−</text><text class="lbl" x="80" y="116" text-anchor="start" >VS</text><text class="val" x="80" y="134" text-anchor="start" >DC 12</text></g><polyline class="w" points="60,90 60,40 120,40"/><text class="net" x="46" y="32" text-anchor="start" >A</text><g class="part" data-part="R1_6a" tabindex="0" role="button" aria-label="R1, resistor, 100 ohms"><rect class="hit" x="114" y="16" width="72" height="56" rx="3"/><path class="w" d="M120 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="140" y="28" text-anchor="start" >R1</text><text class="val" x="140" y="62" text-anchor="start" >100</text></g><polyline class="w" points="180,40 260,40 260,90"/><text class="net" x="262" y="32" text-anchor="start" >B</text><g class="part" data-part="R2_6a" tabindex="0" role="button" aria-label="R2, resistor, 300 ohms"><rect class="hit" x="244" y="86" width="64" height="72" rx="3"/><path class="w" d="M260 90 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="276" y="116" text-anchor="start" >R2</text><text class="val" x="276" y="134" text-anchor="start" >300</text></g><polyline class="w" points="260,150 260,190 60,190 60,150"/><circle class="dot" cx="160" cy="190" r="4"/><g class="part" data-part="G6a" tabindex="0" role="button" aria-label="Ground"><rect class="hit" x="144" y="190" width="32" height="28" rx="3"/><path class="w" d="M160 190 v10 M146 200 h28 M151 205 h18 M156 210 h8"/></g><g class="ovl" data-ovl="in" hidden aria-hidden="true"><polyline points="60,90 60,40 120,40"/></g><g class="ovl alt" data-ovl="out" hidden aria-hidden="true"><polyline points="180,40 260,40 260,90"/></g><g class="ovl" data-ovl="gnd" hidden aria-hidden="true"><polyline points="260,150 260,190 60,190 60,150"/><polyline points="160,190 160,200"/></g></svg></div>
+  <div class="info-panel" id="p6a" aria-live="polite"><p class="hint">Select a part for placement tips.</p></div>
+</div>
+<div class="prose"><h3>Draw it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 06A</code> in the circuit name box.</li>
+<li>Pick R and place R1 across the top. Press <kbd>O</kbd> once, so the next resistor stands upright, and place R2 below and to the right of R1.</li>
+<li>Pick V, keep it upright with + at the top, and place it level with R2 on the left. Double-click its name and rename it <code>VS</code>.</li>
+<li>Set the values: R1 = <code>100</code>, R2 = <code>300</code>, VS = <code>DC 12</code>.</li>
+<li>Wire the loop: VS + up and across to R1, R1 across and down to R2, R2 down and back to VS −. Place a ground on the bottom wire.</li>
+<li>Pick Net alias (<kbd>K</kbd>). Put <code>A</code> on the corner between VS and R1, and <code>B</code> on the corner between R1 and R2.</li>
+<li>Open the Netlist panel. Count the nodes other than ground and enter the number under Your readings, then press Check my work.</li>
+</ol>
+<div class="prose">
+<h3>What this circuit does</h3>
+<p>R1 and R2 are in series, so they share the source voltage in proportion to their resistance. This is called a <span class="term">voltage divider</span>, and it's the most common circuit in electronics. Move the sliders to see how the voltage at B depends on the two resistors.</p>
+</div>
+<div class="demo" id="vd">
+<div class="controls">
+  <div class="field"><label for="vd-r1">R1</label><input type="range" id="vd-r1" min="0" max="12" step="1" value="0"><output id="vd-r1o" for="vd-r1"></output></div>
+  <div class="field"><label for="vd-r2">R2</label><input type="range" id="vd-r2" min="0" max="12" step="1" value="2"><output id="vd-r2o" for="vd-r2"></output></div>
+</div>
+<dl class="readouts" id="vd-read" aria-live="polite"></dl>
+<p class="result ok" id="vd-say" aria-live="polite"></p>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s6-3">Previous section</button><button type="button" class="btn" data-complete="s6-4" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-5">Next: Lab 6B: a series-parallel circuit</button></div></section>
+<section class="lesson" id="s6-5" data-title="Lab 6B: a series-parallel circuit" aria-labelledby="s6-5-h" hidden><p class="sub-num">Section 6.5</p><h2 id="s6-5-h">Lab 6B: a series-parallel circuit</h2><p class="lede prose">Draw a four-resistor network, name its nodes, and predict its output.</p>
+<div class="prose">
+<p>Open <strong>6B · Draw a series-parallel circuit</strong>. It has four resistors: R4 is in parallel with the series pair R2 and R3, and that combination is in series with R1.</p>
+</div>
+<div class="btn-row" role="group" aria-label="Highlight">
+  <button type="button" class="btn" data-ovl-for="s6b" data-ovl="p1" aria-pressed="false">Path 1</button>
+  <button type="button" class="btn" data-ovl-for="s6b" data-ovl="p2" aria-pressed="false">Path 2</button>
+  <button type="button" class="btn" data-ovl-for="s6b" data-ovl="mid" aria-pressed="false">Middle node</button>
+  <button type="button" class="btn" data-ovl-for="s6b" data-ovl="out" aria-pressed="false">Node OUT</button>
+  <button type="button" class="btn" data-ovl-for="s6b" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s6b-ovl-desc" aria-live="polite">Choose a path or node to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing" style="max-width:760px"><svg class="schem" id="s6b" viewBox="10 10 420 240" role="group" aria-labelledby="s6b-t s6b-d" data-panel="p6b"><title id="s6b-t">Lab 6B series-parallel circuit</title><desc id="s6b-d">VS on the left feeds node IN. R1 runs to a middle node. R4 drops from the middle node to ground. R2 continues right to node OUT, and R3 drops from OUT to ground.</desc><g class="part" data-part="VS6b" tabindex="0" role="button" aria-label="VS, voltage source, DC 12"><rect class="hit" x="16" y="96" width="80" height="74" rx="3"/><path class="w" d="M50 100 v24 M34 124 h32 M50 132 v28"/><rect class="fill" x="42" y="130" width="16" height="4"/><text class="val" x="26" y="120" text-anchor="start" >+</text><text class="val" x="26" y="148" text-anchor="start" >−</text><text class="lbl" x="70" y="126" text-anchor="start" >VS</text><text class="val" x="70" y="144" text-anchor="start" >DC 12</text></g><polyline class="w" points="50,100 50,40 100,40"/><text class="net" x="40" y="32" text-anchor="start" >IN</text><g class="part" data-part="R1_6b" tabindex="0" role="button" aria-label="R1, resistor, 100 ohms"><rect class="hit" x="94" y="16" width="72" height="56" rx="3"/><path class="w" d="M100 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="120" y="28" text-anchor="start" >R1</text><text class="val" x="120" y="62" text-anchor="start" >100</text></g><polyline class="w" points="160,40 250,40"/><circle class="dot" cx="200" cy="40" r="4"/><g class="part" data-part="R2_6b" tabindex="0" role="button" aria-label="R2, resistor, 600 ohms"><rect class="hit" x="244" y="16" width="72" height="56" rx="3"/><path class="w" d="M250 40 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="270" y="28" text-anchor="start" >R2</text><text class="val" x="270" y="62" text-anchor="start" >600</text></g><polyline class="w" points="310,40 370,40 370,100"/><text class="net" x="350" y="32" text-anchor="start" >OUT</text><g class="part" data-part="R3_6b" tabindex="0" role="button" aria-label="R3, resistor, 600 ohms"><rect class="hit" x="354" y="96" width="64" height="72" rx="3"/><path class="w" d="M370 100 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="386" y="126" text-anchor="start" >R3</text><text class="val" x="386" y="144" text-anchor="start" >600</text></g><polyline class="w" points="370,160 370,210 50,210 50,160"/><polyline class="w" points="200,40 200,100"/><g class="part" data-part="R4_6b" tabindex="0" role="button" aria-label="R4, resistor, 1.2 kilohms"><rect class="hit" x="184" y="96" width="64" height="72" rx="3"/><path class="w" d="M200 100 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="216" y="126" text-anchor="start" >R4</text><text class="val" x="216" y="144" text-anchor="start" >1.2k</text></g><polyline class="w" points="200,160 200,210"/><circle class="dot" cx="200" cy="210" r="4"/><g class="part" data-part="G6b" tabindex="0" role="button" aria-label="Ground"><rect class="hit" x="184" y="210" width="32" height="28" rx="3"/><path class="w" d="M200 210 v10 M186 220 h28 M191 225 h18 M196 230 h8"/></g><g class="ovl" data-ovl="p1" hidden aria-hidden="true"><polyline points="50,100 50,40 200,40 200,210 50,210 50,160"/></g><g class="ovl alt" data-ovl="p2" hidden aria-hidden="true"><polyline points="50,100 50,40 370,40 370,210 50,210 50,160"/></g><g class="ovl alt" data-ovl="mid" hidden aria-hidden="true"><polyline points="160,40 250,40"/><polyline points="200,40 200,100"/></g><g class="ovl" data-ovl="out" hidden aria-hidden="true"><polyline points="310,40 370,40 370,100"/></g></svg></div>
+  <div class="info-panel" id="p6b" aria-live="polite"><p class="hint">Select a part for placement tips.</p></div>
+</div>
+<div class="prose"><h3>Draw it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 06B</code> in the circuit name box.</li>
+<li>Place VS (<code>DC 12</code>, + up) on the left. Place R1 = <code>100</code> across the top to its upper right, and R2 = <code>600</code> across the top further right.</li>
+<li>Press <kbd>O</kbd> and place R3 = <code>600</code> upright, below and right of R2. Place R4 = <code>1.2k</code> upright, level with VS, halfway between R1 and R2.</li>
+<li>Wire VS + to R1, R1 to R2, R2 across and down to R3, and R3 down and back along the bottom to VS −.</li>
+<li>Run R4's top up to the wire between R1 and R2, and R4's bottom down to the bottom wire. A wire that ends on another wire joins it.</li>
+<li>Ground the bottom wire.</li>
+<li>Place net aliases: <code>IN</code> where VS meets R1, and <code>OUT</code> where R2 meets R3.</li>
+<li>Run the Operating point, enter the voltage at OUT, and press Check my work.</li>
+</ol>
+<div class="prose">
+<h3>Estimate before you simulate</h3>
+<p>Work from the far end back toward the source:</p>
+<ul>
+<li>R2 and R3 in series: 600 + 600 = 1,200 Ω.</li>
+<li>That 1,200 Ω branch in parallel with R4 (also 1,200 Ω): two equal resistors in parallel make half, 600 Ω.</li>
+<li>Add R1 in series: 100 + 600 = 700 Ω in total.</li>
+<li>The middle node sits across the 600 Ω part of that 700 Ω total, so it gets 600 ÷ 700 of the 12 V.</li>
+<li>R2 and R3 are equal, so OUT is half of the middle node's voltage.</li>
+</ul>
+</div>
+<div class="predict" data-answer="5.142857142857143" data-tol="0.02" data-unit="V">
+<p><strong class="k" style="font-family:var(--font-tech)">Predict first.</strong> Use the steps above to work out the voltage at OUT, in volts.</p>
+<div class="controls"><div class="field"><label for="pr1">V(OUT) in volts</label><input type="text" id="pr1" autocomplete="off" spellcheck="false" style="min-width:6rem;width:8rem"></div>
+<button type="button" class="btn primary chk">Check my prediction</button></div>
+<p class="result" aria-live="polite"></p>
+<button type="button" class="btn show" hidden>Show the worked answer</button>
+<div class="worked" hidden><ol><li>Middle node: 12 × 600 ÷ 700 = 10.29 V.</li><li>OUT: half of that, 10.29 ÷ 2 = <strong>5.14 V</strong>.</li><li>Check: the current from the source is 12 ÷ 700 = 17.1 mA, and R1 drops 17.1 mA × 100 Ω = 1.71 V, leaving 10.29 V at the middle node.</li></ol></div>
+</div><div class="pager"><button type="button" class="btn" data-goto="s6-4">Previous section</button><button type="button" class="btn" data-complete="s6-5" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-6">Next: Lab 6C: crossovers and power symbols</button></div></section>
+<section class="lesson" id="s6-6" data-title="Lab 6C: crossovers and power symbols" aria-labelledby="s6-6-h" hidden><p class="sub-num">Section 6.6</p><h2 id="s6-6-h">Lab 6C: crossovers and power symbols</h2><p class="lede prose">Draw a differential pair with split supplies and a wire crossing.</p>
+<div class="prose">
+<p>Open <strong>6C · Draw a differential pair with crossovers</strong>. This is the busiest drawing so far: two transistors, a split power supply, and a wire that has to cross another without connecting. You won't simulate it; the lab checks that it's drawn and connected correctly.</p>
+<h3>What the circuit is</h3>
+<p>It's a <span class="term">differential amplifier</span>, a building block inside every op amp. Q1 and Q2 share the emitter resistor REE, so they compare their two base voltages: Q1's base receives the input signal, and Q2's base is held at ground. You'll analyse amplifiers in Lab 12; for now the goal is a clean, correct drawing.</p>
+<h3>New ideas in this drawing</h3>
+</div>
+<div class="parts-grid">
+<article class="pcard"><header><svg class="schem" viewBox="0 0 84 56" aria-hidden="true" focusable="false"><path class="w" d="M42 44 v-12 M30 32 h24"/><text class="net" x="42" y="26" text-anchor="middle" >VCC</text></svg><div><h4>Power symbols</h4><p class="ref">Tool: Power symbol (P)</p></div></header>
+<p>A T-shaped symbol with a name. Every symbol with the same name is the same node, so VCC and VEE reach every part that needs them without long wires.</p><details class="more"><summary>More about power symbols</summary><div class="more-body"><p>The handout calls this part VCC_BAR. Press <kbd>O</kbd> twice before placing a VEE symbol so its bar points down, the convention for a negative supply.</p><ul><li>Use them for supplies that connect to many places.</li><li>Check the spelling carefully: a symbol named <code>VCC1</code> is a different node from <code>VCC</code>.</li></ul></div></details></article>
+<article class="pcard"><header><svg class="schem" viewBox="0 0 84 56" aria-hidden="true" focusable="false"><polyline class="w" points="10,28 74,28"/><polyline class="w" points="42,6 42,50"/></svg><div><h4>Crossover</h4><p class="ref">Wires that cross without connecting</p></div></header>
+<p>Q2's base wire has to pass Q1's emitter lead. Keep drawing past it: no dot means no connection.</p><details class="more"><summary>More about crossovers</summary><div class="more-body"><p>A dot at a crossing would join Q2's base to the emitters and change the circuit completely. In Q Circuits a wire only connects where one of its <em>ends</em> lands on a pin or wire, so a straight wire drawn across another never joins it.</p></div></details></article>
+<article class="pcard"><header><svg class="schem" viewBox="0 -4 84 64" aria-hidden="true" focusable="false"><path class="w" d="M42 -2 v14 M42 44 v14"/><circle class="w" cx="42" cy="28" r="16"/><path class="w" d="M32 28 q5 -12 10 0 t10 0"/></svg><div><h4>AC test source</h4><p class="ref">Toolbar: V, DC 0, AC magnitude 1</p></div></header>
+<p>The input signal source, used for AC sweeps. PSpice has two sine sources: VAC (1Vac, 0Vdc) for AC sweeps and VSIN for transient runs.</p><details class="more"><summary>More about the two AC sources</summary><div class="more-body"><ul><li><strong>For an AC sweep:</strong> set <code>DC 0</code> and AC magnitude <code>1</code>. The simulator varies the frequency.</li><li><strong>For a transient run:</strong> set the value to <code>SIN(offset amplitude frequency)</code>, as in Lab 5B.</li></ul></div></details></article>
+<article class="pcard"><header><svg class="schem" viewBox="0 -10 84 78" aria-hidden="true" focusable="false"><path class="w" d="M20 30 h20 M40 16 v28 M40 24 L56 12 V-6 M40 36 L56 48 V66"/><path class="fill" d="M54 47 l-9 -1 l4 -7 z"/></svg><div><h4>Q2N2222 transistor</h4><p class="ref">Toolbar: NPN, model Q2N2222</p></div></header>
+<p>A general-purpose NPN transistor. Choose the model in the Selected part panel.</p><details class="more"><summary>More about transistor models</summary><div class="more-body"><p>A model is a list of numbers describing how a real part behaves: how much it amplifies, its capacitances, and so on. The PSpice handout has you edit the Q2N2222 model and add your name to it; in Q Circuits you just choose the model, because the simulator already has it.</p></div></details></article>
+</div>
+
+<div class="prose"><h3>Explore the connections</h3></div>
+<div class="btn-row" role="group" aria-label="Highlight a node">
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="vcc" aria-pressed="false">VCC</button>
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="vee" aria-pressed="false">VEE</button>
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="emit" aria-pressed="false">Emitter node</button>
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="base2" aria-pressed="false">Q2 base and ground</button>
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="cross" aria-pressed="false">The crossover</button>
+  <button type="button" class="btn" data-ovl-for="s6c" data-ovl="none" aria-pressed="true">Clear</button>
+  <button type="button" class="btn" id="c6-dotbtn" aria-pressed="false">Add a dot at the crossover (wrong)</button>
+</div>
+<p class="result ok" id="s6c-ovl-desc" aria-live="polite">Choose a node to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing" style="max-width:820px"><svg class="schem" id="s6c" viewBox="0 -30 520 390" role="group" aria-labelledby="s6c-t s6c-d" data-panel="p6c"><title id="s6c-t">Lab 6C differential pair</title><desc id="s6c-d">Two stacked 12 volt sources make VCC and VEE. An AC source feeds C1 into Q1&#x27;s base. Q2 sits lower right. RC1 and RC2 connect the collectors to VCC. The emitters join and go through REE to VEE. Q2&#x27;s base wire runs left across Q1&#x27;s emitter lead, without connecting, to the grounded wire under the AC source.</desc><g class="part" data-part="VS1_6c" tabindex="0" role="button" aria-label="VS1, voltage source, DC 12"><rect class="hit" x="14" y="104" width="76" height="72" rx="3"/><path class="w" d="M40 110 v24 M24 134 h32 M40 142 v28"/><rect class="fill" x="32" y="140" width="16" height="4"/><text class="val" x="16" y="130" text-anchor="start" >+</text><text class="val" x="16" y="158" text-anchor="start" >−</text><text class="lbl" x="58" y="134" text-anchor="start" >VS1</text><text class="val" x="58" y="150" text-anchor="start" >DC 12</text></g><g class="part" data-part="VS2_6c" tabindex="0" role="button" aria-label="VS2, voltage source, DC 12"><rect class="hit" x="14" y="184" width="76" height="72" rx="3"/><path class="w" d="M40 190 v24 M24 214 h32 M40 222 v28"/><rect class="fill" x="32" y="220" width="16" height="4"/><text class="val" x="16" y="210" text-anchor="start" >+</text><text class="val" x="16" y="238" text-anchor="start" >−</text><text class="lbl" x="58" y="214" text-anchor="start" >VS2</text><text class="val" x="58" y="230" text-anchor="start" >DC 12</text></g><polyline class="w" points="40,170 40,190"/><polyline class="w" points="40,180 80,180"/><circle class="dot" cx="40" cy="180" r="4"/><path class="w" d="M80 180 v10 M66 190 h28 M71 195 h18 M76 200 h8"/><path class="w" d="M40 110 v-12 M28 98 h24"/><text class="net" x="40" y="92" text-anchor="middle" >VCC</text><path class="w" d="M40 250 v12 M28 262 h24"/><text class="net" x="40" y="278" text-anchor="middle" >VEE</text><g class="part" data-part="VS6c" tabindex="0" role="button" aria-label="VS, AC test source, DC 0, AC magnitude 1"><rect class="hit" x="110" y="164" width="90" height="72" rx="3"/><path class="w" d="M130 170 v14 M130 216 v14"/><circle class="w" cx="130" cy="200" r="16"/><path class="w" d="M120 200 q5 -12 10 0 t10 0"/><text class="lbl" x="152" y="190" text-anchor="start" >VS</text><text class="val" x="152" y="206" text-anchor="start" >DC 0</text><text class="val" x="152" y="222" text-anchor="start" >AC 1</text></g><polyline class="w" points="130,170 130,120 170,120"/><g class="part" data-part="C1_6c" tabindex="0" role="button" aria-label="C1, capacitor, 10 microfarads"><rect class="hit" x="164" y="96" width="72" height="56" rx="3"/><path class="w" d="M170 120 h26 M196 110 v20 M204 110 v20 M204 120 h26"/><text class="lbl" x="192" y="104" text-anchor="start" >C1</text><text class="val" x="190" y="146" text-anchor="start" >10u</text></g><polyline class="w" points="230,120 260,120"/><g class="part" data-part="Q1_6c" tabindex="0" role="button" aria-label="Q1, NPN transistor Q2N2222"><rect class="hit" x="256" y="80" width="100" height="80" rx="3"/><path class="w" d="M260 120 h20 M280 106 v28 M280 114 L296 102 V84 M280 126 L296 138 V156"/><path class="fill" d="M294 137 l-9 -1 l4 -7 z"/><text class="lbl" x="270" y="94" text-anchor="start" >Q1</text><text class="val" x="304" y="144" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="Q2_6c" tabindex="0" role="button" aria-label="Q2, NPN transistor Q2N2222"><rect class="hit" x="396" y="160" width="110" height="80" rx="3"/><path class="w" d="M400 200 h20 M420 186 v28 M420 194 L436 182 V164 M420 206 L436 218 V236"/><path class="fill" d="M434 217 l-9 -1 l4 -7 z"/><text class="lbl" x="410" y="174" text-anchor="start" >Q2</text><text class="val" x="444" y="222" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="RC1_6c" tabindex="0" role="button" aria-label="RC1, resistor, 5 kilohms"><rect class="hit" x="280" y="20" width="60" height="66" rx="3"/><path class="w" d="M296 24 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="310" y="50" text-anchor="start" >RC1</text><text class="val" x="310" y="66" text-anchor="start" >5k</text></g><g class="part" data-part="RC2_6c" tabindex="0" role="button" aria-label="RC2, resistor, 5 kilohms"><rect class="hit" x="420" y="20" width="60" height="66" rx="3"/><path class="w" d="M436 24 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="450" y="50" text-anchor="start" >RC2</text><text class="val" x="450" y="66" text-anchor="start" >5k</text></g><polyline class="w" points="296,24 296,14 436,14 436,24"/><circle class="dot" cx="366" cy="14" r="4"/><path class="w" d="M366 14 v-12 M354 2 h24"/><text class="net" x="366" y="-4" text-anchor="middle" >VCC</text><polyline class="w" points="436,84 436,164"/><polyline class="w" points="296,156 296,250 436,250 436,236"/><circle class="dot" cx="366" cy="250" r="4"/><polyline class="w" points="366,250 366,270"/><g class="part" data-part="REE_6c" tabindex="0" role="button" aria-label="REE, resistor, 4.8 kilohms"><rect class="hit" x="350" y="266" width="64" height="70" rx="3"/><path class="w" d="M366 270 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="382" y="296" text-anchor="start" >REE</text><text class="val" x="382" y="312" text-anchor="start" >4.8k</text></g><path class="w" d="M366 330 v12 M354 342 h24"/><text class="net" x="366" y="358" text-anchor="middle" >VEE</text><polyline class="w" points="400,200 210,200 210,290 130,290"/><circle class="dot" cx="130" cy="290" r="4"/><polyline class="w" points="130,230 130,330"/><path class="w" d="M130 330 v10 M116 340 h28 M121 345 h18 M126 350 h8"/><g id="c6-baddot" hidden><circle class="bad-dot" cx="296" cy="200" r="4"/><text class="bad-txt" x="304" y="220" text-anchor="start" >dot = connected!</text></g><g class="ovl" data-ovl="vcc" hidden aria-hidden="true"><polyline points="40,110 40,98"/><polyline points="296,24 296,14 436,14 436,24"/><polyline points="366,14 366,2"/></g><g class="ovl alt" data-ovl="vee" hidden aria-hidden="true"><polyline points="40,250 40,262"/><polyline points="366,330 366,342"/></g><g class="ovl" data-ovl="emit" hidden aria-hidden="true"><polyline points="296,156 296,250 436,250 436,236"/><polyline points="366,250 366,270"/></g><g class="ovl alt" data-ovl="base2" hidden aria-hidden="true"><polyline points="400,200 210,200 210,290 130,290"/><polyline points="130,230 130,330"/><polyline points="40,180 80,180"/></g><g class="ovl" data-ovl="cross" hidden aria-hidden="true"><circle cx="296" cy="200" r="14"/></g></svg></div>
+  <div class="info-panel" id="p6c" aria-live="polite"><p class="hint">Select a part for its settings.</p></div>
+</div>
+
+<div class="prose"><h3>Draw it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 06C</code> in the circuit name box.</li>
+<li>Place VS (+ up) with value <code>DC 0</code> and AC magnitude <code>1</code>. Place C1 = <code>10u</code> to its upper right, then an NPN to the right of C1 with its base facing left. Name it Q1 and set its model to Q2N2222 in the Selected part panel.</li>
+<li>Place Q2, another Q2N2222, lower and further right than Q1.</li>
+<li>Wire VS + to C1 and C1 to Q1's base. Run a wire down from VS − and ground it.</li>
+<li>Join the two emitters with a wire below the transistors. Wire Q2's base left, straight across Q1's emitter lead, and down to the wire from VS −. There must be no dot where it crosses.</li>
+<li>Place RC1 and RC2 (<code>5k</code>) upright above the two collectors and join their tops with a wire. Place REE (<code>4.8k</code>) upright below the middle of the emitter wire and wire its top up to it.</li>
+<li>Place VS1 and VS2 (<code>DC 12</code>, + up), stacked so VS1 − lands on VS2 +. Ground that junction with a wire and a ground symbol.</li>
+<li>Pick Power symbol (<kbd>P</kbd>). Put <code>VCC</code> on VS1 + and on the wire joining RC1 and RC2. Press <kbd>O</kbd> twice so the bar points down, name it <code>VEE</code>, and put it on VS2 − and on the bottom of REE.</li>
+<li>Press Check my work. This lab checks the drawing and connections; it doesn't run a simulation.</li>
+</ol>
+<div class="pager"><button type="button" class="btn" data-goto="s6-5">Previous section</button><button type="button" class="btn" data-complete="s6-6" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s6-7">Next: Wrap-up</button></div></section>
+<section class="lesson" id="s6-7" data-title="Wrap-up" aria-labelledby="s6-7-h" hidden><p class="sub-num">Section 6.7</p><h2 id="s6-7-h">Wrap-up</h2><p class="lede prose">Quiz yourself, confirm all three labs pass, and review the vocabulary.</p>
+<div class="prose"><h3>Check your understanding</h3></div>
+<div class="quiz" data-quiz="lab6"></div>
+<div class="prose"><h3>Before you finish</h3><p>Your instructor will tell you how to submit. In Q Circuits, a lab is done when Check my work passes every check and the lab shows ✓ Passed.</p></div>
+<ul class="checklist">
+<li><input type="checkbox" id="c6s1"><label for="c6s1">6A: named LAB 06A; VS, R1 and R2 with the right names and values; aliases A and B; ground; node count entered.</label></li>
+<li><input type="checkbox" id="c6s2"><label for="c6s2">6B: named LAB 06B; four resistors wired as shown; aliases IN and OUT; V(OUT) entered.</label></li>
+<li><input type="checkbox" id="c6s3"><label for="c6s3">6C: named LAB 06C; every part, value and model; no dot at the crossover; VCC and VEE each used twice.</label></li>
+<li><input type="checkbox" id="c6s4"><label for="c6s4">All three labs show ✓ Passed.</label></li>
+</ul>
+<div class="prose">
+<h3>Glossary</h3>
+<p>Dotted-underlined words in the lesson show their definition when you point at, tap or tab to them. The <a href="glossary.html" target="_blank" rel="noopener">full course glossary (opens in a new tab)</a> is searchable.</p>
+<dl class="gloss">
+<dt>Series</dt><dd>One path; the same current through every part.</dd>
+<dt>Parallel</dt><dd>Parts across the same two nodes; the same voltage across each.</dd>
+<dt>Branch</dt><dd>One of the separate paths in a parallel circuit.</dd>
+<dt>Series-parallel</dt><dd>A mix of series and parallel connections.</dd>
+<dt>Input node / output node</dt><dd>The nodes on the far side of the input and output parts, looking from ground.</dd>
+<dt>Net alias</dt><dd>A name on a wire that labels, and connects, a node.</dd>
+<dt>Netlist</dt><dd>The text list of parts and nodes that the simulator reads.</dd>
+<dt>Floating node</dt><dd>A node with no DC path to ground.</dd>
+<dt>Power symbol</dt><dd>A named supply connection; same name, same node.</dd>
+<dt>Crossover</dt><dd>Two wires that cross without connecting.</dd>
+<dt>Differential amplifier</dt><dd>A two-transistor stage that responds to the difference between its inputs.</dd>
+</dl>
+</div>
+<div class="callout prose"><p><strong class="k">Next.</strong> <a href="elec101-lab07-lesson.html">Lab 7 lesson: DC sweep analysis</a></p></div><div class="pager"><button type="button" class="btn" data-goto="s6-6">Previous section</button><button type="button" class="btn" data-complete="s6-7" aria-pressed="false">Mark this section complete</button><span></span></div></section>
+  </main>
+</div>
+<p id="live" class="visually-hidden" aria-live="polite"></p>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026. This lesson accompanies the Lab 6 handout; follow the handout for exact submission steps.</p></footer>
+<script type="application/json" id="parts-data">{"VS6a": {"name": "VS: voltage source", "what": "The 12 V supply. Its name was changed from V1 to VS.", "props": [["Toolbar", "V (placed + up)"], ["Value", "DC 12"], ["Rename", "double-click the name"]], "here": "The input part: its + end is node A."}, "R1_6a": {"name": "R1: resistor, 100 \u03a9", "what": "Along the top wire, between A and B.", "props": [["Toolbar", "R"], ["Value", "100"]], "here": "In series with R2: the same current flows through both."}, "R2_6a": {"name": "R2: resistor, 300 \u03a9", "what": "Placed upright: press O before placing it.", "props": [["Toolbar", "R, rotated with O"], ["Value", "300"]], "here": "The output part: the voltage across it is V(B)."}, "G6a": {"name": "Ground", "what": "Placed on the bottom wire. Any point along that wire works.", "props": [["Tool", "Ground (G)"]]}, "VS6b": {"name": "VS: voltage source", "what": "12 V, + end up.", "props": [["Value", "DC 12"]], "here": "Node IN is its + end."}, "R1_6b": {"name": "R1: resistor, 100 \u03a9", "what": "Carries the total current.", "props": [["Value", "100"]], "here": "In series with everything after it."}, "R2_6b": {"name": "R2: resistor, 600 \u03a9", "what": "On the top wire, right of the middle node.", "props": [["Value", "600"]], "here": "In series with R3."}, "R3_6b": {"name": "R3: resistor, 600 \u03a9", "what": "Upright, below and right of R2.", "props": [["Value", "600"]], "here": "The output part: the voltage across it is V(OUT)."}, "R4_6b": {"name": "R4: resistor, 1.2 k\u03a9", "what": "Upright, halfway between R1 and R2. Its top wire ends on the top wire, which joins them.", "props": [["Value", "1.2k"]], "here": "In parallel with the R2 + R3 branch."}, "G6b": {"name": "Ground", "what": "Under R4 on the bottom wire."}, "VS1_6c": {"name": "VS1: voltage source, 12 V", "what": "Top of the stacked supply. A VCC power symbol sits on its + end.", "props": [["Value", "DC 12"]]}, "VS2_6c": {"name": "VS2: voltage source, 12 V", "what": "Bottom of the stack; its + end lands on VS1's \u2212 end, and that junction is grounded. A VEE symbol sits on its \u2212 end.", "props": [["Value", "DC 12"]]}, "VS6c": {"name": "VS: AC test source", "what": "The input signal. In PSpice this is the VAC part set to 1Vac and 0Vdc.", "props": [["Toolbar", "V"], ["Value", "DC 0"], ["AC magnitude", "1"]]}, "C1_6c": {"name": "C1: capacitor, 10 \u00b5F", "what": "Couples the AC signal into Q1's base while blocking any DC from the source.", "props": [["Toolbar", "C"], ["Value", "10u"]]}, "Q1_6c": {"name": "Q1: NPN transistor (Q2N2222)", "what": "Base facing left, emitter down. Its model is chosen in the Selected part panel.", "props": [["Toolbar", "NPN"], ["Model", "Q2N2222"]], "here": "One half of the differential pair; it receives the input signal."}, "Q2_6c": {"name": "Q2: NPN transistor (Q2N2222)", "what": "Lower and further right than Q1.", "props": [["Model", "Q2N2222"]], "here": "The other half of the pair. Its base is grounded, so the pair compares the input with 0 V."}, "RC1_6c": {"name": "RC1: collector resistor, 5 k\u03a9", "what": "Upright, directly above Q1's collector.", "props": [["Value", "5k"]]}, "RC2_6c": {"name": "RC2: collector resistor, 5 k\u03a9", "what": "Upright, above Q2's collector wire.", "props": [["Value", "5k"]]}, "REE_6c": {"name": "REE: emitter resistor, 4.8 k\u03a9", "what": "Upright, below the middle of the emitter wire.", "props": [["Value", "4.8k"]], "here": "Sets the total current shared by the two transistors."}}</script>
+<script type="application/json" id="cfg-info">{"series": {"svg": "cfg-series", "nodes": 3, "paths": 1, "p1": "There is only one path: out of the + terminal, through R1, through R2, and back to the \u2212 terminal. Every part carries the same current.", "sum": "Series: one path, so the same current flows through every part. Each resistor takes its own share of the voltage. Adding a part in series adds a node."}, "parallel": {"svg": "cfg-parallel", "nodes": 2, "paths": 2, "p1": "Path 1 goes through R1 only.", "p2": "Path 2 goes through R2 only. The paths split at the top node and rejoin at the bottom.", "sum": "Parallel: two separate paths (branches). Both resistors have the full source voltage across them, and each carries its own current. Adding a part in parallel doesn't add a node."}, "sp1": {"svg": "cfg-sp1", "nodes": 3, "paths": 2, "p1": "Path 1 goes through R1 and then R3. Both are on this path, and no other path passes between them, so R1 and R3 are in series.", "p2": "Path 2 goes through R2 only. It spans the same two nodes as the R1\u2013R3 branch, so R2 is in parallel with that series pair.", "sum": "Series-parallel, form 2: R1 and R3 are in series with each other, and that pair is in parallel with R2."}, "sp2": {"svg": "cfg-sp2", "nodes": 3, "paths": 2, "p1": "Path 1 goes through R1 and then R2.", "p2": "Path 2 goes through R1 and then R3. Both paths share R1, so R1 is in series with the rest. They split after R1, so R2 and R3 are in parallel.", "sum": "Series-parallel, form 1: R2 and R3 are in parallel with each other, and that pair is in series with R1."}}</script>
+<script type="application/json" id="s6a-n-ovl">{"in": "Input node A. Stand at ground and look through the input part, the source VS: the node on its other side is the input.", "out": "Output node B. Stand at ground and look through the output part, R2: the node on its other side is the output.", "gnd": "Ground (node 0). The bottom of R2 and the \u2212 end of VS share this node, so it's the common reference for both the input and the output.", "none": ""}</script>
+<script type="application/json" id="s6b-ovl">{"p1": "Path 1: IN \u2192 R1 \u2192 R4 \u2192 ground.", "p2": "Path 2: IN \u2192 R1 \u2192 R2 \u2192 R3 \u2192 ground. Both paths share R1, so R1 is in series with everything after it. R2 and R3 are on the same path with nothing branching between them, so they're in series; together they're in parallel with R4.", "mid": "The middle node, where R1, R2 and R4 meet. It has no alias in this lab, so Q Circuits numbers it.", "out": "Node OUT, between R2 and R3. Looking from ground through the output part R3, this is the node on the other side.", "none": ""}</script>
+<script type="application/json" id="s6c-ovl">{"vcc": "Every VCC symbol is the same node: the + end of VS1 and the wire joining RC1 and RC2. No wire is drawn between them; the matching names connect them.", "vee": "Both VEE symbols are the same node: the \u2212 end of VS2 and the bottom of REE.", "emit": "The emitter node: both emitters and the top of REE. Current from both transistors flows down through REE together.", "base2": "Q2's base is grounded: its wire runs left to the grounded wire under the AC source, which is also the ground between VS1 and VS2.", "cross": "The crossover. Q2's base wire passes over Q1's emitter lead. There's no dot, and neither wire ends here, so they are not connected.", "none": ""}</script>
+<script type="application/json" id="quiz-lab6">[{"q": "What identifies a series circuit?", "choices": ["There is only one path for current", "Every part has the same voltage", "It has more than one source", "It has at least three resistors"], "answer": 0, "explain": "One path means one current: the same current flows through every part."}, {"q": "What do two resistors in parallel always share?", "choices": ["The same voltage", "The same current", "The same value", "Nothing"], "answer": 0, "explain": "Both ends are connected to the same two nodes, so the voltage across each is the same."}, {"q": "In Lab 6B, which resistor is in series with everything else?", "choices": ["R1", "R2", "R3", "R4"], "answer": 0, "explain": "Every path from IN to ground passes through R1."}, {"q": "How do you find the output node of a circuit?", "choices": ["Stand at ground and look through the output part; the node on its other side is the output", "It is always the node with the highest voltage", "It is the node nearest the source", "It is always named OUT automatically"], "answer": 0, "explain": "Ground is the common reference; the output node is on the far side of the output part."}, {"q": "What does a net alias change in the netlist?", "choices": ["Nodes get meaningful names such as A and B instead of numbers", "Part values", "The analysis type", "Nothing"], "answer": 0, "explain": "Without aliases, unnamed nodes are numbered, and the numbers can change when you rewire."}, {"q": "Why must a circuit have a ground?", "choices": ["Without it every node is floating: there's no 0 V reference to measure from", "Only to make the drawing look finished", "It stops current from flowing", "It is needed for AC sources only"], "answer": 0, "explain": "Simulators measure every node voltage from node 0. A node with no DC path to ground is called floating."}, {"q": "Two wires cross in Q Circuits with no dot, and neither ends at the crossing. Are they connected?", "choices": ["No", "Yes", "Only in an AC sweep", "Only if they're the same color"], "answer": 0, "explain": "In Q Circuits a wire only connects where it ends on a pin or another wire. That's what Lab 6C's crossover relies on."}, {"q": "In Lab 6C, how does VCC reach the collector resistors without a drawn wire?", "choices": ["A second VCC power symbol has the same name, so it's the same node", "Through Q1", "Through C1", "It doesn't; the circuit is incomplete"], "answer": 0, "explain": "Power symbols with the same name are one node, which keeps busy schematics uncluttered."}, {"q": "Adding a resistor in parallel with an existing one does what to the node count?", "choices": ["Nothing: no new node is created", "Adds one node", "Adds two nodes", "Removes a node"], "answer": 0, "explain": "A parallel part connects to nodes that already exist. A series part splits a wire and so adds a node."}]</script>
+<script type="application/json" id="glossary-data">[{"term": "AC (alternating current)", "def": "Current or voltage that keeps reversing direction, usually as a smooth sine wave.", "labs": [5], "aka": ["ac", "alternating current"]}, {"term": "AC sweep", "def": "An analysis that feeds the circuit a sine wave at many frequencies and plots how the output changes with frequency.", "labs": [5], "aka": ["ac sweep analysis"]}, {"term": "Amplitude", "def": "How big a wave is: the distance from its centre line to its peak.", "labs": [5], "aka": []}, {"term": "Analysis panel", "def": "The Q Circuits panel where you choose what the simulator calculates (Operating point, DC sweep, Transient or AC sweep) and its settings.", "labs": [5], "aka": []}, {"term": "Anode", "def": "The terminal of a diode that current enters when the diode conducts. It's the triangle side of the symbol.", "labs": [5], "aka": []}, {"term": "Band-pass filter", "def": "A filter that passes a middle range of frequencies and weakens both lower and higher ones. Lab 5A's circuit is one.", "labs": [5], "aka": ["band-pass"]}, {"term": "Bandwidth", "def": "The range of frequencies between a circuit's two cutoff (\u22123 dB) points.", "labs": [5], "aka": []}, {"term": "Base", "def": "The control lead of a transistor. A small base current controls a much larger collector current.", "labs": [4], "aka": []}, {"term": "Bias point", "def": "PSpice's name for the Operating point analysis: the steady DC voltages and currents in a circuit.", "labs": [5], "aka": []}, {"term": "Block diagram", "def": "A drawing that shows a system as labelled boxes, such as amplifier or filter, rather than individual parts.", "labs": [4], "aka": []}, {"term": "Breakdown voltage", "def": "The reverse voltage at which a diode starts conducting backward. A Zener diode is designed to do this safely; the D1N750's is 4.7 V.", "labs": [5], "aka": []}, {"term": "Capacitor", "def": "A part made of two conductors separated by an insulator. It blocks steady DC and passes changing signals, more easily at higher frequencies.", "labs": [5], "aka": []}, {"term": "Cathode", "def": "The terminal of a diode that current leaves when the diode conducts. It's the bar side of the symbol, and a painted band on a real part.", "labs": [5], "aka": []}, {"term": "Circuit name box", "def": "The box at the top of the Q Circuits page where you type the lab name. It does the job of a title block.", "labs": [4], "aka": []}, {"term": "Clipping", "def": "When an amplifier's output tries to go beyond its supply voltage and is flattened at the limit.", "labs": [5], "aka": ["clips"]}, {"term": "Closed circuit", "def": "A complete, unbroken loop that current can flow around.", "labs": [4], "aka": []}, {"term": "Collector", "def": "The transistor lead where the main current enters an NPN transistor.", "labs": [4], "aka": []}, {"term": "Corner frequency", "def": "The frequency where a filter's output has fallen to 70.7% of its passband value (\u22123 dB). For an RC filter it's 1 \u00f7 (2\u03c0RC).", "labs": [5], "aka": ["cutoff frequency", "cutoff frequencies", "corner frequencies", "\u22123 dB point", "-3 db point"]}, {"term": "Current", "def": "The flow of electric charge, measured in amperes (A). 1 mA is one thousandth of an ampere.", "labs": [4], "aka": ["current (i)"]}, {"term": "DC (direct current)", "def": "Current or voltage that stays steady and flows in one direction.", "labs": [4], "aka": ["dc", "direct current"]}, {"term": "DC sweep", "def": "An analysis that steps a source's DC value through a range and plots the results against it.", "labs": [7], "aka": []}, {"term": "Decibel (dB)", "def": "A logarithmic unit for gain: 20 \u00d7 log\u2081\u2080 of the voltage ratio. \u00d710 is +20 dB, \u00d71 is 0 dB, \u00d70.707 is \u22123 dB.", "labs": [5], "aka": ["decibel", "decibels", "db"]}, {"term": "Diode", "def": "A part that lets current flow easily in one direction only, from anode to cathode, once about 0.7 V is across it.", "labs": [5], "aka": []}, {"term": "Emitter", "def": "The transistor lead where current leaves an NPN transistor. It's the lead with the arrow.", "labs": [4], "aka": []}, {"term": "Feedback", "def": "Sending part of an amplifier's output back to its input. In an op amp circuit, feedback sets the gain.", "labs": [5], "aka": []}, {"term": "Filter", "def": "A circuit that passes some frequencies and weakens others.", "labs": [5], "aka": []}, {"term": "Frequency", "def": "How many cycles a wave completes each second, measured in hertz (Hz). 1 kHz is 1,000 cycles per second.", "labs": [5], "aka": []}, {"term": "Frequency response", "def": "A graph of how a circuit's gain changes with frequency. An AC sweep produces one.", "labs": [5], "aka": []}, {"term": "Gain", "def": "How much a circuit multiplies a signal: output divided by input. Often given in decibels.", "labs": [5], "aka": []}, {"term": "Ground", "def": "The reference point defined as 0 V. Every voltage is measured from it. Also called node 0.", "labs": [4], "aka": ["ground (node 0)", "node 0"]}, {"term": "High-pass filter", "def": "A filter that passes high frequencies and weakens low ones.", "labs": [5], "aka": ["high-pass"]}, {"term": "Junction", "def": "A point where three or more connections meet, marked with a dot.", "labs": [4], "aka": ["junction dot"]}, {"term": "Load line", "def": "A straight line showing every combination of voltage and current the rest of the circuit allows. Where it crosses a part's curve is the operating point.", "labs": [5], "aka": []}, {"term": "Logarithmic scale", "def": "An axis where each factor of ten takes the same space, so 10 to 100 is as wide as 1,000 to 10,000.", "labs": [5], "aka": ["logarithmic", "log scale"]}, {"term": "Low-pass filter", "def": "A filter that passes low frequencies and weakens high ones.", "labs": [5], "aka": ["low-pass"]}, {"term": "Minor gridlines", "def": "The fainter lines between the main gridlines of a plot. On a log axis they mark 2, 3, 4 \u2026 9 times each decade.", "labs": [5], "aka": []}, {"term": "Net alias", "def": "A name attached to a wire, such as IN or OUT. It labels the node, and wires with the same name are connected.", "labs": [5, 6], "aka": ["net aliases"]}, {"term": "Netlist", "def": "The text version of a schematic: a list of every part and the nodes it connects to. It's what the simulator actually reads.", "labs": [4], "aka": []}, {"term": "Node", "def": "All the points joined together by wire. Every point on a node is at the same voltage.", "labs": [4], "aka": []}, {"term": "Non-inverting amplifier", "def": "An op amp circuit where the signal enters the + input. Its gain is 1 + RF \u00f7 RIN, and the output is in step with the input.", "labs": [5], "aka": ["non-inverting amplifiers"]}, {"term": "NPN transistor", "def": "A transistor made of N-type, P-type and N-type layers. Current flows in at the collector and out at the emitter.", "labs": [4], "aka": []}, {"term": "Ohm's law", "def": "The link between voltage, current and resistance: I = V \u00f7 R, or V = I \u00d7 R.", "labs": [4], "aka": []}, {"term": "Op amp (operational amplifier)", "def": "A very high-gain amplifier with + and \u2212 inputs. Resistors around it set the actual gain.", "labs": [5], "aka": ["op amp", "operational amplifier", "op amps"]}, {"term": "Open circuit", "def": "A break in the path. No current can flow through it.", "labs": [4], "aka": []}, {"term": "Open end", "def": "A wire end or pin connected to nothing. Q Circuits marks it with an open circle.", "labs": [4], "aka": []}, {"term": "Operating point", "def": "An analysis that calculates the steady DC voltage at every node. PSpice calls it Bias Point.", "labs": [4, 5], "aka": []}, {"term": "Orthogonal wiring", "def": "Wires drawn only as horizontal and vertical segments, the professional standard.", "labs": [4], "aka": ["orthogonal"]}, {"term": "Parallel", "def": "Parts connected across the same two nodes. They share the same voltage.", "labs": [4], "aka": []}, {"term": "Phase shift", "def": "How far one wave is shifted in time relative to another, measured in degrees; a full cycle is 360\u00b0.", "labs": [5], "aka": []}, {"term": "Plot", "def": "The Q Circuits graph of probed signals. Volts and amps are drawn in separate panes.", "labs": [5], "aka": []}, {"term": "PN junction", "def": "The boundary where P-type and N-type semiconductor meet. It's what makes a diode conduct in one direction.", "labs": [5], "aka": []}, {"term": "Power symbol", "def": "A named supply connection such as VCC or VEE. Every symbol with the same name is the same node.", "labs": [5, 6], "aka": []}, {"term": "Probe", "def": "A marker that tells the simulator what to graph: a wire for its voltage, or a part's body for its current. Placed with the Probe tool (B).", "labs": [5], "aka": ["probe tool", "probes"]}, {"term": "Reactance", "def": "A capacitor's (or inductor's) opposition to AC, in ohms. For a capacitor, X\u1d04 = 1 \u00f7 (2\u03c0fC), so it falls as frequency rises.", "labs": [5], "aka": []}, {"term": "Rectifier", "def": "A circuit that turns AC into DC. A single diode makes a half-wave rectifier, which passes only one half of each cycle.", "labs": [5], "aka": ["half-wave rectifier"]}, {"term": "Reference designator", "def": "A part's name on a schematic, such as R1, C2 or Q1.", "labs": [4], "aka": []}, {"term": "Resistance", "def": "How strongly a part opposes current, measured in ohms (\u03a9).", "labs": [4], "aka": ["resistance (r)"]}, {"term": "Resistor", "def": "A part that opposes current by a set amount, measured in ohms.", "labs": [4], "aka": []}, {"term": "Schematic", "def": "A drawing of a circuit that uses standard symbols to show every part, its value, and how the parts are connected.", "labs": [4], "aka": []}, {"term": "Series", "def": "Parts connected end to end with nothing branching off between them. They carry the same current.", "labs": [4], "aka": []}, {"term": "Series-parallel", "def": "A circuit that combines series and parallel connections.", "labs": [4], "aka": []}, {"term": "Short circuit", "def": "A path of (almost) zero resistance, such as a wire across a part, so current bypasses the part.", "labs": [4], "aka": ["short"]}, {"term": "Simulation", "def": "Using a computer to solve a circuit's equations and predict what a real circuit would do.", "labs": [5], "aka": []}, {"term": "SPICE", "def": "The family of circuit simulators that Q Circuits and PSpice are based on. It also names the value notation they share, such as 1k and .15u.", "labs": [4], "aka": []}, {"term": "Title block", "def": "The labelled box on a drawing that identifies it and its author. In Q Circuits the circuit name box does this job.", "labs": [4], "aka": []}, {"term": "Transient", "def": "An analysis that steps through time and plots signals the way an oscilloscope shows them.", "labs": [5], "aka": ["transient analysis"]}, {"term": "Value", "def": "The number that sets a part's size, such as 1k for a resistor or DC 12 for a source.", "labs": [4], "aka": []}, {"term": "Voltage", "def": "The electrical push that makes charge move, measured in volts (V). Always measured between two points.", "labs": [4], "aka": ["voltage (v)"]}, {"term": "Voltage divider", "def": "Two or more parts in series that share a voltage in proportion to their resistance (or reactance).", "labs": [4, 5], "aka": []}, {"term": "Wire", "def": "A connection with no resistance. Its length and shape don't matter, only what it connects.", "labs": [4], "aka": ["wires"]}, {"term": "Zener diode", "def": "A diode designed to conduct backward at a precise breakdown voltage. Used as a voltage reference.", "labs": [5], "aka": []}, {"term": "Branch", "def": "One of the separate paths current can take between two nodes in a parallel circuit.", "labs": [6], "aka": ["branches"]}, {"term": "Crossover", "def": "A place where two wires cross on a schematic without connecting. There is no dot, and in Q Circuits neither wire ends there.", "labs": [6], "aka": ["crossovers"]}, {"term": "Differential amplifier", "def": "An amplifier built from two matched transistors that responds to the difference between two inputs. Lab 6C draws one.", "labs": [6], "aka": []}, {"term": "Differential probe", "def": "A probe that measures the voltage between two nodes instead of from a node to ground, such as V(A,B). Placed with Diff probe (X).", "labs": [7], "aka": ["diff probe"]}, {"term": "Family of curves", "def": "Several traces on one plot, one for each value of a parameter, so you can compare them.", "labs": [7], "aka": []}, {"term": "Floating node", "def": "A node with no DC path to ground. The simulator can't work out its voltage.", "labs": [6], "aka": ["floating"]}, {"term": "Input node", "def": "The node where the signal enters a circuit. Looking from ground through the source, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Linear circuit", "def": "A circuit whose output is directly proportional to its input. Its DC sweep plot is a straight line.", "labs": [7], "aka": ["linear"]}, {"term": "Loading", "def": "When connecting more parts to a node draws current from it and lowers its voltage.", "labs": [7], "aka": ["load"]}, {"term": "Output node", "def": "The node where you measure a circuit's result. Looking from ground through the output part, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Parameter", "def": "A named value, such as RVAL, defined by a Parameter part and used in a part value inside curly braces: {RVAL}.", "labs": [7], "aka": ["parameters", "{rval}"]}, {"term": "Parametric sweep", "def": "Running the same analysis several times, once for each value of a parameter, and plotting all the results together.", "labs": [7], "aka": []}, {"term": "Slope", "def": "How steep a line is: how much the output changes for each 1 unit change of the input.", "labs": [7], "aka": []}, {"term": "Step", "def": "The spacing between values in a sweep. From \u221212 to 12 in steps of 0.1 gives 241 points. PSpice calls it Increment.", "labs": [7], "aka": ["increment"]}, {"term": "Sine source", "def": "A voltage source whose value is SIN(offset amplitude frequency), used for transient runs. PSpice calls it VSIN.", "labs": [5, 6], "aka": ["vsin"]}, {"term": "AC magnitude", "def": "The size of the test signal a source supplies during an AC sweep. PSpice's VAC source sets it with 1Vac.", "labs": [5, 6], "aka": ["vac"]}, {"term": "Q Circuits", "def": "The browser-based schematic and simulation tool used for the ELEC 101 labs.", "labs": [4], "aka": []}, {"term": "Axis ranges", "def": "The Q Circuits settings under the plot that fix the X and Y limits instead of fitting them automatically. PSpice calls this a User Defined data range.", "labs": [8, 9], "aka": ["axis range", "user defined range"]}, {"term": "Bode plot", "def": "A graph of gain in decibels against frequency on a logarithmic axis. An AC sweep with a probe in dB mode produces one.", "labs": [8], "aka": ["bode plots"]}, {"term": "Coupling", "def": "How much of a transformer's magnetic field links both windings, from 0 to 1. 1 would be a perfect transformer.", "labs": [8], "aka": ["coupling coefficient"]}, {"term": "Critical frequency", "def": "Another name for the corner (\u22123 dB) frequency: where the output has fallen 3 dB below its flat level.", "labs": [8], "aka": []}, {"term": "Decade", "def": "A factor of ten in frequency, such as 10 Hz to 100 Hz. On a log axis every decade is the same width.", "labs": [5, 8], "aka": ["decades"]}, {"term": "Duty cycle", "def": "The fraction of each period a pulse spends high: pulse width \u00f7 period, often given as a percentage.", "labs": [9], "aka": []}, {"term": "Fall time", "def": "How long a pulse takes to drop from its high level back to its low level (TF).", "labs": [9], "aka": ["tf"]}, {"term": "Inductor", "def": "A coil of wire that stores energy in a magnetic field. Its opposition to AC rises with frequency. Measured in henries (H).", "labs": [8], "aka": ["inductors", "inductance"]}, {"term": "Measurements table", "def": "The table under the Q Circuits plot that lists each trace's maximum, minimum and other values over the visible range.", "labs": [9], "aka": ["measurements"]}, {"term": "Nonperiodic waveform", "def": "A signal that never repeats in a regular pattern, such as random noise.", "labs": [9], "aka": ["nonperiodic"]}, {"term": "Period", "def": "The time for one complete cycle of a repeating waveform. Period = 1 \u00f7 frequency.", "labs": [9], "aka": ["per"]}, {"term": "Periodic waveform", "def": "A signal that repeats the same shape at regular intervals.", "labs": [9], "aka": ["periodic"]}, {"term": "Primary", "def": "The transformer winding connected to the source.", "labs": [8], "aka": ["primary winding"]}, {"term": "Pulse source", "def": "A source that switches between two voltages with set delay, rise, width, fall and period. PSpice calls it VPULSE.", "labs": [9], "aka": ["pulse", "vpulse"]}, {"term": "Pulse width", "def": "How long a pulse stays at its high level (PW).", "labs": [9], "aka": ["pw"]}, {"term": "Ramp", "def": "A waveform that rises steadily and then drops quickly, also called a sawtooth.", "labs": [9], "aka": ["sawtooth", "ramp wave"]}, {"term": "Rise time", "def": "How long a pulse takes to climb from its low level to its high level (TR).", "labs": [9], "aka": ["tr"]}, {"term": "Roll-off", "def": "The part of a frequency response where the gain falls steadily. A simple RC filter rolls off at 20 dB per decade.", "labs": [8], "aka": ["rolloff"]}, {"term": "Secondary", "def": "The transformer winding connected to the load.", "labs": [8], "aka": ["secondary winding"]}, {"term": "Square wave", "def": "A pulse waveform that switches sharply between two levels.", "labs": [9], "aka": ["square waves"]}, {"term": "Step-up transformer", "def": "A transformer whose output voltage is larger than its input. Its secondary inductance is larger than its primary.", "labs": [8], "aka": ["step-down transformer", "step-up"]}, {"term": "Time constant", "def": "For an RC circuit, \u03c4 = R \u00d7 C. In one time constant a capacitor charges 63% of the way; after about five it is essentially done.", "labs": [9], "aka": ["tau", "\u03c4"]}, {"term": "Transformer", "def": "Two coupled coils that transfer AC from one circuit to another, stepping the voltage up or down and isolating the two sides.", "labs": [8], "aka": ["transformers"]}, {"term": "Triangle wave", "def": "A waveform that rises and falls at equal, steady rates.", "labs": [9], "aka": ["triangle"]}, {"term": "Active-low", "def": "An input that does its job when it is 0, not 1. Its name usually has a bar or BAR, as in SBAR or CLR\u0305.", "labs": [11], "aka": ["active low"]}, {"term": "AND gate", "def": "A logic gate whose output is 1 only when all of its inputs are 1.", "labs": [10], "aka": ["and"]}, {"term": "Bit", "def": "A single binary digit: 0 or 1. It can stand for any two-way choice, such as off/on or false/true.", "labs": [10], "aka": ["bits"]}, {"term": "Boolean expression", "def": "A formula for a logic function, such as Q = A + B for OR or Q = A \u00b7 B for AND.", "labs": [10], "aka": ["boolean"]}, {"term": "Clear", "def": "A flip-flop input that forces Q to 0 regardless of the clock. On the 7473 it is active-low (CLR\u0305).", "labs": [11], "aka": ["clr"]}, {"term": "Clock", "def": "A digital signal that switches back and forth at a steady rate to tell sequential circuits when to act.", "labs": [11], "aka": ["clock signal"]}, {"term": "Combinational logic", "def": "Logic whose output depends only on its present inputs, with no memory. Every Lab 10 circuit is combinational.", "labs": [10, 11], "aka": []}, {"term": "Complement", "def": "The opposite logic level: the complement of 1 is 0. A NOT gate produces it. Written with a bar, as Q\u0305 (QBAR).", "labs": [10], "aka": ["complementation", "negation"]}, {"term": "Counter", "def": "A sequential circuit that steps through a sequence of binary numbers, one per clock pulse.", "labs": [11], "aka": ["binary counter"]}, {"term": "DigClock", "def": "The Q Circuits and PSpice digital clock source, set by OFFTIME, ONTIME, DELAY, STARTVAL and OPPVAL.", "labs": [11], "aka": ["digital clock"]}, {"term": "Digital stimulus", "def": "A digital source defined by a list of times and logic levels. PSpice calls it STIM1.", "labs": [10], "aka": ["stim1", "stimulus"]}, {"term": "Falling edge", "def": "The moment a signal changes from 1 to 0. The 7473 changes its output on the clock's falling edge.", "labs": [11], "aka": ["negative edge", "falling-edge"]}, {"term": "Flip-flop", "def": "A one-bit memory circuit that changes state only at a clock edge.", "labs": [11], "aka": ["flip-flops"]}, {"term": "Forbidden state", "def": "An input combination a latch should avoid. In a NAND latch, SBAR and RBAR both 0 drive Q and QBAR both to 1, and releasing both at once leaves the result unpredictable.", "labs": [11], "aka": ["invalid state"]}, {"term": "Integrated circuit", "def": "A chip containing many components. A 7400-series chip holds several gates, labelled A, B, C, D, as in U1A.", "labs": [10], "aka": ["ic", "chip"]}, {"term": "Inverter", "def": "A NOT gate: its output is the opposite of its input. The 7404 holds six of them.", "labs": [10], "aka": []}, {"term": "JK flip-flop", "def": "A flip-flop with inputs J and K: 0 0 holds, 1 0 sets Q to 1, 0 1 resets it to 0, and 1 1 toggles it.", "labs": [11], "aka": ["jk"]}, {"term": "Latch", "def": "A memory circuit that responds to its inputs as soon as they change, with no clock. Two cross-coupled NAND gates make an RS latch.", "labs": [11], "aka": ["rs latch", "sr latch"]}, {"term": "Logic gate", "def": "A circuit that produces a 0 or 1 output from one or more 0/1 inputs according to a fixed rule.", "labs": [10], "aka": ["gate", "gates", "logic gates"]}, {"term": "Logic lanes", "def": "The way Q Circuits plots digital signals: one 0/1 strip per probe, top to bottom in the order the probes were placed.", "labs": [10, 11], "aka": ["logic lane", "lanes"]}, {"term": "Logic level", "def": "The 0 or 1 a digital signal represents. In Q Circuits, 0 V is 0 and 5 V is 1, with the threshold at 2.5 V.", "labs": [10], "aka": ["logic state", "logic levels"]}, {"term": "Master-slave flip-flop", "def": "A flip-flop made of two latches: the master follows the inputs while the clock is high, and the slave copies it when the clock falls.", "labs": [11], "aka": ["master-slave"]}, {"term": "Modulus", "def": "How many different states a counter steps through before repeating. A 4-bit counter is MOD 16.", "labs": [11], "aka": ["mod"]}, {"term": "NAND gate", "def": "NOT AND: the output is 0 only when all inputs are 1.", "labs": [10], "aka": ["nand"]}, {"term": "NOR gate", "def": "NOT OR: the output is 1 only when all inputs are 0.", "labs": [10], "aka": ["nor"]}, {"term": "NOT gate", "def": "A gate with one input whose output is the opposite level. Also called an inverter.", "labs": [10], "aka": ["not"]}, {"term": "OR gate", "def": "A logic gate whose output is 1 when any input is 1.", "labs": [10], "aka": ["or"]}, {"term": "Propagation delay", "def": "The short time between a gate's input changing and its output responding, typically nanoseconds.", "labs": [11], "aka": []}, {"term": "Sequential logic", "def": "Logic whose output depends on past inputs as well as present ones, because it has memory. Latches, flip-flops and counters are sequential.", "labs": [11], "aka": []}, {"term": "Set and reset", "def": "Making a memory circuit's output 1 (set) or 0 (reset).", "labs": [11], "aka": ["set", "reset"]}, {"term": "Synchronous counter", "def": "A counter whose flip-flops all share one clock, so every bit changes at the same moment.", "labs": [11], "aka": []}, {"term": "Timing diagram", "def": "A plot of digital signals against time, one above another, used to read how a circuit behaves.", "labs": [10, 11], "aka": ["timing diagrams"]}, {"term": "Toggle", "def": "Switch to the opposite state. A JK flip-flop with J = K = 1 toggles at every clock edge.", "labs": [11], "aka": ["toggles"]}, {"term": "Truth table", "def": "A table listing a logic circuit's output for every combination of inputs.", "labs": [10], "aka": ["truth tables"]}, {"term": "TTL", "def": "Transistor-transistor logic, the family the 7400-series chips belong to. It uses about 0 V for 0 and 5 V for 1.", "labs": [10], "aka": []}, {"term": "Unknown state (X)", "def": "A logic value the simulator can't determine, drawn as X. Flip-flops start in X unless they are initialized.", "labs": [10, 11], "aka": ["x", "unknown"]}, {"term": "XOR gate", "def": "Exclusive OR: the output is 1 when the inputs differ.", "labs": [10, 11], "aka": ["xor", "exclusive or"]}, {"term": "Amplifier", "def": "A circuit that makes a signal larger.", "labs": [5, 12], "aka": ["amplifiers"]}, {"term": "Bias", "def": "The DC voltages and currents that put a transistor in its working range, so it can amplify.", "labs": [12], "aka": ["biasing"]}, {"term": "Bridge", "def": "Two voltage dividers side by side. A small change in one resistor shows up as a small voltage difference between the two junctions.", "labs": [14], "aka": ["wheatstone bridge"]}, {"term": "Bus", "def": "A group of signals drawn as one thick line. Signals join it by name, through bus entries.", "labs": [13], "aka": ["buses", "busses"]}, {"term": "Bus entry", "def": "The short diagonal line that ties a named wire to a bus.", "labs": [13], "aka": ["bus entries"]}, {"term": "Bypass capacitor", "def": "A capacitor that acts as a short circuit for AC across a resistor, so the resistor affects DC but not the signal.", "labs": [12], "aka": []}, {"term": "Cascade", "def": "Amplifier stages connected one after another. Their gains multiply, so their gains in dB add.", "labs": [12], "aka": []}, {"term": "Common mode", "def": "The voltage both inputs of a differential amplifier share. A good differential amplifier ignores it.", "labs": [14], "aka": ["common-mode"]}, {"term": "Common-emitter amplifier", "def": "A transistor amplifier with the input at the base and the output at the collector.", "labs": [12], "aka": ["common emitter"]}, {"term": "Coupling capacitor", "def": "A capacitor that passes an AC signal from one stage to the next while blocking DC.", "labs": [12], "aka": ["coupling capacitors"]}, {"term": "Current source", "def": "A circuit that supplies a steady current regardless of the voltage across it.", "labs": [14], "aka": ["current sink"]}, {"term": "Decoder", "def": "A circuit that turns a binary number into one active output line. The 74154 is a 4-to-16 decoder.", "labs": [13], "aka": []}, {"term": "Demultiplexer", "def": "A circuit that routes one input line to one of many outputs, chosen by select lines.", "labs": [13], "aka": ["demux"]}, {"term": "Differential pair", "def": "Two matched transistors sharing a current. The difference between their inputs steers the current from one to the other.", "labs": [14], "aka": []}, {"term": "Emitter follower", "def": "A transistor stage whose output (the emitter) follows its input with low output resistance.", "labs": [14], "aka": []}, {"term": "Gain-bandwidth product", "def": "For an op amp, gain \u00d7 bandwidth is roughly constant: about 1 MHz for the LM324.", "labs": [12], "aka": ["gbw"]}, {"term": "Instrumentation amplifier", "def": "An amplifier that boosts a small difference between two inputs and rejects what they have in common.", "labs": [14], "aka": []}, {"term": "JFET", "def": "Junction field-effect transistor: the gate voltage controls the current, and the gate draws almost no current.", "labs": [14], "aka": ["n-channel jfet"]}, {"term": "Mid-band gain", "def": "An amplifier's flat gain between its lower and upper \u22123 dB frequencies.", "labs": [12], "aka": []}, {"term": "Mirror", "def": "Flip a part left\u2013right or top\u2013bottom, as a reflection, without rotating it.", "labs": [14], "aka": ["mirrored", "mirroring"]}, {"term": "Multiplexer", "def": "A circuit that sends one of many inputs to a single output, chosen by select lines. Taking turns, it sends many signals over one line.", "labs": [13], "aka": ["mux"]}, {"term": "Port", "def": "A named connection drawn as an arrow (PSpice's PORTLEFT and PORTRIGHT).", "labs": [13], "aka": ["ports"]}, {"term": "Select lines", "def": "The inputs of a multiplexer or demultiplexer that choose which line is connected.", "labs": [13], "aka": ["select line", "select inputs"]}]</script>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var NS='http://www.w3.org/2000/svg';
+var LAB=document.body.getAttribute('data-lab');
+var KEY='elec101-lesson-'+LAB+'-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function readJSON(id){var n=document.getElementById(id); if(!n) return null; try{return JSON.parse(n.textContent)}catch(e){return null}}
+var state=load(); state.done=state.done||{}; state.checks=state.checks||{};
+
+/* ---------------- navigation ---------------- */
+var sections=$$('main section.lesson');
+var navBtns=$$('#toc button[data-target]');
+var live=$('#live');
+function announce(msg){ if(live){ live.textContent=''; setTimeout(function(){live.textContent=msg},30);} }
+function show(id,focus){
+  var idx=-1;
+  sections.forEach(function(s,i){ var on=s.id===id; s.hidden=!on; if(on) idx=i; });
+  if(idx<0){ return show(sections[0].id,false); }
+  navBtns.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-target')===id ? 'step':'false'); });
+  var sn=$('#sheet-no'); if(sn) sn.textContent=(idx+1)+' of '+sections.length;
+  var st=$('#sheet-title'); if(st) st.textContent=sections[idx].getAttribute('data-title');
+  state.current=id; save();
+  if(focus){ var h=$('h2',sections[idx]); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});}
+    var m=$('#main'); if(m) window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + window.pageYOffset - 12)); }
+  if(history.replaceState){ try{history.replaceState(null,'','#'+id)}catch(e){} }
+  document.dispatchEvent(new CustomEvent('lesson:show',{detail:id}));
+}
+navBtns.forEach(function(b,i){
+  b.addEventListener('click',function(){show(b.getAttribute('data-target'),true)});
+  b.addEventListener('keydown',function(e){
+    var j=null; if(e.key==='ArrowDown') j=Math.min(i+1,navBtns.length-1); if(e.key==='ArrowUp') j=Math.max(i-1,0);
+    if(e.key==='Home') j=0; if(e.key==='End') j=navBtns.length-1;
+    if(j!==null){ e.preventDefault(); navBtns[j].focus(); }
+  });
+});
+$$('[data-goto]').forEach(function(b){ b.addEventListener('click',function(){show(b.getAttribute('data-goto'),true)}); });
+
+function refreshProgress(){
+  var n=0; sections.forEach(function(s){ var d=!!state.done[s.id]; if(d) n++;
+    var c=$('#toc button[data-target="'+s.id+'"] .chk'); if(c){ c.textContent=d?'\u2713':''; }
+    var btn=$('[data-complete="'+s.id+'"]'); if(btn){ btn.setAttribute('aria-pressed', d?'true':'false'); btn.textContent=d?'Completed \u2713':'Mark this section complete'; }
+  });
+  var pct=Math.round(n/sections.length*100);
+  var bar=$('#prog'); if(bar){ bar.setAttribute('aria-valuenow',pct); var sp=$('span',bar); if(sp) sp.style.width=pct+'%'; }
+  var pt=$('#prog-txt'); if(pt) pt.textContent=n+' of '+sections.length+' sections complete';
+}
+$$('[data-complete]').forEach(function(b){ b.addEventListener('click',function(){
+  var id=b.getAttribute('data-complete'); state.done[id]=!state.done[id]; save(); refreshProgress();
+  announce(state.done[id]?'Section marked complete.':'Section marked not complete.');
+});});
+var reset=$('#reset-btn');
+if(reset){ reset.addEventListener('click',function(){ state.done={}; state.checks={}; save(); refreshProgress();
+  $$('.checklist input').forEach(function(c){c.checked=false}); announce('Progress cleared.'); }); }
+
+/* persistent checklists */
+$$('.checklist input[type=checkbox]').forEach(function(c){
+  if(state.checks[c.id]) c.checked=true;
+  c.addEventListener('change',function(){ state.checks[c.id]=c.checked; save(); });
+});
+
+/* reveal buttons */
+$$('[data-reveal]').forEach(function(b){
+  var t=document.getElementById(b.getAttribute('data-reveal')); if(!t) return;
+  b.setAttribute('aria-controls',t.id); b.setAttribute('aria-expanded', t.hidden?'false':'true');
+  var shown=b.getAttribute('data-shown-label'), hid=b.textContent;
+  b.addEventListener('click',function(){ t.hidden=!t.hidden; b.setAttribute('aria-expanded', t.hidden?'false':'true'); if(shown) b.textContent=t.hidden?hid:shown; });
+});
+
+/* ---------------- SPICE numbers ---------------- */
+var SUFFIX=[['meg',1e6],['mil',25.4e-6],['f',1e-15],['p',1e-12],['n',1e-9],['u',1e-6],['m',1e-3],['k',1e3],['g',1e9],['t',1e12]];
+function parseSpice(raw){
+  var s=String(raw==null?'':raw);
+  var t=s.trim();
+  if(!t) return {ok:false,msg:'Nothing entered. Type a value such as 1k or 15.9k.'};
+  if(/\s/.test(t)) return {ok:false,msg:'This value contains a space. The simulator stops reading at the space, so the value is rejected when you run the simulation. Delete the space.'};
+  var m=t.match(/^([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5]*)$/);
+  if(!m) return {ok:false,msg:'A value has to start with a number and can only be followed by letters (a scale suffix and, optionally, a unit).'};
+  var num=parseFloat(m[1]); var tail=m[2].replace('\u00b5','u'); var low=tail.toLowerCase();
+  var mult=1, suf='';
+  for(var i=0;i<SUFFIX.length;i++){ if(low.indexOf(SUFFIX[i][0])===0){ mult=SUFFIX[i][1]; suf=SUFFIX[i][0]; break; } }
+  var r={ok:true,value:num*mult,num:num,suffix:suf,ignored:tail.slice(suf.length),notes:[]};
+  if(suf==='m' && tail.charAt(0)==='M') r.notes.push('Capital M still means milli (\u00d70.001) in SPICE. For mega (\u00d71,000,000) type MEG.');
+  if(m[2].charAt(0)==='\u00b5') r.notes.push('The \u00b5 symbol is not reliable in SPICE. Type u for micro.');
+  if(r.ignored) r.notes.push('The letters "'+r.ignored+'" are ignored. They are just a label for people reading the schematic.');
+  return r;
+}
+var ENG=[[1e12,'T'],[1e9,'G'],[1e6,'MEG'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'u'],[1e-9,'n'],[1e-12,'p'],[1e-15,'f']];
+function eng(v,unit,digits){
+  if(v===0) return '0 '+(unit||'');
+  var a=Math.abs(v);
+  for(var i=0;i<ENG.length;i++){ if(a>=ENG[i][0]*0.9995){ var x=v/ENG[i][0]; var d=digits==null?3:digits;
+      var str=Number(x.toPrecision(d)).toString(); var p=ENG[i][1]; if(p==='u') p='\u00b5'; if(p==='MEG') p='M';
+      return str+' '+p+(unit||''); } }
+  return v.toExponential(2)+' '+(unit||'');
+}
+function fmtHz(f){ if(f>=1000){ var k=f/1000; return (k<10? k.toFixed(2): k<100? k.toFixed(1) : Math.round(k))+' kHz'; } return Math.round(f)+' Hz'; }
+
+/* ---------------- tiny SVG plotter ---------------- */
+function el(tag,attrs,parent,text){ var e=document.createElementNS(NS,tag); for(var k in attrs){ if(attrs.hasOwnProperty(k)) e.setAttribute(k,attrs[k]); } if(text!=null) e.textContent=text; if(parent) parent.appendChild(e); return e; }
+var clipN=0;
+function plot(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var W=cfg.w||640, H=cfg.h||290, L=68, R=34, T=12, B=cfg.xlabel===false?26:52;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-L-R, ph=H-T-B;
+  var lg=function(v){return Math.log(v)/Math.LN10};
+  var X= cfg.xlog ? function(v){return L+(lg(v)-lg(cfg.xmin))/(lg(cfg.xmax)-lg(cfg.xmin))*pw} : function(v){return L+(v-cfg.xmin)/(cfg.xmax-cfg.xmin)*pw};
+  var Y= function(v){return T+(1-(v-cfg.ymin)/(cfg.ymax-cfg.ymin))*ph};
+  el('rect',{x:L,y:T,width:pw,height:ph,'class':'pl-bg'},svg);
+  var g=el('g',{'aria-hidden':'true'},svg);
+  (cfg.xminor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-minor'},g); });
+  (cfg.yminor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-minor'},g); });
+  (cfg.xmajor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-major'},g);
+    el('text',{x:X(v),y:T+ph+15,'text-anchor':'middle','class':'pl-tick'},g,cfg.xfmt?cfg.xfmt(v):v); });
+  (cfg.ymajor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-major'},g);
+    el('text',{x:L-6,y:Y(v)+4,'text-anchor':'end','class':'pl-tick'},g,cfg.yfmt?cfg.yfmt(v):v); });
+  if(cfg.xlabel) el('text',{x:L+pw,y:H-6,'text-anchor':'end','class':'pl-axis'},g,cfg.xlabel);
+  var cid='pc'+(++clipN);
+  var cp=el('clipPath',{id:cid},svg); el('rect',{x:L,y:T,width:pw,height:ph},cp);
+  var tg=el('g',{'clip-path':'url(#'+cid+')'},svg);
+  (cfg.hlines||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-hline'},tg); });
+  (cfg.traces||[]).forEach(function(tr){
+    var d=''; for(var i=0;i<tr.pts.length;i++){ var yy=Y(tr.pts[i][1]); if(yy<-2000) yy=-2000; if(yy>4000) yy=4000; d+=(i?'L':'M')+X(tr.pts[i][0]).toFixed(1)+' '+yy.toFixed(1); }
+    el('path',{d:d,'class':'pl-trace '+(tr.cls||'')},tg);
+  });
+  var lx=L+4;
+  (cfg.traces||[]).forEach(function(tr){ if(!tr.name) return; var t=el('text',{x:lx,y:H-6,'class':'pl-leg '+(tr.cls||'')},g,'\u25a0 '+tr.name); lx+=tr.name.length*7.4+26; });
+  var over=el('g',{},svg);
+  return {X:X,Y:Y,L:L,T:T,pw:pw,ph:ph,over:over,svg:svg,
+    invX: cfg.xlog ? function(px){ return Math.pow(10, lg(cfg.xmin)+(px-L)/pw*(lg(cfg.xmax)-lg(cfg.xmin))); } : function(px){ return cfg.xmin+(px-L)/pw*(cfg.xmax-cfg.xmin); }};
+}
+function svgPoint(svg,evt){ var r=svg.getBoundingClientRect(); var vb=svg.viewBox.baseVal; return {x:(evt.clientX-r.left)/r.width*vb.width, y:(evt.clientY-r.top)/r.height*vb.height}; }
+function logGrid(xmin,xmax,mode){
+  var maj=[],min=[]; var d0=Math.floor(Math.log(xmin)/Math.LN10), d1=Math.ceil(Math.log(xmax)/Math.LN10);
+  for(var d=d0; d<=d1; d++){ var b=Math.pow(10,d);
+    if(mode==='auto'){ [1,3].forEach(function(k){ var v=k*b; if(v>=xmin*0.999&&v<=xmax*1.001) maj.push(v); }); }
+    else { if(b>=xmin*0.999&&b<=xmax*1.001) maj.push(b); for(var k=2;k<10;k++){ var v=k*b; if(v>xmin&&v<xmax) min.push(v);} }
+  }
+  return {maj:maj,min:min};
+}
+function linTicks(a,b,step){ var o=[]; for(var v=Math.ceil(a/step-1e-9)*step; v<=b+1e-9; v+=step) o.push(Math.round(v/step)*step); return o; }
+
+/* ---------------- clickable schematic parts ---------------- */
+var PARTS=readJSON('parts-data')||{};
+function showPart(panel,id){
+  var p=PARTS[id]; if(!p||!panel) return;
+  while(panel.firstChild) panel.removeChild(panel.firstChild);
+  var h=document.createElement('h4'); h.textContent=p.name; panel.appendChild(h);
+  if(p.what){ var w=document.createElement('p'); w.textContent=p.what; panel.appendChild(w); }
+  if(p.props){ var dl=document.createElement('dl'); dl.className='kv';
+    p.props.forEach(function(kv){ var dt=document.createElement('dt'); dt.textContent=kv[0]; var dd=document.createElement('dd'); dd.textContent=kv[1]; dl.appendChild(dt); dl.appendChild(dd); });
+    panel.appendChild(dl); }
+  if(p.here){ var q=document.createElement('p'); var b=document.createElement('strong'); b.textContent='In this circuit: '; q.appendChild(b); q.appendChild(document.createTextNode(p.here)); panel.appendChild(q); }
+}
+$$('svg.schem').forEach(function(svg){
+  var panel=document.getElementById(svg.getAttribute('data-panel'));
+  $$('.part',svg).forEach(function(g){
+    var act=function(){ $$('.part',svg).forEach(function(o){o.classList.remove('sel')}); g.classList.add('sel'); showPart(panel,g.getAttribute('data-part')); };
+    g.addEventListener('click',act);
+    g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } });
+  });
+});
+/* stage highlighter: buttons with data-stage-for=svgId data-stage=name */
+$$('[data-stage-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var svg=document.getElementById(b.getAttribute('data-stage-for')); var st=b.getAttribute('data-stage');
+    $$('[data-stage-for="'+svg.id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('[data-stages]',svg).forEach(function(n){ var list=n.getAttribute('data-stages').split(' ');
+      if(st==='all' || list.indexOf(st)>=0) n.classList.remove('dimmed'); else n.classList.add('dimmed'); });
+    var d=document.getElementById(svg.id+'-stage-desc'); var S=readJSON(svg.id+'-stages');
+    if(d&&S&&S[st]){ d.textContent=S[st]; }
+  });
+});
+
+/* ---------------- quiz engine ---------------- */
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildQuiz(box){
+  var data=readJSON('quiz-'+box.getAttribute('data-quiz')); if(!data) return;
+  while(box.firstChild) box.removeChild(box.firstChild);
+  var score=0, answered=0;
+  var sc=document.createElement('p'); sc.className='score'; sc.setAttribute('aria-live','polite');
+  data.forEach(function(item,qi){
+    var q=document.createElement('div'); q.className='q'; q.setAttribute('role','group');
+    var qt=document.createElement('p'); qt.className='qt'; qt.id=box.getAttribute('data-quiz')+'-q'+qi; qt.textContent=(qi+1)+'. '+item.q; q.appendChild(qt);
+    q.setAttribute('aria-labelledby',qt.id);
+    var ch=document.createElement('div'); ch.className='choices'; q.appendChild(ch);
+    var fb=document.createElement('p'); fb.className='fb'; fb.setAttribute('aria-live','polite');
+    var idx=item.choices.map(function(_,i){return i});
+    var order=item.keepOrder? idx : shuffle(idx);
+    var btns=[];
+    order.forEach(function(ci){
+      var b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=item.choices[ci];
+      b.setAttribute('data-ci',ci);
+      b.addEventListener('click',function(){
+        var right= ci===item.answer;
+        btns.forEach(function(x){ x.disabled=true;
+          if(+x.getAttribute('data-ci')===item.answer){ x.classList.add('right'); x.textContent=item.choices[item.answer]+'  \u2713 correct answer'; } });
+        if(!right){ b.classList.add('wrong'); b.textContent=item.choices[ci]+'  \u2717 your answer'; }
+        fb.textContent=(right?'Correct. ':'Not quite. ')+item.explain;
+        answered++; if(right) score++;
+        sc.textContent='Score: '+score+' of '+answered+' answered ('+data.length+' questions total)';
+      });
+      btns.push(b); ch.appendChild(b);
+    });
+    q.appendChild(fb); box.appendChild(q);
+  });
+  box.appendChild(sc);
+  var again=document.createElement('button'); again.type='button'; again.className='btn'; again.textContent='Reset quiz and shuffle';
+  again.addEventListener('click',function(){ buildQuiz(box); var f=box.querySelector('.choice'); if(f) f.focus(); });
+  box.appendChild(again);
+}
+$$('.quiz[data-quiz]').forEach(buildQuiz);
+
+/* ---------------- SPICE value checker widgets ---------------- */
+$$('[data-spice-check]').forEach(function(w){
+  var inp=$('input',w), btn=$('button',w), out=$('.result',w);
+  var run=function(){ var r=parseSpice(inp.value); out.className='result '+(r.ok?'ok':'no');
+    if(!r.ok){ out.textContent='Error: '+r.msg; return; }
+    var plain=Number(r.value.toPrecision(6)); var s='The simulator reads "'+inp.value.trim()+'" as '+(r.suffix? eng(r.value,'',4).trim()+', which is '+plain : plain)+'.';
+    if(r.suffix) s+=' Suffix "'+r.suffix+'" multiplies '+r.num+' by '+(SUFFIX.filter(function(x){return x[0]===r.suffix})[0][1]).toExponential(0).replace('e',' \u00d7 10^').replace('+','')+'.';
+    if(r.notes.length) s+=' Note: '+r.notes.join(' ');
+    out.textContent=s; };
+  btn.addEventListener('click',run);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+  $$('[data-try]',w).forEach(function(t){ t.addEventListener('click',function(){ inp.value=t.getAttribute('data-try'); run(); }); });
+});
+
+/* ---------------- settings-form checkers ---------------- */
+$$('form.sim-settings').forEach(function(f){
+  var spec=readJSON(f.getAttribute('data-spec')); var out=$('.result',f);
+  f.addEventListener('submit',function(e){
+    e.preventDefault(); var bad=[];
+    spec.forEach(function(s){
+      var n=f.elements[s.name]; if(!n) return; var v=n.value;
+      if(s.type==='select'){ if(v!==s.want) bad.push(s.label+': choose '+s.wantText+'.'); return; }
+      if(s.type==='check'){ if(n.checked!==s.want) bad.push(s.label+': '+(s.want?'tick it.':'leave it unticked.')); return; }
+      if(s.type==='text'){ if(v.trim().toLowerCase()!==String(s.want).toLowerCase()) bad.push(s.label+': "'+v.trim()+'" should be '+s.want+'. '+(s.hint||'')); return; }
+      var r=parseSpice(v); if(!r.ok){ bad.push(s.label+': '+r.msg); return; }
+      if(Math.abs(r.value-s.want)>Math.abs(s.want)*1e-6) bad.push(s.label+': "'+v.trim()+'" is '+eng(r.value,s.unit||'',4).trim()+', but the lab asks for '+eng(s.want,s.unit||'',4).trim()+'. '+(s.hint||''));
+    });
+    out.className='result '+(bad.length?'no':'ok');
+    out.textContent= bad.length ? ('Check these: '+bad.join(' ')) : (f.getAttribute('data-ok')||'All settings match the lab.');
+  });
+});
+
+/* ---------------- glossary tooltips ---------------- */
+var GL=readJSON('glossary-data')||[], GMAP={};
+GL.forEach(function(g){ [g.term].concat(g.aka||[]).forEach(function(k){ GMAP[k.toLowerCase()]=g; }); });
+function lookup(t){
+  t=String(t).toLowerCase().replace(/\s+/g,' ').trim();
+  var c=[t, t.replace(/\s*\(.*\)$/,''), t.replace(/'s$/,'')];
+  for(var i=0;i<c.length;i++){ var k=c[i]; if(GMAP[k]) return GMAP[k]; if(/s$/.test(k)&&GMAP[k.slice(0,-1)]) return GMAP[k.slice(0,-1)]; if(/es$/.test(k)&&GMAP[k.slice(0,-2)]) return GMAP[k.slice(0,-2)]; }
+  return null;
+}
+var tip=document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+var tipFor=null, hideTimer=null;
+function placeTip(el){
+  var r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight, vw=document.documentElement.clientWidth;
+  var left=Math.max(8, Math.min(r.left, vw-tw-8));
+  var top=r.bottom+6; if(top+th>window.innerHeight-8 && r.top-th-6>8) top=r.top-th-6;
+  tip.style.left=(left+window.pageXOffset)+'px'; tip.style.top=(top+window.pageYOffset)+'px';
+}
+function showTip(el){
+  var g=lookup(el.textContent); if(!g) return;
+  clearTimeout(hideTimer);
+  if(tipFor&&tipFor!==el) tipFor.removeAttribute('aria-describedby');
+  tipFor=el;
+  while(tip.firstChild) tip.removeChild(tip.firstChild);
+  var b=document.createElement('strong'); b.textContent=g.term+': '; tip.appendChild(b);
+  tip.appendChild(document.createTextNode(g.def));
+  tip.hidden=false; el.setAttribute('aria-describedby','tip'); placeTip(el);
+}
+function hideTip(now){
+  clearTimeout(hideTimer);
+  var go=function(){ tip.hidden=true; if(tipFor){ tipFor.removeAttribute('aria-describedby'); tipFor=null; } };
+  if(now) go(); else hideTimer=setTimeout(go,180);
+}
+$$('.term').forEach(function(el){
+  if(!lookup(el.textContent)) return;
+  el.classList.add('has-tip'); el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',function(){showTip(el)});
+  el.addEventListener('mouseleave',function(){hideTip(false)});
+  el.addEventListener('focus',function(){showTip(el)});
+  el.addEventListener('blur',function(){hideTip(true)});
+  el.addEventListener('click',function(e){ e.stopPropagation(); if(tipFor===el&&!tip.hidden) hideTip(true); else showTip(el); });
+});
+tip.addEventListener('mouseenter',function(){clearTimeout(hideTimer)});
+tip.addEventListener('mouseleave',function(){hideTip(false)});
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!tip.hidden) hideTip(true); });
+document.addEventListener('click',function(){ if(!tip.hidden) hideTip(true); });
+window.addEventListener('resize',function(){ if(tipFor&&!tip.hidden) placeTip(tipFor); });
+
+/* ---------------- overlay highlighter ----------------
+   Buttons: data-ovl-for="svgId" data-ovl="name" ("none" clears).
+   Overlays inside the svg: <g class="ovl" data-ovl="name" hidden>.
+   Descriptions: JSON script id "svgId-ovl" {name: text}. */
+$$('[data-ovl-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var id=b.getAttribute('data-ovl-for'), svg=document.getElementById(id), name=b.getAttribute('data-ovl');
+    if(!svg) return;
+    $$('[data-ovl-for="'+id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('.ovl',svg).forEach(function(g){ var list=(g.getAttribute('data-ovl')||'').split(' ');
+      if(name!=='none' && (name==='all'||list.indexOf(name)>=0)) g.removeAttribute('hidden'); else g.setAttribute('hidden',''); });
+    var d=document.getElementById(id+'-ovl-desc'), S=readJSON(id+'-ovl');
+    if(d&&S) d.textContent=S[name]||'';
+  });
+});
+
+/* ---------------- predict-then-check boxes ----------------
+   <div class="predict" data-answer="5.14" data-tol="0.03" data-unit="V" data-reveal-after="2">
+     ...<input> <button class="chk"> <p class="result"> <button class="show" hidden> <div class="worked" hidden> */
+$$('.predict').forEach(function(box){
+  var inp=$('input',box), chk=$('button.chk',box), out=$('.result',box), show=$('button.show',box), worked=$('.worked',box);
+  var ans=parseFloat(box.getAttribute('data-answer')), tol=parseFloat(box.getAttribute('data-tol')||'0.02'), unit=box.getAttribute('data-unit')||'';
+  var after=parseInt(box.getAttribute('data-reveal-after')||'2',10), tries=0;
+  var go=function(){
+    var r=parseSpice(inp.value);
+    if(!r.ok){ out.className='result no'; out.textContent=r.msg; return; }
+    tries++;
+    var ok=Math.abs(r.value-ans)<=Math.abs(ans)*tol+1e-12;
+    out.className='result '+(ok?'ok':'no');
+    out.textContent= ok ? ('Yes: '+eng(r.value,unit,4)+' is right. Now confirm it with your simulation.')
+      : ('Not yet: '+eng(r.value,unit,4)+' doesn\u2019t match. '+(r.value>ans?'Your value is too high.':'Your value is too low.')+' Check each step and try again.');
+    if((ok||tries>=after)&&show) show.hidden=false;
+  };
+  chk.addEventListener('click',go);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); go(); } });
+  if(show&&worked){ show.addEventListener('click',function(){ worked.hidden=!worked.hidden; show.setAttribute('aria-expanded',worked.hidden?'false':'true'); show.textContent=worked.hidden?'Show the worked answer':'Hide the worked answer'; }); show.setAttribute('aria-expanded','false'); }
+});
+
+window.LESSON={$:$, $$:$$, el:el, plot:plot, logGrid:logGrid, linTicks:linTicks, parseSpice:parseSpice, eng:eng, fmtHz:fmtHz, svgPoint:svgPoint, readJSON:readJSON, announce:announce, state:state, save:save};
+
+refreshProgress();
+window.addEventListener('hashchange',function(){ var h=(location.hash||'').slice(1); if(h && sections.some(function(x){return x.id===h;})) show(h,true); });
+var start=(location.hash||'').slice(1);
+if(!document.getElementById(start)) start=state.current;
+show(start && document.getElementById(start) ? start : sections[0].id, false);
+})();
+</script>
+<script>
+(function(){
+var L=window.LESSON, $=L.$, $$=L.$$;
+/* ---- path tracer ---- */
+var INFO=L.readJSON('cfg-info');
+function curCfg(){ return $('input[name=cfg]:checked').value; }
+function cfgShow(path){
+  var k=curCfg(), inf=INFO[k], svg=document.getElementById(inf.svg);
+  $$('[data-cfg-path]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-cfg-path')===path?'true':'false'); });
+  $$('.ovl',svg).forEach(function(g){ var n=g.getAttribute('data-ovl'); if(path==='all'||n===path) g.removeAttribute('hidden'); else g.setAttribute('hidden',''); });
+  var say=inf.sum; if(path==='p1'||path==='p2') say=inf[path]||'This circuit has only one path.'; if(path==='all') say=inf.sum;
+  $('#cfg-say').textContent=say;
+}
+function cfgSel(){
+  var k=curCfg(), inf=INFO[k];
+  $$('[data-cfg-svg]').forEach(function(d){ d.hidden=d.getAttribute('data-cfg-svg')!==k; });
+  $('[data-cfg-path="p2"]').disabled = inf.paths<2;
+  var dl=$('#cfg-read'); while(dl.firstChild) dl.removeChild(dl.firstChild);
+  [['Paths from + to \u2212', inf.paths],['Nodes (including ground)', inf.nodes]].forEach(function(r){ var dt=document.createElement('dt'); dt.textContent=r[0]; var dd=document.createElement('dd'); dd.textContent=r[1]; dl.appendChild(dt); dl.appendChild(dd); });
+  cfgShow('none'); $('#cfg-say').textContent=inf.sum;
+}
+$$('input[name=cfg]').forEach(function(r){ r.addEventListener('change',cfgSel); });
+$$('[data-cfg-path]').forEach(function(b){ b.addEventListener('click',function(){ cfgShow(b.getAttribute('data-cfg-path')); }); });
+cfgSel();
+
+/* ---- series vs parallel numbers ---- */
+function spDraw(){
+  var s=$('input[name=sp-mode]:checked').value==='s', r1=+$('#sp-r1').value, r2=+$('#sp-r2').value, V=10;
+  var rows, rt, it;
+  if(s){ rt=r1+r2; it=V/rt; rows=[['R1',it*r1,it],['R2',it*r2,it],['Total',V,it]]; }
+  else { rt=r1*r2/(r1+r2); it=V/rt; rows=[['R1',V,V/r1],['R2',V,V/r2],['Total',V,it]]; }
+  var tb=$('#sp-body'); while(tb.firstChild) tb.removeChild(tb.firstChild);
+  rows.forEach(function(r){ var tr=document.createElement('tr'); [r[0], L.eng(r[1],'V',3), L.eng(r[2],'A',3)].forEach(function(c,i){ var td=document.createElement(i?'td':'th'); if(!i) td.setAttribute('scope','row'); td.textContent=c; tr.appendChild(td); }); tb.appendChild(tr); });
+  $('#sp-say').textContent = s
+    ? 'Series: total resistance '+L.eng(rt,'\u03a9')+'. Both resistors carry the same '+L.eng(it,'A',3)+', and the larger resistor takes the larger share of the 10 V.'
+    : 'Parallel: total resistance '+L.eng(rt,'\u03a9',3)+', less than either resistor. Both have the full 10 V, and the smaller resistor carries more current. The branch currents add up to the total.';
+}
+$$('input[name=sp-mode]').forEach(function(r){ r.addEventListener('change',spDraw); });
+['#sp-r1','#sp-r2'].forEach(function(k){ $(k).addEventListener('change',spDraw); });
+spDraw();
+
+/* ---- netlist viewer ---- */
+var NL={
+ alias:['VS A 0 DC 12','R1 A B 100','R2 B 0 300','With aliases, the node names say what they are. R2 B 0 means R2 runs from B to ground.'],
+ num:['VS 1 0 DC 12','R1 1 2 100','R2 2 0 300','Without aliases the same circuit uses numbers. They still work, but "node 2" means nothing to a reader, and the numbers can change when you rewire.'],
+ nognd:['VS 1 2 DC 12','R1 1 3 100','R2 3 2 300','With no ground, no node is 0. Every node is floating: there is no reference to measure from, so voltages can\u2019t be worked out. Q Circuits warns "No ground" (PSpice reports each node as floating). Add a ground to fix it.']
+};
+function nl(k){ $$('[data-nl]').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-nl')===k?'true':'false'); });
+  $('#nl-text').textContent=NL[k].slice(0,3).join('\n'); $('#nl-say').textContent=NL[k][3]; }
+$$('[data-nl]').forEach(function(b){ b.addEventListener('click',function(){ nl(b.getAttribute('data-nl')); }); });
+nl('alias');
+
+/* ---- voltage divider ---- */
+var RV=[100,150,200,300,470,600,1000,1200,2200,3300,4700,6800,10000];
+function vd(){
+  var r1=RV[+$('#vd-r1').value], r2=RV[+$('#vd-r2').value], V=12, i=V/(r1+r2), vb=i*r2;
+  $('#vd-r1o').textContent=L.eng(r1,'\u03a9'); $('#vd-r2o').textContent=L.eng(r2,'\u03a9');
+  var dl=$('#vd-read'); while(dl.firstChild) dl.removeChild(dl.firstChild);
+  [['Current',L.eng(i,'A',3)],['Voltage across R1 (A to B)',L.eng(i*r1,'V',3)],['V(B), across R2',L.eng(vb,'V',3)]].forEach(function(r){ var dt=document.createElement('dt'); dt.textContent=r[0]; var dd=document.createElement('dd'); dd.textContent=r[1]; dl.appendChild(dt); dl.appendChild(dd); });
+  $('#vd-say').textContent='V(B) = 12 V \u00d7 R2 \u00f7 (R1 + R2) = '+(vb).toFixed(2)+' V, which is '+(100*r2/(r1+r2)).toFixed(0)+'% of the source. The bigger R2 is compared with R1, the more of the voltage it takes.';
+}
+['#vd-r1','#vd-r2'].forEach(function(k){ $(k).addEventListener('input',vd); });
+vd();
+
+/* ---- 6C wrong dot ---- */
+var db=$('#c6-dotbtn'), dg=document.getElementById('c6-baddot');
+db.addEventListener('click',function(){ var on=db.getAttribute('aria-pressed')!=='true'; db.setAttribute('aria-pressed',on?'true':'false');
+  if(on) dg.removeAttribute('hidden'); else dg.setAttribute('hidden','');
+  $('#s6c-ovl-desc').textContent= on ? 'With a dot here, Q2\u2019s base would be joined to both emitters and to ground, shorting the emitter node to ground. The lab check "Q2\u2019s base goes to ground, and the crossover has no junction" would fail. In Q Circuits this happens if a wire ends on the crossing point.' : 'Dot removed: the wires cross without connecting, as they should.'; });
+})();
+</script>
+</body>
+</html>

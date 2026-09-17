@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Lab 14 Companion: Instrumentation and operational amplifiers</title>
+<meta name="description" content="Companion lesson for ELEC 101 Lab 14 in Q Circuits: bridges, instrumentation amplifiers, mirrored parts, and a discrete operational amplifier with a JFET input stage.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+</style>
+</head>
+<body data-lab="14">
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">Lab 14: Instrumentation and operational amplifiers</h1><span class="tb-k" style="margin-top:.35rem">The three-op-amp instrumentation amplifier, mirroring parts, and what&#x27;s inside an op amp, in Q Circuits</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101 Lab Companion</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Now on</span><span class="tb-v" id="sheet-title">&nbsp;</span></div>
+      <div><span class="tb-k">Sheet</span><span class="tb-v" id="sheet-no">1</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="index.html">All labs</a>
+      <a class="btn" href="glossary.html" target="_blank" rel="noopener">Glossary (new tab)</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+      <button type="button" class="btn" id="reset-btn">Clear my progress</button>
+    </div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Lesson sections">
+    <div class="toc-inner">
+      <h2>Sections</h2>
+      <ol><li><button type="button" data-target="s14-1" aria-current="false"><span class="num">14.1</span><span>Instrumentation amplifiers</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s14-2" aria-current="false"><span class="num">14.2</span><span>Mirroring parts</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s14-3" aria-current="false"><span class="num">14.3</span><span>Lab 14A: drawing Figure 14-1</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s14-4" aria-current="false"><span class="num">14.4</span><span>Inside an op amp</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s14-5" aria-current="false"><span class="num">14.5</span><span>Lab 14B: drawing Figure 14-2</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s14-6" aria-current="false"><span class="num">14.6</span><span>Troubleshooting and wrap-up</span><span class="chk" aria-hidden="true"></span></button></li></ol>
+      <div class="progress-wrap">
+        <div class="bar" id="prog" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <p id="prog-txt" style="margin:.35rem 0 0">0 complete</p>
+      </div>
+    </div>
+  </nav>
+  <main id="main" tabindex="-1">
+<section class="lesson" id="s14-1" data-title="Instrumentation amplifiers" aria-labelledby="s14-1-h" hidden><p class="sub-num">Section 14.1</p><h2 id="s14-1-h">Instrumentation amplifiers</h2><p class="lede prose">Bridges, differential and common-mode signals, and the three-op-amp design.</p>
+<div class="prose">
+<p>Many sensors, such as strain gauges and thermistors, change resistance very slightly. Wired into a <span class="term">bridge</span>, that change becomes a tiny voltage <em>difference</em> of a few millivolts, sitting on top of several volts that both sides share. An <span class="term">instrumentation amplifier</span> amplifies the difference and ignores the shared part.</p>
+<h3>Differential and common-mode signals</h3>
+<ul>
+<li>The <strong>differential</strong> signal is IN+ − IN-: what you want to measure.</li>
+<li>The <strong><span class="term">common-mode</span></strong> signal is what both inputs have in common: here about 3 V from the bridge, plus any noise picked up equally on both wires. A good instrumentation amplifier rejects it.</li>
+</ul>
+<h3>The three-op-amp design (Figure 14-1)</h3>
+<ol>
+<li><strong>Two input buffers</strong> (U1A, U1B) draw almost no current from the bridge, so they don't disturb it. Together with RA1, RB and RA2 they amplify the difference by <strong>1 + 2RA ÷ RB = 21</strong> but pass the common-mode voltage through unamplified.</li>
+<li><strong>A difference amplifier</strong> (U1C) subtracts its inputs, removing the common-mode part, and multiplies by <strong>RF ÷ RIN = 100</strong>.</li>
+<li>The overall gain is <strong>21 × 100 = 2100</strong>. A 1 mV imbalance becomes 2.1 V at OUT.</li>
+</ol>
+</div>
+
+<div class="demo" id="ia">
+<h4>Bridge and instrumentation amplifier</h4>
+<div class="controls">
+  <div class="field"><label for="ia-r">RVAL (R2)</label><input type="range" id="ia-r" min="9800" max="10200" step="1" value="10000"><output id="ia-ro" for="ia-r"></output></div>
+  <div class="field"><label for="ia-rb">RB</label><select id="ia-rb"><option>470</option><option selected>1k</option><option>2.2k</option><option>20k</option></select></div>
+  <label class="radio"><input type="checkbox" id="ia-cm"> Add 1 V to both inputs (common mode)</label>
+  <button type="button" class="btn" id="ia-bal">Balance (RVAL = 10k)</button>
+</div>
+<div class="demo-grid">
+  <dl class="readouts" id="ia-read" aria-live="polite"></dl>
+  <div>
+    <svg id="ia-meter" viewBox="0 0 300 70" role="img" aria-label="Output meter from minus 18 to plus 18 volts" style="width:100%;max-width:360px"></svg>
+    <p id="ia-say" aria-live="polite" style="margin:.4rem 0 0"></p>
+  </div>
+</div>
+</div>
+
+<div class="prose"><p>Lab 14 is a drawing lab: the handout asks only for the schematics, and Q Circuits marks them on the drawing. The demo shows what the circuit would do if you ran it.</p></div>
+<div class="pager"><span></span><button type="button" class="btn" data-complete="s14-1" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s14-2">Next: Mirroring parts</button></div></section>
+<section class="lesson" id="s14-2" data-title="Mirroring parts" aria-labelledby="s14-2-h" hidden><p class="sub-num">Section 14.2</p><h2 id="s14-2-h">Mirroring parts</h2><p class="lede prose">Why Lab 14 mirrors instead of rotating, and how to do it in Q Circuits.</p>
+<div class="prose">
+<p>Both Lab 14 drawings require parts to be <span class="term">mirror</span>ed, not rotated. Rotating turns the whole part; mirroring flips it like a reflection, so the pins swap sides but the part still faces the same way.</p>
+</div>
+<div class="drawing small" style="max-width:620px"><svg class="schem" id="mir" viewBox="0 0 540 150" role="group" aria-labelledby="mir-t mir-d"><title id="mir-t">Mirroring compared with rotating</title><desc id="mir-d">Three op-amp symbols. As placed: minus input on top, output on the right. Mirrored vertically: plus input on top, output still on the right, supply pins swapped. Rotated 180 degrees: the output points left, which is not what the handout wants.</desc><path class="w" d="M56 24 L112 60 L56 96 Z"/><path class="w" d="M40 40 h16 M40 80 h16 M112 60 h8 M80 20 V39 M80 100 V81"/><text class="val" x="60" y="46" text-anchor="start" >−</text><text class="val" x="60" y="86" text-anchor="start" >+</text><text class="net" x="24" y="44" text-anchor="end" >−</text><text class="net" x="24" y="84" text-anchor="end" >+</text><text class="val" x="80" y="16" text-anchor="middle" >V+</text><text class="val" x="80" y="118" text-anchor="middle" >V−</text><text class="lbl" x="60" y="140" text-anchor="middle" >As placed</text><path class="w" d="M236 24 L292 60 L236 96 Z"/><path class="w" d="M220 40 h16 M220 80 h16 M292 60 h8 M260 20 V39 M260 100 V81"/><text class="val" x="240" y="46" text-anchor="start" >+</text><text class="val" x="240" y="86" text-anchor="start" >−</text><text class="net" x="204" y="44" text-anchor="end" >+</text><text class="net" x="204" y="84" text-anchor="end" >−</text><text class="val" x="260" y="16" text-anchor="middle" >V−</text><text class="val" x="260" y="118" text-anchor="middle" >V+</text><text class="lbl" x="240" y="140" text-anchor="middle" >⇅ Mirrored vertically</text><g transform="rotate(180 460 60)"><path class="w" d="M436 24 L492 60 L436 96 Z"/><path class="w" d="M420 40 h16 M420 80 h16 M492 60 h8 M460 20 V39 M460 100 V81"/><text class="val" x="440" y="46" text-anchor="start" >−</text><text class="val" x="440" y="86" text-anchor="start" >+</text></g><text class="lbl" x="460" y="140" text-anchor="middle" >Rotated 180° (not this)</text></svg></div>
+<div class="prose">
+<h3>Mirroring in Q Circuits</h3>
+<ul>
+<li>Select the part and press <strong>⇆</strong> (Mirror horizontally: left and right swap) or <strong>⇅</strong> (Mirror vertically: top and bottom swap). They're on the toolbar next to Rotate. PSpice calls these Mirror Horizontally and Mirror Vertically.</li>
+<li>Pins, pin labels and the symbol all follow. Wires don't move, so after mirroring check that every wire still meets its pin.</li>
+<li><strong>14A:</strong> U1A is mirrored vertically so its + input is on top. U1B and U1C are not mirrored. The lab checks all three.</li>
+<li><strong>14B:</strong> J2 and Q3 are mirrored horizontally, so their gate and base face right. The lab checks both.</li>
+</ul>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s14-1">Previous section</button><button type="button" class="btn" data-complete="s14-2" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s14-3">Next: Lab 14A: drawing Figure 14-1</button></div></section>
+<section class="lesson" id="s14-3" data-title="Lab 14A: drawing Figure 14-1" aria-labelledby="s14-3-h" hidden><p class="sub-num">Section 14.3</p><h2 id="s14-3-h">Lab 14A: drawing Figure 14-1</h2><p class="lede prose">The instrumentation amplifier, its mirrored op amp and its no-dot crossing.</p>
+<div class="prose"><p>Open <strong>14A · Instrumentation amplifier</strong> and draw Figure 14-1.</p></div>
+<div class="btn-row" role="group" aria-label="Highlight part of the circuit">
+  <button type="button" class="btn" data-ovl-for="s14a" data-ovl="bridge" aria-pressed="false">Bridge</button>
+  <button type="button" class="btn" data-ovl-for="s14a" data-ovl="st1" aria-pressed="false">Input stage</button>
+  <button type="button" class="btn" data-ovl-for="s14a" data-ovl="st2" aria-pressed="false">Difference amplifier</button>
+  <button type="button" class="btn" data-ovl-for="s14a" data-ovl="x" aria-pressed="false">The crossing</button>
+  <button type="button" class="btn" data-ovl-for="s14a" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s14a-ovl-desc" aria-live="polite">Choose a part of the circuit to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing"><svg class="schem" id="s14a" viewBox="20 60 930 510" role="group" aria-labelledby="s14a-t s14a-d" data-panel="p14a"><title id="s14a-t">Lab 14A instrumentation amplifier</title><desc id="s14a-d">A split plus and minus 18 V supply. VS (DC 6) drives a bridge: R1 over R3 on the left and R2 ({RVAL}) over R4 on the right, all 10k otherwise. The R2-R4 junction is IN-, to the + input of U1A, which is mirrored so its + input is on top. The R1-R3 junction is IN+, to the + input of U1B; its wire crosses the R2-R4 line without connecting. RA1, RB and RA2 run in a column between the two op-amp outputs, with each op amp&#x27;s minus input at a junction. U1C is a difference amplifier with RIN1, RF1, RIN2 and RF2, and its output is OUT.</desc><polyline class="w" points="60,120 60,140"/><polyline class="w" points="60,260 60,280"/><polyline class="w" points="60,200 100,200"/><polyline class="w" points="180,300 180,200 340,200"/><polyline class="w" points="260,200 260,240"/><polyline class="w" points="340,200 340,240"/><polyline class="w" points="260,300 260,380"/><polyline class="w" points="340,300 340,380"/><polyline class="w" points="180,360 180,480 340,480"/><polyline class="w" points="260,440 260,480"/><polyline class="w" points="340,440 340,480"/><polyline class="w" points="340,320 420,320 420,140 500,140"/><polyline class="w" points="260,360 400,360 400,500 500,500"/><polyline class="w" points="540,100 540,120"/><polyline class="w" points="540,200 540,220"/><polyline class="w" points="580,160 640,160 640,200"/><polyline class="w" points="640,260 640,300"/><polyline class="w" points="640,280 480,280 480,180 500,180"/><polyline class="w" points="640,360 640,400"/><polyline class="w" points="640,380 480,380 480,460 500,460"/><polyline class="w" points="640,460 640,480"/><polyline class="w" points="580,480 640,480"/><polyline class="w" points="540,420 540,440"/><polyline class="w" points="540,520 540,540"/><polyline class="w" points="640,160 680,160"/><polyline class="w" points="740,160 800,160"/><polyline class="w" points="760,160 760,300 800,300"/><polyline class="w" points="860,160 920,160 920,320 880,320"/><polyline class="w" points="640,480 680,480"/><polyline class="w" points="740,480 800,480"/><polyline class="w" points="860,480 880,480"/><polyline class="w" points="760,480 760,340 800,340"/><polyline class="w" points="840,260 840,280"/><polyline class="w" points="840,360 840,380"/><g class="part" data-part="SPL" tabindex="0" role="button" aria-label="VS1, source, DC 18"><rect class="hit" x="40" y="138" width="86" height="64" rx="3"/><path class="w" d="M60 140 v24 M44 164 h32 M60 172 v28"/><rect class="fill" x="52" y="170" width="16" height="4"/><text class="val" x="36" y="160" text-anchor="start" >+</text><text class="val" x="36" y="188" text-anchor="start" >−</text><text class="lbl" x="82" y="152" text-anchor="start" >VS1</text><text class="val" x="82" y="168" text-anchor="start" >DC 18</text></g><path class="w" d="M60 200 v24 M44 224 h32 M60 232 v28"/><rect class="fill" x="52" y="230" width="16" height="4"/><text class="val" x="36" y="220" text-anchor="start" >+</text><text class="val" x="36" y="248" text-anchor="start" >−</text><text class="lbl" x="82" y="240" text-anchor="start" >VS2</text><text class="val" x="82" y="256" text-anchor="start" >DC 18</text><path class="w" d="M60 120 v-12 M48 108 h24"/><text class="net" x="60" y="102" text-anchor="middle" >VCC</text><path class="w" d="M60 280 v12 M48 292 h24"/><text class="net" x="60" y="308" text-anchor="middle" >VEE</text><g transform="rotate(270 100 200)"><path class="w" d="M100 200 v10 M86 210 h28 M91 215 h18 M96 220 h8"/></g><g class="part" data-part="PAR" tabindex="0" role="button" aria-label="Parameter part: RVAL = 10k"><rect class="hit" x="256" y="104" width="150" height="40" rx="3"/><text class="lbl" x="260" y="120">PARAMETERS:</text><line class="w" x1="260" y1="124" x2="392" y2="124"/><text class="val" x="260" y="138">RVAL = 10k</text></g><g class="part" data-part="VS" tabindex="0" role="button" aria-label="VS, source, DC 6"><rect class="hit" x="160" y="298" width="86" height="64" rx="3"/><path class="w" d="M180 300 v24 M164 324 h32 M180 332 v28"/><rect class="fill" x="172" y="330" width="16" height="4"/><text class="val" x="156" y="320" text-anchor="start" >+</text><text class="val" x="156" y="348" text-anchor="start" >−</text><text class="lbl" x="202" y="322" text-anchor="start" >VS</text><text class="val" x="202" y="338" text-anchor="start" >DC 6</text></g><g class="part" data-part="RBR" tabindex="0" role="button" aria-label="R1, resistor, 10k"><rect class="hit" x="250" y="238" width="60" height="64" rx="3"/><path class="w" d="M260 240 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="272" y="266" text-anchor="start" >R1</text><text class="val" x="272" y="282" text-anchor="start" >10k</text></g><g class="part" data-part="R2" tabindex="0" role="button" aria-label="R2, resistor, {RVAL}"><rect class="hit" x="330" y="238" width="60" height="64" rx="3"/><path class="w" d="M340 240 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="352" y="266" text-anchor="start" >R2</text><text class="val" x="352" y="282" text-anchor="start" >{RVAL}</text></g><g class="part" data-part="RBR" tabindex="0" role="button" aria-label="R3, resistor, 10k"><rect class="hit" x="250" y="378" width="60" height="64" rx="3"/><path class="w" d="M260 380 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="272" y="406" text-anchor="start" >R3</text><text class="val" x="272" y="422" text-anchor="start" >10k</text></g><g class="part" data-part="RBR" tabindex="0" role="button" aria-label="R4, resistor, 10k"><rect class="hit" x="330" y="378" width="60" height="64" rx="3"/><path class="w" d="M340 380 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="352" y="406" text-anchor="start" >R4</text><text class="val" x="352" y="422" text-anchor="start" >10k</text></g><g class="part" data-part="U1A" tabindex="0" role="button" aria-label="U1A, LM324 op amp, mirrored vertically so its + input is on top"><rect class="hit" x="498" y="118" width="84" height="84" rx="3"/><path class="w" d="M516 124 L572 160 L516 196 Z"/><path class="w" d="M500 140 h16 M500 180 h16 M572 160 h8 M540 120 V139 M540 200 V181"/><text class="val" x="520" y="146" text-anchor="start" >+</text><text class="val" x="520" y="186" text-anchor="start" >−</text><text class="lbl" x="556" y="196" text-anchor="start" >U1A</text></g><g class="part" data-part="U1B" tabindex="0" role="button" aria-label="U1B, LM324 op amp"><rect class="hit" x="498" y="438" width="84" height="84" rx="3"/><path class="w" d="M516 444 L572 480 L516 516 Z"/><path class="w" d="M500 460 h16 M500 500 h16 M572 480 h8 M540 440 V459 M540 520 V501"/><text class="val" x="520" y="466" text-anchor="start" >−</text><text class="val" x="520" y="506" text-anchor="start" >+</text><text class="lbl" x="556" y="454" text-anchor="start" >U1B</text></g><g class="part" data-part="U1C" tabindex="0" role="button" aria-label="U1C, LM324 op amp"><rect class="hit" x="798" y="278" width="84" height="84" rx="3"/><path class="w" d="M816 284 L872 320 L816 356 Z"/><path class="w" d="M800 300 h16 M800 340 h16 M872 320 h8 M840 280 V299 M840 360 V341"/><text class="val" x="820" y="306" text-anchor="start" >−</text><text class="val" x="820" y="346" text-anchor="start" >+</text><text class="lbl" x="856" y="294" text-anchor="start" >U1C</text></g><path class="w" d="M540 100 v-12 M528 88 h24"/><text class="net" x="540" y="82" text-anchor="middle" >VEE</text><path class="w" d="M540 220 v12 M528 232 h24"/><text class="net" x="540" y="248" text-anchor="middle" >VCC</text><path class="w" d="M540 420 v-12 M528 408 h24"/><text class="net" x="540" y="402" text-anchor="middle" >VCC</text><path class="w" d="M540 540 v12 M528 552 h24"/><text class="net" x="540" y="568" text-anchor="middle" >VEE</text><path class="w" d="M840 260 v-12 M828 248 h24"/><text class="net" x="840" y="242" text-anchor="middle" >VCC</text><path class="w" d="M840 380 v12 M828 392 h24"/><text class="net" x="840" y="408" text-anchor="middle" >VEE</text><g class="part" data-part="RA" tabindex="0" role="button" aria-label="RA1, resistor, 10k"><rect class="hit" x="630" y="198" width="60" height="64" rx="3"/><path class="w" d="M640 200 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="652" y="226" text-anchor="start" >RA1</text><text class="val" x="652" y="242" text-anchor="start" >10k</text></g><g class="part" data-part="RB" tabindex="0" role="button" aria-label="RB, resistor, 1k"><rect class="hit" x="630" y="298" width="60" height="64" rx="3"/><path class="w" d="M640 300 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="652" y="326" text-anchor="start" >RB</text><text class="val" x="652" y="342" text-anchor="start" >1k</text></g><g class="part" data-part="RA" tabindex="0" role="button" aria-label="RA2, resistor, 10k"><rect class="hit" x="630" y="398" width="60" height="64" rx="3"/><path class="w" d="M640 400 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="652" y="426" text-anchor="start" >RA2</text><text class="val" x="652" y="442" text-anchor="start" >10k</text></g><g class="part" data-part="RIN" tabindex="0" role="button" aria-label="RIN1, resistor, 10k"><rect class="hit" x="678" y="136" width="64" height="52" rx="3"/><path class="w" d="M680 160 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="698" y="150" text-anchor="start" >RIN1</text><text class="val" x="698" y="182" text-anchor="start" >10k</text></g><g class="part" data-part="RF" tabindex="0" role="button" aria-label="RF1, resistor, 1MEG"><rect class="hit" x="798" y="136" width="64" height="52" rx="3"/><path class="w" d="M800 160 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="818" y="150" text-anchor="start" >RF1</text><text class="val" x="818" y="182" text-anchor="start" >1MEG</text></g><g class="part" data-part="RIN" tabindex="0" role="button" aria-label="RIN2, resistor, 10k"><rect class="hit" x="678" y="456" width="64" height="52" rx="3"/><path class="w" d="M680 480 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="698" y="470" text-anchor="start" >RIN2</text><text class="val" x="698" y="502" text-anchor="start" >10k</text></g><g class="part" data-part="RF" tabindex="0" role="button" aria-label="RF2, resistor, 1MEG"><rect class="hit" x="798" y="456" width="64" height="52" rx="3"/><path class="w" d="M800 480 h12 l3 -6 l6 12 l6 -12 l6 12 l6 -12 l6 12 l3 -6 h12"/><text class="lbl" x="818" y="470" text-anchor="start" >RF2</text><text class="val" x="818" y="502" text-anchor="start" >1MEG</text></g><g transform="rotate(270 880 480)"><path class="w" d="M880 480 v10 M866 490 h28 M871 495 h18 M876 500 h8"/></g><circle class="dot" cx="60" cy="200" r="4"/><circle class="dot" cx="260" cy="200" r="4"/><circle class="dot" cx="260" cy="480" r="4"/><circle class="dot" cx="340" cy="320" r="4"/><circle class="dot" cx="260" cy="360" r="4"/><circle class="dot" cx="640" cy="160" r="4"/><circle class="dot" cx="640" cy="280" r="4"/><circle class="dot" cx="640" cy="380" r="4"/><circle class="dot" cx="640" cy="480" r="4"/><circle class="dot" cx="760" cy="160" r="4"/><circle class="dot" cx="760" cy="480" r="4"/><text class="net" x="380" y="134" text-anchor="start" >IN-</text><text class="net" x="360" y="494" text-anchor="start" >IN+</text><text class="net" x="886" y="154" text-anchor="start" >OUT</text><g class="ovl" data-ovl="bridge" hidden aria-hidden="true"><polyline points="180,300 180,200 340,200 340,480 180,480 180,360"/><polyline points="260,200 260,480"/></g><g class="ovl alt" data-ovl="st1" hidden aria-hidden="true"><polyline points="580,160 640,160 640,460"/><polyline points="640,280 480,280 480,180 500,180"/><polyline points="640,380 480,380 480,460 500,460"/><polyline points="580,480 640,480"/></g><g class="ovl" data-ovl="st2" hidden aria-hidden="true"><polyline points="640,160 800,160 920,160 920,320"/><polyline points="760,160 760,300 800,300"/><polyline points="640,480 880,480"/><polyline points="760,480 760,340 800,340"/></g><g class="ovl" data-ovl="x" hidden aria-hidden="true"><circle cx="340" cy="360" r="14"/></g></svg></div>
+  <div class="info-panel" id="p14a" aria-live="polite"><p class="hint">Select a part.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 14A</code> in the circuit name box.</li>
+<li>Place the split supply: VS1 and VS2 (<code>DC 18</code>) with <strong>VCC</strong> and <strong>VEE</strong> power symbols and the junction grounded.</li>
+<li>Draw the bridge: VS (<code>DC 6</code>) across two dividers, R1 over R3 and R2 over R4, all <code>10k</code> except R2 = <code>{RVAL}</code>. Place a <strong>Parameter</strong> part: RVAL = <code>10k</code>.</li>
+<li>Place three <strong>LM324</strong>s. Select U1A and press <strong>⇅</strong> so its + input is on top; U1B and U1C stay as placed.</li>
+<li>The R2–R4 junction is <code>IN-</code>, to U1A's + input. The R1–R3 junction is <code>IN+</code>, to U1B's + input. The IN+ wire crosses the R2–R4 line without joining it: <strong>no dot</strong>.</li>
+<li>RA1 (<code>10k</code>), RB (<code>1k</code>) and RA2 (<code>10k</code>) run in a column from U1A's output to U1B's output. U1A's − input joins the RA1–RB junction, and U1B's − input joins the RB–RA2 junction.</li>
+<li>RIN1 (<code>10k</code>) runs from U1A's output to U1C's − input, and RF1 (<code>1MEG</code>) from there to OUT. RIN2 (<code>10k</code>) runs from U1B's output to U1C's + input, and RF2 (<code>1MEG</code>) from there to ground.</li>
+<li>Power every op amp from VCC and VEE (remember U1A's supply pins are swapped), name U1C's output <code>OUT</code>, and press Check my work.</li>
+</ol>
+<div class="pager"><button type="button" class="btn" data-goto="s14-2">Previous section</button><button type="button" class="btn" data-complete="s14-3" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s14-4">Next: Inside an op amp</button></div></section>
+<section class="lesson" id="s14-4" data-title="Inside an op amp" aria-labelledby="s14-4-h" hidden><p class="sub-num">Section 14.4</p><h2 id="s14-4-h">Inside an op amp</h2><p class="lede prose">The stages of Figure 14-2 and the new parts it uses.</p>
+<div class="prose">
+<p>Every op amp you've used since Lab 5 is a complete multi-stage amplifier on one chip. Figure 14-2 is a simplified op amp built from discrete parts, so you can see what's inside.</p>
+</div>
+<div class="table-wrap"><table>
+<caption>The stages of Figure 14-2</caption>
+<thead><tr><th scope="col">Stage</th><th scope="col">Parts</th><th scope="col">Job</th></tr></thead>
+<tbody>
+<tr><td>Input differential pair</td><td>J1, J2, R2, R3</td><td>Responds to vin+ − vin-, with almost no input current</td></tr>
+<tr><td>Current source</td><td>Q1, R1, D1, D3, R6</td><td>Supplies the pair a constant “tail” current, so common-mode changes are ignored</td></tr>
+<tr><td>Second differential stage</td><td>Q2, Q3, R4, R5, R7</td><td>More gain</td></tr>
+<tr><td>Level shifter</td><td>Q4, R10, Q5 (with R8, D2, R9, R11)</td><td>Moves the signal down so the output can sit near 0 V</td></tr>
+<tr><td>Output stage</td><td>Q6, R12</td><td>An <span class="term">emitter follower</span>: low output resistance to drive a load</td></tr>
+</tbody></table></div>
+<div class="parts-grid">
+<article class="pcard"><header><svg class="schem" viewBox="0 0 60 56" aria-hidden="true" focusable="false"><path class="w" d="M4 28 h24 M28 10 v36 M28 16 H44 V2 M28 40 H44 V54"/><path class="fill" d="M26 28 l-8 -4 v8 z"/></svg><div><h4>N-channel JFET</h4><p class="ref">Toolbar: NJF, Model J2N3819</p></div></header>
+<p>A junction field-effect transistor. The gate voltage controls the drain–source current, and the gate draws almost no current.</p><details class="more"><summary>More about the JFET</summary><div class="more-body"><ul><li><strong>Pins:</strong> gate (left, arrow pointing in), drain (top), source (bottom).</li><li><strong>Why here:</strong> an op amp's inputs should load the circuit as little as possible; a JFET gate is nearly an open circuit.</li><li>The Q Circuits J2N3819 model is PSpice's, with a few parameters removed that the simulator can't accept.</li></ul></div></details></article>
+<article class="pcard"><header><svg class="schem" viewBox="0 0 64 56" aria-hidden="true" focusable="false"><path class="w" d="M8 28 h18 M46 28 h10 M44 16 v24"/><path class="fill" d="M26 16 L26 40 L44 28 Z"/></svg><div><h4>D1N914 and D1N750</h4><p class="ref">Toolbar: D, choose the Model</p></div></header>
+<p>D1N914 is a small-signal diode (a 0.7 V drop when forward biased). D1N750 is the 4.7 V zener from Lab 5.</p><details class="more"><summary>More about the diodes</summary><div class="more-body"><ul><li>D1 and D2 are forward biased: they cancel the transistors' base–emitter drops.</li><li>D3 is reverse biased in breakdown: it holds a steady 4.7 V reference. Place it with its anode toward vee.</li></ul></div></details></article>
+<article class="pcard"><header><svg class="schem" viewBox="0 0 60 56" aria-hidden="true" focusable="false"><path class="w" d="M30 40 v-18 M18 22 h24"/><text class="net" x="30" y="16" text-anchor="middle">vcc</text></svg><div><h4>Named power symbols</h4><p class="ref">Toolbar: Power symbol</p></div></header>
+<p>The handout places VCC/CAPSYM symbols named vcc, vee, vin+, vin- and vo. In Q Circuits use the Power symbol and type each name.</p><details class="more"><summary>More about the names</summary><div class="more-body"><ul><li>Symbols with the same name are connected, like net aliases.</li><li>Q Circuits keeps vin+ and vin- as separate nodes, even though SPICE node names can't contain + or -.</li><li>Rotate a symbol so its bar points away from the wire it labels.</li></ul></div></details></article>
+</div>
+
+<div class="demo" id="dp">
+<h4>The differential pair</h4>
+<p class="prose">A simplified model of J1 and J2 with Q1's constant tail current (about 1.2 mA) and 10 kΩ drain resistors, from a 15 V vcc.</p>
+<div class="controls">
+  <div class="field"><label for="dp-d">vin+ − vin-</label><input type="range" id="dp-d" min="-2" max="2" step="0.02" value="0"><output id="dp-do" for="dp-d"></output></div>
+  <div class="field"><label for="dp-c">Common-mode level</label><input type="range" id="dp-c" min="-3" max="3" step="0.1" value="0"><output id="dp-co" for="dp-c"></output></div>
+</div>
+<div class="demo-grid">
+  <dl class="readouts" id="dp-read" aria-live="polite"></dl>
+  <div><svg id="dp-bars" viewBox="0 0 300 150" role="img" aria-label="Bar chart of the two drain currents" style="width:100%;max-width:360px"></svg>
+  <p id="dp-say" aria-live="polite" style="margin:.4rem 0 0"></p></div>
+</div>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s14-3">Previous section</button><button type="button" class="btn" data-complete="s14-4" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s14-5">Next: Lab 14B: drawing Figure 14-2</button></div></section>
+<section class="lesson" id="s14-5" data-title="Lab 14B: drawing Figure 14-2" aria-labelledby="s14-5-h" hidden><p class="sub-num">Section 14.5</p><h2 id="s14-5-h">Lab 14B: drawing Figure 14-2</h2><p class="lede prose">A discrete op amp, stage by stage.</p>
+<div class="prose"><p>Open <strong>14B · Inside an operational amplifier</strong> and draw Figure 14-2. It's the largest drawing in the course: take it in stages.</p></div>
+<div class="btn-row" role="group" aria-label="Highlight a stage">
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="in" aria-pressed="false">Input pair</button>
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="tail" aria-pressed="false">Current source</button>
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="st2" aria-pressed="false">Second stage</button>
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="out" aria-pressed="false">Level shift and output</button>
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="x" aria-pressed="false">Crossings</button>
+  <button type="button" class="btn" data-ovl-for="s14b" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s14b-ovl-desc" aria-live="polite">Choose a stage to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing"><svg class="schem" id="s14b" viewBox="-40 0 1280 760" role="group" aria-labelledby="s14b-t s14b-d" data-panel="p14b"><title id="s14b-t">Lab 14B discrete operational amplifier (Figure 14-2)</title><desc id="s14b-d">A vcc rail across the top and a vee rail across the bottom. The input stage is a JFET differential pair, J1 and J2 (J2 mirrored), with drain resistors R2 and R3; their sources join and are fed by Q1, a current source biased by R1, D1 and zener D3, with emitter resistor R6. The second stage is the differential pair Q2 and Q3 (Q3 mirrored) with collector resistors R4 and R5 and a shared emitter resistor R7; J1&#x27;s drain crosses over to Q3&#x27;s base. Q4 follows Q3&#x27;s collector; R10 and the current sink Q5 (biased by R8, D2 and R9, with R11) shift the level; Q6 is the emitter-follower output at vo, loaded by R12. Inputs are vin+ and vin-.</desc><polyline class="w" points="100,40 1140,40"/><polyline class="w" points="100,720 1140,720"/><polyline class="w" points="100,40 100,100"/><polyline class="w" points="280,40 280,100"/><polyline class="w" points="400,40 400,100"/><polyline class="w" points="600,40 600,80"/><polyline class="w" points="680,40 680,80"/><polyline class="w" points="860,40 860,300"/><polyline class="w" points="980,40 980,100"/><polyline class="w" points="1140,40 1140,320"/><polyline class="w" points="100,160 100,500"/><polyline class="w" points="100,440 300,440"/><polyline class="w" points="100,560 100,620"/><polyline class="w" points="100,680 100,720"/><polyline class="w" points="340,480 340,560"/><polyline class="w" points="340,620 340,720"/><polyline class="w" points="40,300 240,300"/><polyline class="w" points="40,380 480,380 480,300 440,300"/><polyline class="w" points="280,340 280,360 400,360 400,340"/><polyline class="w" points="340,360 340,400"/><polyline class="w" points="280,160 280,260"/><polyline class="w" points="400,160 400,260"/><polyline class="w" points="400,200 560,200"/><polyline class="w" points="280,220 500,220 500,420 780,420 780,200 720,200"/><polyline class="w" points="600,140 600,160"/><polyline class="w" points="680,140 680,160"/><polyline class="w" points="600,240 600,280 680,280 680,240"/><polyline class="w" points="640,280 640,560"/><polyline class="w" points="640,620 640,720"/><polyline class="w" points="680,140 940,140"/><polyline class="w" points="980,180 980,240"/><polyline class="w" points="980,300 980,400"/><polyline class="w" points="980,360 1100,360"/><polyline class="w" points="860,360 860,500"/><polyline class="w" points="860,440 940,440"/><polyline class="w" points="860,560 860,600"/><polyline class="w" points="860,660 860,720"/><polyline class="w" points="980,480 980,560"/><polyline class="w" points="980,620 980,720"/><polyline class="w" points="1140,400 1140,560"/><polyline class="w" points="1140,620 1140,720"/><polyline class="w" points="1140,480 1200,480"/><path class="w" d="M620 40 v-12 M608 28 h24"/><text class="net" x="620" y="22" text-anchor="middle" >vcc</text><path class="w" d="M620 720 v12 M608 732 h24"/><text class="net" x="620" y="748" text-anchor="middle" >vee</text><path class="w" d="M40 300 h-12 M28 288 v24"/><text class="net" x="24" y="304" text-anchor="end" >vin+</text><path class="w" d="M40 380 h-12 M28 368 v24"/><text class="net" x="24" y="384" text-anchor="end" >vin-</text><path class="w" d="M1200 480 h12 M1212 468 v24"/><text class="net" x="1216" y="484" text-anchor="start" >vo</text><g class="part" data-part="R1b" tabindex="0" role="button" aria-label="R1, resistor, 15.3k"><rect class="hit" x="90" y="98" width="60" height="64" rx="3"/><path class="w" d="M100 100 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="112" y="126" text-anchor="start" >R1</text><text class="val" x="112" y="142" text-anchor="start" >15.3k</text></g><g class="part" data-part="D1" tabindex="0" role="button" aria-label="D1, diode D1N914"><rect class="hit" x="88" y="498" width="80" height="64" rx="3"/><path class="w" d="M100 500 v20 M100 540 v20"/><path class="fill" d="M91 520 L109 520 L100 538 Z"/><path class="w" d="M91 538 h18"/><text class="lbl" x="114" y="526" text-anchor="start" >D1</text><text class="val" x="114" y="542" text-anchor="start" >D1N914</text></g><g class="part" data-part="D3" tabindex="0" role="button" aria-label="D3, Zener diode D1N750"><rect class="hit" x="88" y="618" width="80" height="64" rx="3"/><path class="w" d="M100 620 v20 M100 660 v20"/><path class="fill" d="M91 660 L109 660 L100 642 Z"/><path class="w" d="M91 642 h-4 M91 642 h18 v-4"/><text class="lbl" x="114" y="646" text-anchor="start" >D3</text><text class="val" x="114" y="662" text-anchor="start" >D1N750</text></g><g class="part" data-part="Q1s" tabindex="0" role="button" aria-label="Q1, NPN transistor Q2N2222"><rect class="hit" x="296" y="398" width="48" height="84" rx="3"/><path class="w" d="M300 440 h22 M322 424 v32 M322 433 L340 420 V400 M322 447 L340 460 V480"/><path class="fill" d="M338 459 l-10 -1 l5 -8 z"/><text class="lbl" x="346" y="436" text-anchor="start" >Q1</text><text class="val" x="346" y="452" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="R6" tabindex="0" role="button" aria-label="R6, resistor, 4k"><rect class="hit" x="330" y="558" width="60" height="64" rx="3"/><path class="w" d="M340 560 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="352" y="586" text-anchor="start" >R6</text><text class="val" x="352" y="602" text-anchor="start" >4k</text></g><g class="part" data-part="J1" tabindex="0" role="button" aria-label="J1, N-channel JFET J2N3819"><rect class="hit" x="236" y="258" width="48" height="84" rx="3"/><path class="w" d="M240 300 h24 M264 282 v36 M264 288 H280 V260 M264 312 H280 V340"/><path class="fill" d="M262 300 l-8 -4 v8 z"/><text class="lbl" x="234" y="272" text-anchor="end" >J1</text><text class="val" x="234" y="288" text-anchor="end" >J2N3819</text></g><g class="part" data-part="J2" tabindex="0" role="button" aria-label="J2, N-channel JFET J2N3819, mirrored"><rect class="hit" x="396" y="258" width="48" height="84" rx="3"/><g transform="translate(440 300) scale(-1 1) translate(-440 -300)"><path class="w" d="M440 300 h24 M464 282 v36 M464 288 H480 V260 M464 312 H480 V340"/><path class="fill" d="M462 300 l-8 -4 v8 z"/></g><text class="lbl" x="446" y="272" text-anchor="start" >J2</text><text class="val" x="446" y="288" text-anchor="start" >J2N3819</text></g><g class="part" data-part="RD" tabindex="0" role="button" aria-label="R2, resistor, 10k"><rect class="hit" x="270" y="98" width="60" height="64" rx="3"/><path class="w" d="M280 100 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="292" y="126" text-anchor="start" >R2</text><text class="val" x="292" y="142" text-anchor="start" >10k</text></g><g class="part" data-part="RD" tabindex="0" role="button" aria-label="R3, resistor, 10k"><rect class="hit" x="390" y="98" width="60" height="64" rx="3"/><path class="w" d="M400 100 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="412" y="126" text-anchor="start" >R3</text><text class="val" x="412" y="142" text-anchor="start" >10k</text></g><g class="part" data-part="Q2s" tabindex="0" role="button" aria-label="Q2, NPN transistor Q2N2222"><rect class="hit" x="556" y="158" width="48" height="84" rx="3"/><path class="w" d="M560 200 h22 M582 184 v32 M582 193 L600 180 V160 M582 207 L600 220 V240"/><path class="fill" d="M598 219 l-10 -1 l5 -8 z"/><text class="lbl" x="544" y="170" text-anchor="end" >Q2</text><text class="val" x="544" y="186" text-anchor="end" >Q2N2222</text></g><g class="part" data-part="Q3s" tabindex="0" role="button" aria-label="Q3, NPN transistor Q2N2222, mirrored"><rect class="hit" x="676" y="158" width="48" height="84" rx="3"/><g transform="translate(720 200) scale(-1 1) translate(-720 -200)"><path class="w" d="M720 200 h22 M742 184 v32 M742 193 L760 180 V160 M742 207 L760 220 V240"/><path class="fill" d="M758 219 l-10 -1 l5 -8 z"/></g><text class="lbl" x="736" y="170" text-anchor="start" >Q3</text><text class="val" x="736" y="186" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="RCs" tabindex="0" role="button" aria-label="R4, resistor, 10k"><rect class="hit" x="590" y="78" width="60" height="64" rx="3"/><path class="w" d="M600 80 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="612" y="106" text-anchor="start" >R4</text><text class="val" x="612" y="122" text-anchor="start" >10k</text></g><g class="part" data-part="RCs" tabindex="0" role="button" aria-label="R5, resistor, 10k"><rect class="hit" x="670" y="78" width="60" height="64" rx="3"/><path class="w" d="M680 80 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="692" y="106" text-anchor="start" >R5</text><text class="val" x="692" y="122" text-anchor="start" >10k</text></g><g class="part" data-part="R7" tabindex="0" role="button" aria-label="R7, resistor, 14.3k"><rect class="hit" x="630" y="558" width="60" height="64" rx="3"/><path class="w" d="M640 560 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="652" y="586" text-anchor="start" >R7</text><text class="val" x="652" y="602" text-anchor="start" >14.3k</text></g><g class="part" data-part="Q4s" tabindex="0" role="button" aria-label="Q4, NPN transistor Q2N2222"><rect class="hit" x="936" y="98" width="48" height="84" rx="3"/><path class="w" d="M940 140 h22 M962 124 v32 M962 133 L980 120 V100 M962 147 L980 160 V180"/><path class="fill" d="M978 159 l-10 -1 l5 -8 z"/><text class="lbl" x="986" y="136" text-anchor="start" >Q4</text><text class="val" x="986" y="152" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="R10" tabindex="0" role="button" aria-label="R10, resistor, 3.6k"><rect class="hit" x="970" y="238" width="60" height="64" rx="3"/><path class="w" d="M980 240 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="992" y="266" text-anchor="start" >R10</text><text class="val" x="992" y="282" text-anchor="start" >3.6k</text></g><g class="part" data-part="R8" tabindex="0" role="button" aria-label="R8, resistor, 14.3k"><rect class="hit" x="850" y="298" width="60" height="64" rx="3"/><path class="w" d="M860 300 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="872" y="326" text-anchor="start" >R8</text><text class="val" x="872" y="342" text-anchor="start" >14.3k</text></g><g class="part" data-part="D2" tabindex="0" role="button" aria-label="D2, diode D1N914"><rect class="hit" x="848" y="498" width="80" height="64" rx="3"/><path class="w" d="M860 500 v20 M860 540 v20"/><path class="fill" d="M851 520 L869 520 L860 538 Z"/><path class="w" d="M851 538 h18"/><text class="lbl" x="874" y="526" text-anchor="start" >D2</text><text class="val" x="874" y="542" text-anchor="start" >D1N914</text></g><g class="part" data-part="R8" tabindex="0" role="button" aria-label="R9, resistor, 5k"><rect class="hit" x="850" y="598" width="60" height="64" rx="3"/><path class="w" d="M860 600 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="872" y="626" text-anchor="start" >R9</text><text class="val" x="872" y="642" text-anchor="start" >5k</text></g><g class="part" data-part="Q5s" tabindex="0" role="button" aria-label="Q5, NPN transistor Q2N2222"><rect class="hit" x="936" y="398" width="48" height="84" rx="3"/><path class="w" d="M940 440 h22 M962 424 v32 M962 433 L980 420 V400 M962 447 L980 460 V480"/><path class="fill" d="M978 459 l-10 -1 l5 -8 z"/><text class="lbl" x="986" y="436" text-anchor="start" >Q5</text><text class="val" x="986" y="452" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="R8" tabindex="0" role="button" aria-label="R11, resistor, 5k"><rect class="hit" x="970" y="558" width="60" height="64" rx="3"/><path class="w" d="M980 560 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="992" y="586" text-anchor="start" >R11</text><text class="val" x="992" y="602" text-anchor="start" >5k</text></g><g class="part" data-part="Q6s" tabindex="0" role="button" aria-label="Q6, NPN transistor Q2N2222"><rect class="hit" x="1096" y="318" width="48" height="84" rx="3"/><path class="w" d="M1100 360 h22 M1122 344 v32 M1122 353 L1140 340 V320 M1122 367 L1140 380 V400"/><path class="fill" d="M1138 379 l-10 -1 l5 -8 z"/><text class="lbl" x="1146" y="356" text-anchor="start" >Q6</text><text class="val" x="1146" y="372" text-anchor="start" >Q2N2222</text></g><g class="part" data-part="R12" tabindex="0" role="button" aria-label="R12, resistor, 10k"><rect class="hit" x="1130" y="558" width="60" height="64" rx="3"/><path class="w" d="M1140 560 v12 l6 3 l-12 6 l12 6 l-12 6 l12 6 l-12 6 l6 3 v12"/><text class="lbl" x="1152" y="586" text-anchor="start" >R12</text><text class="val" x="1152" y="602" text-anchor="start" >10k</text></g><circle class="dot" cx="280" cy="40" r="4"/><circle class="dot" cx="400" cy="40" r="4"/><circle class="dot" cx="600" cy="40" r="4"/><circle class="dot" cx="680" cy="40" r="4"/><circle class="dot" cx="860" cy="40" r="4"/><circle class="dot" cx="980" cy="40" r="4"/><circle class="dot" cx="100" cy="440" r="4"/><circle class="dot" cx="340" cy="720" r="4"/><circle class="dot" cx="340" cy="360" r="4"/><circle class="dot" cx="400" cy="200" r="4"/><circle class="dot" cx="280" cy="220" r="4"/><circle class="dot" cx="680" cy="140" r="4"/><circle class="dot" cx="640" cy="280" r="4"/><circle class="dot" cx="640" cy="720" r="4"/><circle class="dot" cx="980" cy="360" r="4"/><circle class="dot" cx="860" cy="440" r="4"/><circle class="dot" cx="860" cy="720" r="4"/><circle class="dot" cx="980" cy="720" r="4"/><circle class="dot" cx="1140" cy="480" r="4"/><circle class="dot" cx="620" cy="40" r="4"/><circle class="dot" cx="620" cy="720" r="4"/><g class="ovl" data-ovl="in" hidden aria-hidden="true"><polyline points="40,300 240,300"/><polyline points="40,380 480,380 480,300 440,300"/><polyline points="280,100 280,340"/><polyline points="400,100 400,340"/><polyline points="280,360 400,360"/></g><g class="ovl alt" data-ovl="tail" hidden aria-hidden="true"><polyline points="100,100 100,720"/><polyline points="100,440 300,440"/><polyline points="340,360 340,720"/></g><g class="ovl" data-ovl="st2" hidden aria-hidden="true"><polyline points="400,200 560,200"/><polyline points="280,220 500,220 500,420 780,420 780,200 720,200"/><polyline points="600,80 600,280 680,280 680,80"/><polyline points="640,280 640,720"/></g><g class="ovl alt" data-ovl="out" hidden aria-hidden="true"><polyline points="680,140 940,140"/><polyline points="980,100 980,400"/><polyline points="980,360 1100,360"/><polyline points="860,300 860,720"/><polyline points="860,440 940,440"/><polyline points="1140,320 1140,720"/><polyline points="1140,480 1200,480"/></g><g class="ovl" data-ovl="x" hidden aria-hidden="true"><circle cx="400" cy="220" r="12"/><circle cx="100" cy="300" r="12"/><circle cx="100" cy="380" r="12"/><circle cx="340" cy="380" r="12"/><circle cx="500" cy="380" r="12"/></g></svg></div>
+  <div class="info-panel" id="p14b" aria-live="polite"><p class="hint">Select a part.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 14B</code> in the circuit name box.</li>
+<li><strong>Place every part first</strong>, lining up the columns as Figure 14-2 does: R1–R12, J1 and J2 (<strong>NJF</strong>, J2N3819), Q1–Q6 (NPN, Q2N2222), D1 and D2 (D1N914) and D3 (D1N750).</li>
+<li>Select J2 and Q3 and press <strong>⇆</strong>, so J2's gate and Q3's base face right.</li>
+<li>Draw a vcc rail across the top and a vee rail across the bottom, and label them with power symbols named <code>vcc</code> and <code>vee</code>. Add power symbols named <code>vin+</code>, <code>vin-</code> and <code>vo</code> for the inputs and output.</li>
+<li>Wire it as Figure 14-2 shows. <strong>Check every crossing</strong> against the figure: a dot means the wires join; no dot means they only cross.</li>
+<li><strong>Front end:</strong> R1, D1 and D3 bias Q1, whose collector feeds both JFET sources. vin+ drives J1's gate and vin- J2's gate. R2 and R3 load the drains.</li>
+<li><strong>Second stage:</strong> J2's drain drives Q2's base, and J1's drain crosses over to Q3's base. R4 and R5 are the collector loads; the emitters share R7.</li>
+<li><strong>Output:</strong> Q3's collector drives Q4. R8, D2 and R9 bias Q5 under R10 and R11. Q4's emitter, through R10, drives Q6's base, and Q6's emitter is vo, loaded by R12. Press Check my work.</li>
+</ol>
+<div class="callout warn prose"><p><strong class="k">“No ground” is expected.</strong> Like the handout's figure, this circuit has no ground: its supplies and inputs come from outside the sheet. Parts and connections will say No ground; the lab is marked on the drawing, so that's fine here.</p></div>
+<div class="pager"><button type="button" class="btn" data-goto="s14-4">Previous section</button><button type="button" class="btn" data-complete="s14-5" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s14-6">Next: Troubleshooting and wrap-up</button></div></section>
+<section class="lesson" id="s14-6" data-title="Troubleshooting and wrap-up" aria-labelledby="s14-6-h" hidden><p class="sub-num">Section 14.6</p><h2 id="s14-6-h">Troubleshooting and wrap-up</h2><p class="lede prose">Common fixes, a quiz, the checklist and the vocabulary.</p>
+<div class="prose"><h3>When something looks wrong</h3></div>
+<div class="table-wrap"><table>
+<caption>Common Lab 14 problems and fixes</caption>
+<thead><tr><th scope="col">What Check my work says</th><th scope="col">Likely cause</th><th scope="col">Fix</th></tr></thead>
+<tbody>
+<tr><td>U1A should be mirrored top to bottom</td><td>U1A was rotated, or not mirrored</td><td>Reset its rotation, then press ⇅ once</td></tr>
+<tr><td>U1A's + input is not IN- (after mirroring)</td><td>Wires still point at the old pin positions</td><td>Re-draw the wires to the moved pins</td></tr>
+<tr><td>IN+ and IN- are the same node</td><td>A dot at the bridge crossing</td><td>Delete the wire and draw it straight across</td></tr>
+<tr><td>R2's value is flagged</td><td>{RVAL} typed without braces, or no Parameter part</td><td>Use <code>{RVAL}</code> and place the Parameter part</td></tr>
+<tr><td>J2 or Q3 should be mirrored</td><td>Rotated instead of mirrored</td><td>Reset rotation and press ⇆</td></tr>
+<tr><td>A transistor pin is on the wrong node</td><td>A crossing joined, or a join was left open</td><td>Compare with Figure 14-2 using the highlight buttons</td></tr>
+<tr><td>RF shows as 1 milliohm</td><td>Typed 1M</td><td>Type <code>1MEG</code></td></tr>
+</tbody></table></div>
+<div class="prose"><h3>Check your understanding</h3></div>
+<div class="quiz" data-quiz="lab14"></div>
+<div class="prose"><h3>Before you finish</h3><p>Your instructor will tell you how to submit. In Q Circuits, a lab is done when Check my work passes every check and the lab shows ✓ Passed.</p></div>
+<ul class="checklist">
+<li><input type="checkbox" id="c14s1"><label for="c14s1">14A: LAB 14A; split supply; bridge with R2 = {RVAL} and RVAL = 10k; three LM324s with only U1A mirrored; no dot at the IN+ crossing; OUT named.</label></li>
+<li><input type="checkbox" id="c14s2"><label for="c14s2">14B: LAB 14B; all 23 parts with the right values and models; J2 and Q3 mirrored; vcc, vee, vin+, vin- and vo symbols; every crossing matches Figure 14-2.</label></li>
+<li><input type="checkbox" id="c14s3"><label for="c14s3">Both labs show ✓ Passed.</label></li>
+</ul>
+<div class="prose">
+<h3>Glossary</h3>
+<p>Dotted-underlined words in the lesson show their definition when you point at, tap or tab to them. The <a href="glossary.html" target="_blank" rel="noopener">full course glossary (opens in a new tab)</a> is searchable.</p>
+<dl class="gloss">
+<dt>Instrumentation amplifier</dt><dd>Amplifies a small difference and rejects the common part.</dd>
+<dt>Bridge</dt><dd>Two voltage dividers side by side; their difference shows a small change.</dd>
+<dt>Common mode</dt><dd>The voltage both inputs share.</dd>
+<dt>Mirror</dt><dd>Flip a part left–right or top–bottom without rotating it.</dd>
+<dt>JFET</dt><dd>A transistor controlled by gate voltage, with almost no gate current.</dd>
+<dt>Differential pair</dt><dd>Two matched transistors sharing a current; their difference steers it.</dd>
+<dt>Current source</dt><dd>A circuit that supplies a steady current.</dd>
+<dt>Emitter follower</dt><dd>A transistor stage that copies a voltage with low output resistance.</dd>
+</dl>
+<h3>You've reached the end of the lab series</h3>
+<p>From reading a schematic in Lab 4 to drawing the inside of an op amp here, you've used every analysis type in Q Circuits (operating point, DC sweep, AC sweep and transient), in both analog and digital circuits.</p>
+</div>
+<div class="callout prose"><p><strong class="k">Next.</strong> <a href="index.html">Back to all lab lessons</a></p></div><div class="pager"><button type="button" class="btn" data-goto="s14-5">Previous section</button><button type="button" class="btn" data-complete="s14-6" aria-pressed="false">Mark this section complete</button><span></span></div></section>
+  </main>
+</div>
+<p id="live" class="visually-hidden" aria-live="polite"></p>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026. This lesson accompanies the Lab 14 handout; follow the handout for exact submission steps.</p></footer>
+<script type="application/json" id="parts-data">{"SPL": {"name": "VS1 and VS2: \u00b118 V supply", "what": "Powers the three op amps: VCC is +18 V and VEE is \u221218 V.", "props": [["Values", "DC 18 each"]]}, "PAR": {"name": "Parameter part: RVAL = 10k", "what": "Sets R2's value by name, as in Labs 7 and 8.", "props": [["Toolbar", "Parameter"]], "here": "Changing RVAL unbalances the bridge."}, "VS": {"name": "VS: bridge supply, DC 6", "what": "Powers the bridge.", "props": [["Value", "DC 6"]]}, "RBR": {"name": "Bridge resistor, 10 k\u03a9", "what": "One arm of the bridge.", "props": [["Value", "10k"]]}, "R2": {"name": "R2: {RVAL}", "what": "The \u201csensor\u201d arm: in a real instrument this would be a strain gauge or thermistor whose resistance changes.", "props": [["Value", "{RVAL}"]]}, "U1A": {"name": "U1A: LM324, mirrored", "what": "Input buffer for IN-.", "props": [["Mirror", "\u21c5 (vertically): + input on top"], ["Model", "LM324"]], "here": "The handout requires this mirroring. Mirroring also moves the supply pins: V\u2212 is now on top, so the VEE symbol goes above it."}, "U1B": {"name": "U1B: LM324", "what": "Input buffer for IN+. Not mirrored.", "props": [["Model", "LM324"]]}, "U1C": {"name": "U1C: LM324 difference amplifier", "what": "Outputs 100 \u00d7 (its + input \u2212 its \u2212 input).", "props": [["Model", "LM324"]]}, "RA": {"name": "RA1 / RA2: 10 k\u03a9", "what": "Feedback resistors of the input stage.", "props": [["Value", "10k"]]}, "RB": {"name": "RB: 1 k\u03a9 gain resistor", "what": "The one resistor that sets the input stage's gain: 1 + 2RA \u00f7 RB.", "props": [["Value", "1k"]], "here": "Real instrumentation amplifiers let you choose the gain with this single resistor."}, "RIN": {"name": "RIN1 / RIN2: 10 k\u03a9", "what": "Input resistors of the difference amplifier.", "props": [["Value", "10k"]]}, "RF": {"name": "RF1 / RF2: 1 M\u03a9", "what": "Set the difference amplifier's gain, RF \u00f7 RIN = 100.", "props": [["Value", "1MEG (not 1M, which is milli)"]]}, "R1b": {"name": "R1: 15.3 k\u03a9", "what": "Feeds current from vcc into the bias diodes for Q1.", "props": [["Value", "15.3k"]]}, "D1": {"name": "D1: D1N914 diode", "what": "A small-signal diode, forward biased. Its 0.7 V drop matches Q1's base\u2013emitter drop.", "props": [["Toolbar", "D"], ["Model", "D1N914"]]}, "D3": {"name": "D3: D1N750 zener", "what": "A 4.7 V zener, reverse biased, giving a steady reference. It's placed turned so its anode is at vee.", "props": [["Model", "D1N750"], ["Rotation", "anode down (toward vee)"]]}, "Q1s": {"name": "Q1: current source", "what": "With its base held steady, its emitter sits about 4.7 V above vee, so R6 (4k) sets a constant current of about 1.2 mA.", "props": [["Model", "Q2N2222"]], "here": "Its collector feeds both JFET sources: the \u201ctail\u201d current of the differential pair."}, "R6": {"name": "R6: 4 k\u03a9", "what": "Sets Q1's current.", "props": [["Value", "4k"]]}, "J1": {"name": "J1: N-channel JFET", "what": "A field-effect transistor: the gate voltage controls the drain\u2013source current, with almost no gate current. That's why op-amp inputs draw so little.", "props": [["Toolbar", "NJF"], ["Model", "J2N3819"], ["Pins", "gate left, drain top, source bottom"]], "here": "Its gate is vin+."}, "J2": {"name": "J2: N-channel JFET, mirrored", "what": "J1's partner. Its gate is vin-.", "props": [["Mirror", "\u21c6 (horizontally): gate on the right"]], "here": "The handout says J2 is mirrored, not rotated. Rotating it 180\u00b0 would put its drain at the bottom."}, "RD": {"name": "R2 / R3: 10 k\u03a9 drain loads", "what": "Turn the JFET currents into voltages.", "props": [["Value", "10k"]]}, "Q2s": {"name": "Q2: second stage", "what": "Base driven by J2's drain.", "props": [["Model", "Q2N2222"]]}, "Q3s": {"name": "Q3: second stage, mirrored", "what": "Base driven by J1's drain, which crosses over the circuit to reach it.", "props": [["Mirror", "\u21c6 (horizontally)"]]}, "RCs": {"name": "R4 / R5: 10 k\u03a9 collector loads", "what": "Load the second-stage pair.", "props": [["Value", "10k"]]}, "R7": {"name": "R7: 14.3 k\u03a9 tail", "what": "The shared emitter resistor of Q2 and Q3.", "props": [["Value", "14.3k"]]}, "Q4s": {"name": "Q4: emitter follower", "what": "Copies Q3's collector voltage (less 0.7 V) without loading it.", "props": [["Model", "Q2N2222"]]}, "R10": {"name": "R10: 3.6 k\u03a9 level shifter", "what": "With Q5's steady current, drops a fixed voltage so the output can sit near 0 V.", "props": [["Value", "3.6k"]]}, "R8": {"name": "R8, R9, R11: Q5 bias", "what": "With D2, set Q5's constant current.", "props": [["Values", "R8 14.3k, R9 5k, R11 5k"]]}, "D2": {"name": "D2: D1N914", "what": "Part of Q5's bias chain.", "props": [["Model", "D1N914"]]}, "Q5s": {"name": "Q5: current sink", "what": "Draws a constant current through R10.", "props": [["Model", "Q2N2222"]]}, "Q6s": {"name": "Q6: output emitter follower", "what": "Drives vo with low output resistance.", "props": [["Model", "Q2N2222"]]}, "R12": {"name": "R12: 10 k\u03a9", "what": "Load from vo to vee.", "props": [["Value", "10k"]]}}</script>
+<script type="application/json" id="s14a-ovl">{"bridge": "The bridge: two voltage dividers across VS. When R2 equals R4 (RVAL = 10k), both junctions sit at 3 V and the difference is zero.", "st1": "Stage 1, the input buffers: U1A and U1B with RA1, RB and RA2. The differential gain is 1 + 2RA \u00f7 RB = 21, and the inputs draw almost no current from the bridge.", "st2": "Stage 2, the difference amplifier: U1C subtracts its two inputs and multiplies by RF \u00f7 RIN = 100.", "x": "Here the IN+ wire crosses the R2\u2013R4 line. It must not connect: no dot. Joining them would short the two bridge outputs together.", "none": ""}</script>
+<script type="application/json" id="s14b-ovl">{"in": "Input stage: the JFET differential pair J1 and J2. The difference between vin+ and vin- steers the shared current between their drains, R2 and R3.", "tail": "Current source: R1, D1 and the zener D3 hold Q1's base at a fixed voltage, so Q1 feeds the JFET pair a constant current through R6.", "st2": "Second stage: another differential pair, Q2 and Q3, amplifies the difference between the JFET drains. Note J1's drain crosses over to Q3 on the far side.", "out": "Output: Q4 follows Q3's collector, R10 and the Q5 current sink shift the level down toward zero, and the emitter follower Q6 drives vo with low output resistance.", "x": "Crossings that don't connect: J1's drain wire passes R3's line; vin+ and vin- pass the bias column at R1's wire; vin- also passes Q1's collector line and the wire to Q3's base. Compare every crossing with Figure 14-2.", "none": ""}</script>
+<script type="application/json" id="quiz-lab14">[{"q": "What does an instrumentation amplifier amplify?", "choices": ["The difference between its two inputs, while ignoring what they have in common", "The sum of its inputs", "Only positive voltages", "Current"], "answer": 0, "explain": "That's why it suits bridge sensors: the useful signal is a tiny difference on top of a large common voltage."}, {"q": "With RVAL = 10k, what is the voltage difference between IN+ and IN-?", "choices": ["0 V: the bridge is balanced", "3 V", "6 V", "1.5 V"], "answer": 0, "explain": "Both junctions sit at 3 V."}, {"q": "What is the gain of the 14A input stage (RA = 10k, RB = 1k)?", "choices": ["21", "10", "11", "100"], "answer": 0, "explain": "1 + 2 \u00d7 10k \u00f7 1k = 21."}, {"q": "What is the overall differential gain of the 14A circuit?", "choices": ["2100", "121", "100", "21"], "answer": 0, "explain": "21 \u00d7 100: gains multiply."}, {"q": "Why must U1A be mirrored rather than rotated?", "choices": ["Mirroring puts the + input on top while keeping the output on the right", "Rotation isn't allowed", "Mirroring changes the gain", "It's only cosmetic"], "answer": 0, "explain": "Rotating 180\u00b0 would point the output left."}, {"q": "What happens to U1A's supply pins when it is mirrored vertically?", "choices": ["They swap: V\u2212 is on top", "Nothing", "They disappear", "They move to the right"], "answer": 0, "explain": "Everything flips, pins included, so the VEE symbol goes above it."}, {"q": "What must happen where the IN+ wire crosses the R2\u2013R4 line?", "choices": ["Nothing: they cross with no dot", "A junction dot", "A bus entry", "A port"], "answer": 0, "explain": "A connection there would short the bridge outputs."}, {"q": "What is a JFET's main advantage as an op-amp input?", "choices": ["Its gate draws almost no current", "It is cheaper", "It amplifies more", "It needs no power"], "answer": 0, "explain": "Very high input resistance."}, {"q": "What does Q1 do in the 14B circuit?", "choices": ["Supplies a constant current to the JFET pair", "Amplifies the output", "Protects the input", "Sets the output voltage"], "answer": 0, "explain": "It's the tail current source of the differential pair."}, {"q": "What does the zener diode D3 provide?", "choices": ["A steady reference voltage for Q1's base", "Rectification", "Overvoltage protection for vo", "Gain"], "answer": 0, "explain": "About 4.7 V, so Q1's current stays constant."}, {"q": "Why does Q Circuits report \u201cNo ground\u201d for 14B?", "choices": ["The handout's circuit has none: its supplies and inputs come from outside the sheet", "A part is missing", "The rails are wired wrong", "JFETs need ground"], "answer": 0, "explain": "That's expected here; the lab is marked on the drawing."}, {"q": "Which parts in 14B are mirrored horizontally?", "choices": ["J2 and Q3", "J1 and Q2", "Q4 and Q6", "All the transistors"], "answer": 0, "explain": "The handout says so, and the lab checks it."}]</script>
+<script type="application/json" id="glossary-data">[{"term": "AC (alternating current)", "def": "Current or voltage that keeps reversing direction, usually as a smooth sine wave.", "labs": [5], "aka": ["ac", "alternating current"]}, {"term": "AC sweep", "def": "An analysis that feeds the circuit a sine wave at many frequencies and plots how the output changes with frequency.", "labs": [5], "aka": ["ac sweep analysis"]}, {"term": "Amplitude", "def": "How big a wave is: the distance from its centre line to its peak.", "labs": [5], "aka": []}, {"term": "Analysis panel", "def": "The Q Circuits panel where you choose what the simulator calculates (Operating point, DC sweep, Transient or AC sweep) and its settings.", "labs": [5], "aka": []}, {"term": "Anode", "def": "The terminal of a diode that current enters when the diode conducts. It's the triangle side of the symbol.", "labs": [5], "aka": []}, {"term": "Band-pass filter", "def": "A filter that passes a middle range of frequencies and weakens both lower and higher ones. Lab 5A's circuit is one.", "labs": [5], "aka": ["band-pass"]}, {"term": "Bandwidth", "def": "The range of frequencies between a circuit's two cutoff (\u22123 dB) points.", "labs": [5], "aka": []}, {"term": "Base", "def": "The control lead of a transistor. A small base current controls a much larger collector current.", "labs": [4], "aka": []}, {"term": "Bias point", "def": "PSpice's name for the Operating point analysis: the steady DC voltages and currents in a circuit.", "labs": [5], "aka": []}, {"term": "Block diagram", "def": "A drawing that shows a system as labelled boxes, such as amplifier or filter, rather than individual parts.", "labs": [4], "aka": []}, {"term": "Breakdown voltage", "def": "The reverse voltage at which a diode starts conducting backward. A Zener diode is designed to do this safely; the D1N750's is 4.7 V.", "labs": [5], "aka": []}, {"term": "Capacitor", "def": "A part made of two conductors separated by an insulator. It blocks steady DC and passes changing signals, more easily at higher frequencies.", "labs": [5], "aka": []}, {"term": "Cathode", "def": "The terminal of a diode that current leaves when the diode conducts. It's the bar side of the symbol, and a painted band on a real part.", "labs": [5], "aka": []}, {"term": "Circuit name box", "def": "The box at the top of the Q Circuits page where you type the lab name. It does the job of a title block.", "labs": [4], "aka": []}, {"term": "Clipping", "def": "When an amplifier's output tries to go beyond its supply voltage and is flattened at the limit.", "labs": [5], "aka": ["clips"]}, {"term": "Closed circuit", "def": "A complete, unbroken loop that current can flow around.", "labs": [4], "aka": []}, {"term": "Collector", "def": "The transistor lead where the main current enters an NPN transistor.", "labs": [4], "aka": []}, {"term": "Corner frequency", "def": "The frequency where a filter's output has fallen to 70.7% of its passband value (\u22123 dB). For an RC filter it's 1 \u00f7 (2\u03c0RC).", "labs": [5], "aka": ["cutoff frequency", "cutoff frequencies", "corner frequencies", "\u22123 dB point", "-3 db point"]}, {"term": "Current", "def": "The flow of electric charge, measured in amperes (A). 1 mA is one thousandth of an ampere.", "labs": [4], "aka": ["current (i)"]}, {"term": "DC (direct current)", "def": "Current or voltage that stays steady and flows in one direction.", "labs": [4], "aka": ["dc", "direct current"]}, {"term": "DC sweep", "def": "An analysis that steps a source's DC value through a range and plots the results against it.", "labs": [7], "aka": []}, {"term": "Decibel (dB)", "def": "A logarithmic unit for gain: 20 \u00d7 log\u2081\u2080 of the voltage ratio. \u00d710 is +20 dB, \u00d71 is 0 dB, \u00d70.707 is \u22123 dB.", "labs": [5], "aka": ["decibel", "decibels", "db"]}, {"term": "Diode", "def": "A part that lets current flow easily in one direction only, from anode to cathode, once about 0.7 V is across it.", "labs": [5], "aka": []}, {"term": "Emitter", "def": "The transistor lead where current leaves an NPN transistor. It's the lead with the arrow.", "labs": [4], "aka": []}, {"term": "Feedback", "def": "Sending part of an amplifier's output back to its input. In an op amp circuit, feedback sets the gain.", "labs": [5], "aka": []}, {"term": "Filter", "def": "A circuit that passes some frequencies and weakens others.", "labs": [5], "aka": []}, {"term": "Frequency", "def": "How many cycles a wave completes each second, measured in hertz (Hz). 1 kHz is 1,000 cycles per second.", "labs": [5], "aka": []}, {"term": "Frequency response", "def": "A graph of how a circuit's gain changes with frequency. An AC sweep produces one.", "labs": [5], "aka": []}, {"term": "Gain", "def": "How much a circuit multiplies a signal: output divided by input. Often given in decibels.", "labs": [5], "aka": []}, {"term": "Ground", "def": "The reference point defined as 0 V. Every voltage is measured from it. Also called node 0.", "labs": [4], "aka": ["ground (node 0)", "node 0"]}, {"term": "High-pass filter", "def": "A filter that passes high frequencies and weakens low ones.", "labs": [5], "aka": ["high-pass"]}, {"term": "Junction", "def": "A point where three or more connections meet, marked with a dot.", "labs": [4], "aka": ["junction dot"]}, {"term": "Load line", "def": "A straight line showing every combination of voltage and current the rest of the circuit allows. Where it crosses a part's curve is the operating point.", "labs": [5], "aka": []}, {"term": "Logarithmic scale", "def": "An axis where each factor of ten takes the same space, so 10 to 100 is as wide as 1,000 to 10,000.", "labs": [5], "aka": ["logarithmic", "log scale"]}, {"term": "Low-pass filter", "def": "A filter that passes low frequencies and weakens high ones.", "labs": [5], "aka": ["low-pass"]}, {"term": "Minor gridlines", "def": "The fainter lines between the main gridlines of a plot. On a log axis they mark 2, 3, 4 \u2026 9 times each decade.", "labs": [5], "aka": []}, {"term": "Net alias", "def": "A name attached to a wire, such as IN or OUT. It labels the node, and wires with the same name are connected.", "labs": [5, 6], "aka": ["net aliases"]}, {"term": "Netlist", "def": "The text version of a schematic: a list of every part and the nodes it connects to. It's what the simulator actually reads.", "labs": [4], "aka": []}, {"term": "Node", "def": "All the points joined together by wire. Every point on a node is at the same voltage.", "labs": [4], "aka": []}, {"term": "Non-inverting amplifier", "def": "An op amp circuit where the signal enters the + input. Its gain is 1 + RF \u00f7 RIN, and the output is in step with the input.", "labs": [5], "aka": ["non-inverting amplifiers"]}, {"term": "NPN transistor", "def": "A transistor made of N-type, P-type and N-type layers. Current flows in at the collector and out at the emitter.", "labs": [4], "aka": []}, {"term": "Ohm's law", "def": "The link between voltage, current and resistance: I = V \u00f7 R, or V = I \u00d7 R.", "labs": [4], "aka": []}, {"term": "Op amp (operational amplifier)", "def": "A very high-gain amplifier with + and \u2212 inputs. Resistors around it set the actual gain.", "labs": [5], "aka": ["op amp", "operational amplifier", "op amps"]}, {"term": "Open circuit", "def": "A break in the path. No current can flow through it.", "labs": [4], "aka": []}, {"term": "Open end", "def": "A wire end or pin connected to nothing. Q Circuits marks it with an open circle.", "labs": [4], "aka": []}, {"term": "Operating point", "def": "An analysis that calculates the steady DC voltage at every node. PSpice calls it Bias Point.", "labs": [4, 5], "aka": []}, {"term": "Orthogonal wiring", "def": "Wires drawn only as horizontal and vertical segments, the professional standard.", "labs": [4], "aka": ["orthogonal"]}, {"term": "Parallel", "def": "Parts connected across the same two nodes. They share the same voltage.", "labs": [4], "aka": []}, {"term": "Phase shift", "def": "How far one wave is shifted in time relative to another, measured in degrees; a full cycle is 360\u00b0.", "labs": [5], "aka": []}, {"term": "Plot", "def": "The Q Circuits graph of probed signals. Volts and amps are drawn in separate panes.", "labs": [5], "aka": []}, {"term": "PN junction", "def": "The boundary where P-type and N-type semiconductor meet. It's what makes a diode conduct in one direction.", "labs": [5], "aka": []}, {"term": "Power symbol", "def": "A named supply connection such as VCC or VEE. Every symbol with the same name is the same node.", "labs": [5, 6], "aka": []}, {"term": "Probe", "def": "A marker that tells the simulator what to graph: a wire for its voltage, or a part's body for its current. Placed with the Probe tool (B).", "labs": [5], "aka": ["probe tool", "probes"]}, {"term": "Reactance", "def": "A capacitor's (or inductor's) opposition to AC, in ohms. For a capacitor, X\u1d04 = 1 \u00f7 (2\u03c0fC), so it falls as frequency rises.", "labs": [5], "aka": []}, {"term": "Rectifier", "def": "A circuit that turns AC into DC. A single diode makes a half-wave rectifier, which passes only one half of each cycle.", "labs": [5], "aka": ["half-wave rectifier"]}, {"term": "Reference designator", "def": "A part's name on a schematic, such as R1, C2 or Q1.", "labs": [4], "aka": []}, {"term": "Resistance", "def": "How strongly a part opposes current, measured in ohms (\u03a9).", "labs": [4], "aka": ["resistance (r)"]}, {"term": "Resistor", "def": "A part that opposes current by a set amount, measured in ohms.", "labs": [4], "aka": []}, {"term": "Schematic", "def": "A drawing of a circuit that uses standard symbols to show every part, its value, and how the parts are connected.", "labs": [4], "aka": []}, {"term": "Series", "def": "Parts connected end to end with nothing branching off between them. They carry the same current.", "labs": [4], "aka": []}, {"term": "Series-parallel", "def": "A circuit that combines series and parallel connections.", "labs": [4], "aka": []}, {"term": "Short circuit", "def": "A path of (almost) zero resistance, such as a wire across a part, so current bypasses the part.", "labs": [4], "aka": ["short"]}, {"term": "Simulation", "def": "Using a computer to solve a circuit's equations and predict what a real circuit would do.", "labs": [5], "aka": []}, {"term": "SPICE", "def": "The family of circuit simulators that Q Circuits and PSpice are based on. It also names the value notation they share, such as 1k and .15u.", "labs": [4], "aka": []}, {"term": "Title block", "def": "The labelled box on a drawing that identifies it and its author. In Q Circuits the circuit name box does this job.", "labs": [4], "aka": []}, {"term": "Transient", "def": "An analysis that steps through time and plots signals the way an oscilloscope shows them.", "labs": [5], "aka": ["transient analysis"]}, {"term": "Value", "def": "The number that sets a part's size, such as 1k for a resistor or DC 12 for a source.", "labs": [4], "aka": []}, {"term": "Voltage", "def": "The electrical push that makes charge move, measured in volts (V). Always measured between two points.", "labs": [4], "aka": ["voltage (v)"]}, {"term": "Voltage divider", "def": "Two or more parts in series that share a voltage in proportion to their resistance (or reactance).", "labs": [4, 5], "aka": []}, {"term": "Wire", "def": "A connection with no resistance. Its length and shape don't matter, only what it connects.", "labs": [4], "aka": ["wires"]}, {"term": "Zener diode", "def": "A diode designed to conduct backward at a precise breakdown voltage. Used as a voltage reference.", "labs": [5], "aka": []}, {"term": "Branch", "def": "One of the separate paths current can take between two nodes in a parallel circuit.", "labs": [6], "aka": ["branches"]}, {"term": "Crossover", "def": "A place where two wires cross on a schematic without connecting. There is no dot, and in Q Circuits neither wire ends there.", "labs": [6], "aka": ["crossovers"]}, {"term": "Differential amplifier", "def": "An amplifier built from two matched transistors that responds to the difference between two inputs. Lab 6C draws one.", "labs": [6], "aka": []}, {"term": "Differential probe", "def": "A probe that measures the voltage between two nodes instead of from a node to ground, such as V(A,B). Placed with Diff probe (X).", "labs": [7], "aka": ["diff probe"]}, {"term": "Family of curves", "def": "Several traces on one plot, one for each value of a parameter, so you can compare them.", "labs": [7], "aka": []}, {"term": "Floating node", "def": "A node with no DC path to ground. The simulator can't work out its voltage.", "labs": [6], "aka": ["floating"]}, {"term": "Input node", "def": "The node where the signal enters a circuit. Looking from ground through the source, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Linear circuit", "def": "A circuit whose output is directly proportional to its input. Its DC sweep plot is a straight line.", "labs": [7], "aka": ["linear"]}, {"term": "Loading", "def": "When connecting more parts to a node draws current from it and lowers its voltage.", "labs": [7], "aka": ["load"]}, {"term": "Output node", "def": "The node where you measure a circuit's result. Looking from ground through the output part, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Parameter", "def": "A named value, such as RVAL, defined by a Parameter part and used in a part value inside curly braces: {RVAL}.", "labs": [7], "aka": ["parameters", "{rval}"]}, {"term": "Parametric sweep", "def": "Running the same analysis several times, once for each value of a parameter, and plotting all the results together.", "labs": [7], "aka": []}, {"term": "Slope", "def": "How steep a line is: how much the output changes for each 1 unit change of the input.", "labs": [7], "aka": []}, {"term": "Step", "def": "The spacing between values in a sweep. From \u221212 to 12 in steps of 0.1 gives 241 points. PSpice calls it Increment.", "labs": [7], "aka": ["increment"]}, {"term": "Sine source", "def": "A voltage source whose value is SIN(offset amplitude frequency), used for transient runs. PSpice calls it VSIN.", "labs": [5, 6], "aka": ["vsin"]}, {"term": "AC magnitude", "def": "The size of the test signal a source supplies during an AC sweep. PSpice's VAC source sets it with 1Vac.", "labs": [5, 6], "aka": ["vac"]}, {"term": "Q Circuits", "def": "The browser-based schematic and simulation tool used for the ELEC 101 labs.", "labs": [4], "aka": []}, {"term": "Axis ranges", "def": "The Q Circuits settings under the plot that fix the X and Y limits instead of fitting them automatically. PSpice calls this a User Defined data range.", "labs": [8, 9], "aka": ["axis range", "user defined range"]}, {"term": "Bode plot", "def": "A graph of gain in decibels against frequency on a logarithmic axis. An AC sweep with a probe in dB mode produces one.", "labs": [8], "aka": ["bode plots"]}, {"term": "Coupling", "def": "How much of a transformer's magnetic field links both windings, from 0 to 1. 1 would be a perfect transformer.", "labs": [8], "aka": ["coupling coefficient"]}, {"term": "Critical frequency", "def": "Another name for the corner (\u22123 dB) frequency: where the output has fallen 3 dB below its flat level.", "labs": [8], "aka": []}, {"term": "Decade", "def": "A factor of ten in frequency, such as 10 Hz to 100 Hz. On a log axis every decade is the same width.", "labs": [5, 8], "aka": ["decades"]}, {"term": "Duty cycle", "def": "The fraction of each period a pulse spends high: pulse width \u00f7 period, often given as a percentage.", "labs": [9], "aka": []}, {"term": "Fall time", "def": "How long a pulse takes to drop from its high level back to its low level (TF).", "labs": [9], "aka": ["tf"]}, {"term": "Inductor", "def": "A coil of wire that stores energy in a magnetic field. Its opposition to AC rises with frequency. Measured in henries (H).", "labs": [8], "aka": ["inductors", "inductance"]}, {"term": "Measurements table", "def": "The table under the Q Circuits plot that lists each trace's maximum, minimum and other values over the visible range.", "labs": [9], "aka": ["measurements"]}, {"term": "Nonperiodic waveform", "def": "A signal that never repeats in a regular pattern, such as random noise.", "labs": [9], "aka": ["nonperiodic"]}, {"term": "Period", "def": "The time for one complete cycle of a repeating waveform. Period = 1 \u00f7 frequency.", "labs": [9], "aka": ["per"]}, {"term": "Periodic waveform", "def": "A signal that repeats the same shape at regular intervals.", "labs": [9], "aka": ["periodic"]}, {"term": "Primary", "def": "The transformer winding connected to the source.", "labs": [8], "aka": ["primary winding"]}, {"term": "Pulse source", "def": "A source that switches between two voltages with set delay, rise, width, fall and period. PSpice calls it VPULSE.", "labs": [9], "aka": ["pulse", "vpulse"]}, {"term": "Pulse width", "def": "How long a pulse stays at its high level (PW).", "labs": [9], "aka": ["pw"]}, {"term": "Ramp", "def": "A waveform that rises steadily and then drops quickly, also called a sawtooth.", "labs": [9], "aka": ["sawtooth", "ramp wave"]}, {"term": "Rise time", "def": "How long a pulse takes to climb from its low level to its high level (TR).", "labs": [9], "aka": ["tr"]}, {"term": "Roll-off", "def": "The part of a frequency response where the gain falls steadily. A simple RC filter rolls off at 20 dB per decade.", "labs": [8], "aka": ["rolloff"]}, {"term": "Secondary", "def": "The transformer winding connected to the load.", "labs": [8], "aka": ["secondary winding"]}, {"term": "Square wave", "def": "A pulse waveform that switches sharply between two levels.", "labs": [9], "aka": ["square waves"]}, {"term": "Step-up transformer", "def": "A transformer whose output voltage is larger than its input. Its secondary inductance is larger than its primary.", "labs": [8], "aka": ["step-down transformer", "step-up"]}, {"term": "Time constant", "def": "For an RC circuit, \u03c4 = R \u00d7 C. In one time constant a capacitor charges 63% of the way; after about five it is essentially done.", "labs": [9], "aka": ["tau", "\u03c4"]}, {"term": "Transformer", "def": "Two coupled coils that transfer AC from one circuit to another, stepping the voltage up or down and isolating the two sides.", "labs": [8], "aka": ["transformers"]}, {"term": "Triangle wave", "def": "A waveform that rises and falls at equal, steady rates.", "labs": [9], "aka": ["triangle"]}, {"term": "Active-low", "def": "An input that does its job when it is 0, not 1. Its name usually has a bar or BAR, as in SBAR or CLR\u0305.", "labs": [11], "aka": ["active low"]}, {"term": "AND gate", "def": "A logic gate whose output is 1 only when all of its inputs are 1.", "labs": [10], "aka": ["and"]}, {"term": "Bit", "def": "A single binary digit: 0 or 1. It can stand for any two-way choice, such as off/on or false/true.", "labs": [10], "aka": ["bits"]}, {"term": "Boolean expression", "def": "A formula for a logic function, such as Q = A + B for OR or Q = A \u00b7 B for AND.", "labs": [10], "aka": ["boolean"]}, {"term": "Clear", "def": "A flip-flop input that forces Q to 0 regardless of the clock. On the 7473 it is active-low (CLR\u0305).", "labs": [11], "aka": ["clr"]}, {"term": "Clock", "def": "A digital signal that switches back and forth at a steady rate to tell sequential circuits when to act.", "labs": [11], "aka": ["clock signal"]}, {"term": "Combinational logic", "def": "Logic whose output depends only on its present inputs, with no memory. Every Lab 10 circuit is combinational.", "labs": [10, 11], "aka": []}, {"term": "Complement", "def": "The opposite logic level: the complement of 1 is 0. A NOT gate produces it. Written with a bar, as Q\u0305 (QBAR).", "labs": [10], "aka": ["complementation", "negation"]}, {"term": "Counter", "def": "A sequential circuit that steps through a sequence of binary numbers, one per clock pulse.", "labs": [11], "aka": ["binary counter"]}, {"term": "DigClock", "def": "The Q Circuits and PSpice digital clock source, set by OFFTIME, ONTIME, DELAY, STARTVAL and OPPVAL.", "labs": [11], "aka": ["digital clock"]}, {"term": "Digital stimulus", "def": "A digital source defined by a list of times and logic levels. PSpice calls it STIM1.", "labs": [10], "aka": ["stim1", "stimulus"]}, {"term": "Falling edge", "def": "The moment a signal changes from 1 to 0. The 7473 changes its output on the clock's falling edge.", "labs": [11], "aka": ["negative edge", "falling-edge"]}, {"term": "Flip-flop", "def": "A one-bit memory circuit that changes state only at a clock edge.", "labs": [11], "aka": ["flip-flops"]}, {"term": "Forbidden state", "def": "An input combination a latch should avoid. In a NAND latch, SBAR and RBAR both 0 drive Q and QBAR both to 1, and releasing both at once leaves the result unpredictable.", "labs": [11], "aka": ["invalid state"]}, {"term": "Integrated circuit", "def": "A chip containing many components. A 7400-series chip holds several gates, labelled A, B, C, D, as in U1A.", "labs": [10], "aka": ["ic", "chip"]}, {"term": "Inverter", "def": "A NOT gate: its output is the opposite of its input. The 7404 holds six of them.", "labs": [10], "aka": []}, {"term": "JK flip-flop", "def": "A flip-flop with inputs J and K: 0 0 holds, 1 0 sets Q to 1, 0 1 resets it to 0, and 1 1 toggles it.", "labs": [11], "aka": ["jk"]}, {"term": "Latch", "def": "A memory circuit that responds to its inputs as soon as they change, with no clock. Two cross-coupled NAND gates make an RS latch.", "labs": [11], "aka": ["rs latch", "sr latch"]}, {"term": "Logic gate", "def": "A circuit that produces a 0 or 1 output from one or more 0/1 inputs according to a fixed rule.", "labs": [10], "aka": ["gate", "gates", "logic gates"]}, {"term": "Logic lanes", "def": "The way Q Circuits plots digital signals: one 0/1 strip per probe, top to bottom in the order the probes were placed.", "labs": [10, 11], "aka": ["logic lane", "lanes"]}, {"term": "Logic level", "def": "The 0 or 1 a digital signal represents. In Q Circuits, 0 V is 0 and 5 V is 1, with the threshold at 2.5 V.", "labs": [10], "aka": ["logic state", "logic levels"]}, {"term": "Master-slave flip-flop", "def": "A flip-flop made of two latches: the master follows the inputs while the clock is high, and the slave copies it when the clock falls.", "labs": [11], "aka": ["master-slave"]}, {"term": "Modulus", "def": "How many different states a counter steps through before repeating. A 4-bit counter is MOD 16.", "labs": [11], "aka": ["mod"]}, {"term": "NAND gate", "def": "NOT AND: the output is 0 only when all inputs are 1.", "labs": [10], "aka": ["nand"]}, {"term": "NOR gate", "def": "NOT OR: the output is 1 only when all inputs are 0.", "labs": [10], "aka": ["nor"]}, {"term": "NOT gate", "def": "A gate with one input whose output is the opposite level. Also called an inverter.", "labs": [10], "aka": ["not"]}, {"term": "OR gate", "def": "A logic gate whose output is 1 when any input is 1.", "labs": [10], "aka": ["or"]}, {"term": "Propagation delay", "def": "The short time between a gate's input changing and its output responding, typically nanoseconds.", "labs": [11], "aka": []}, {"term": "Sequential logic", "def": "Logic whose output depends on past inputs as well as present ones, because it has memory. Latches, flip-flops and counters are sequential.", "labs": [11], "aka": []}, {"term": "Set and reset", "def": "Making a memory circuit's output 1 (set) or 0 (reset).", "labs": [11], "aka": ["set", "reset"]}, {"term": "Synchronous counter", "def": "A counter whose flip-flops all share one clock, so every bit changes at the same moment.", "labs": [11], "aka": []}, {"term": "Timing diagram", "def": "A plot of digital signals against time, one above another, used to read how a circuit behaves.", "labs": [10, 11], "aka": ["timing diagrams"]}, {"term": "Toggle", "def": "Switch to the opposite state. A JK flip-flop with J = K = 1 toggles at every clock edge.", "labs": [11], "aka": ["toggles"]}, {"term": "Truth table", "def": "A table listing a logic circuit's output for every combination of inputs.", "labs": [10], "aka": ["truth tables"]}, {"term": "TTL", "def": "Transistor-transistor logic, the family the 7400-series chips belong to. It uses about 0 V for 0 and 5 V for 1.", "labs": [10], "aka": []}, {"term": "Unknown state (X)", "def": "A logic value the simulator can't determine, drawn as X. Flip-flops start in X unless they are initialized.", "labs": [10, 11], "aka": ["x", "unknown"]}, {"term": "XOR gate", "def": "Exclusive OR: the output is 1 when the inputs differ.", "labs": [10, 11], "aka": ["xor", "exclusive or"]}, {"term": "Amplifier", "def": "A circuit that makes a signal larger.", "labs": [5, 12], "aka": ["amplifiers"]}, {"term": "Bias", "def": "The DC voltages and currents that put a transistor in its working range, so it can amplify.", "labs": [12], "aka": ["biasing"]}, {"term": "Bridge", "def": "Two voltage dividers side by side. A small change in one resistor shows up as a small voltage difference between the two junctions.", "labs": [14], "aka": ["wheatstone bridge"]}, {"term": "Bus", "def": "A group of signals drawn as one thick line. Signals join it by name, through bus entries.", "labs": [13], "aka": ["buses", "busses"]}, {"term": "Bus entry", "def": "The short diagonal line that ties a named wire to a bus.", "labs": [13], "aka": ["bus entries"]}, {"term": "Bypass capacitor", "def": "A capacitor that acts as a short circuit for AC across a resistor, so the resistor affects DC but not the signal.", "labs": [12], "aka": []}, {"term": "Cascade", "def": "Amplifier stages connected one after another. Their gains multiply, so their gains in dB add.", "labs": [12], "aka": []}, {"term": "Common mode", "def": "The voltage both inputs of a differential amplifier share. A good differential amplifier ignores it.", "labs": [14], "aka": ["common-mode"]}, {"term": "Common-emitter amplifier", "def": "A transistor amplifier with the input at the base and the output at the collector.", "labs": [12], "aka": ["common emitter"]}, {"term": "Coupling capacitor", "def": "A capacitor that passes an AC signal from one stage to the next while blocking DC.", "labs": [12], "aka": ["coupling capacitors"]}, {"term": "Current source", "def": "A circuit that supplies a steady current regardless of the voltage across it.", "labs": [14], "aka": ["current sink"]}, {"term": "Decoder", "def": "A circuit that turns a binary number into one active output line. The 74154 is a 4-to-16 decoder.", "labs": [13], "aka": []}, {"term": "Demultiplexer", "def": "A circuit that routes one input line to one of many outputs, chosen by select lines.", "labs": [13], "aka": ["demux"]}, {"term": "Differential pair", "def": "Two matched transistors sharing a current. The difference between their inputs steers the current from one to the other.", "labs": [14], "aka": []}, {"term": "Emitter follower", "def": "A transistor stage whose output (the emitter) follows its input with low output resistance.", "labs": [14], "aka": []}, {"term": "Gain-bandwidth product", "def": "For an op amp, gain \u00d7 bandwidth is roughly constant: about 1 MHz for the LM324.", "labs": [12], "aka": ["gbw"]}, {"term": "Instrumentation amplifier", "def": "An amplifier that boosts a small difference between two inputs and rejects what they have in common.", "labs": [14], "aka": []}, {"term": "JFET", "def": "Junction field-effect transistor: the gate voltage controls the current, and the gate draws almost no current.", "labs": [14], "aka": ["n-channel jfet"]}, {"term": "Mid-band gain", "def": "An amplifier's flat gain between its lower and upper \u22123 dB frequencies.", "labs": [12], "aka": []}, {"term": "Mirror", "def": "Flip a part left\u2013right or top\u2013bottom, as a reflection, without rotating it.", "labs": [14], "aka": ["mirrored", "mirroring"]}, {"term": "Multiplexer", "def": "A circuit that sends one of many inputs to a single output, chosen by select lines. Taking turns, it sends many signals over one line.", "labs": [13], "aka": ["mux"]}, {"term": "Port", "def": "A named connection drawn as an arrow (PSpice's PORTLEFT and PORTRIGHT).", "labs": [13], "aka": ["ports"]}, {"term": "Select lines", "def": "The inputs of a multiplexer or demultiplexer that choose which line is connected.", "labs": [13], "aka": ["select line", "select inputs"]}]</script>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var NS='http://www.w3.org/2000/svg';
+var LAB=document.body.getAttribute('data-lab');
+var KEY='elec101-lesson-'+LAB+'-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function readJSON(id){var n=document.getElementById(id); if(!n) return null; try{return JSON.parse(n.textContent)}catch(e){return null}}
+var state=load(); state.done=state.done||{}; state.checks=state.checks||{};
+
+/* ---------------- navigation ---------------- */
+var sections=$$('main section.lesson');
+var navBtns=$$('#toc button[data-target]');
+var live=$('#live');
+function announce(msg){ if(live){ live.textContent=''; setTimeout(function(){live.textContent=msg},30);} }
+function show(id,focus){
+  var idx=-1;
+  sections.forEach(function(s,i){ var on=s.id===id; s.hidden=!on; if(on) idx=i; });
+  if(idx<0){ return show(sections[0].id,false); }
+  navBtns.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-target')===id ? 'step':'false'); });
+  var sn=$('#sheet-no'); if(sn) sn.textContent=(idx+1)+' of '+sections.length;
+  var st=$('#sheet-title'); if(st) st.textContent=sections[idx].getAttribute('data-title');
+  state.current=id; save();
+  if(focus){ var h=$('h2',sections[idx]); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});}
+    var m=$('#main'); if(m) window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + window.pageYOffset - 12)); }
+  if(history.replaceState){ try{history.replaceState(null,'','#'+id)}catch(e){} }
+  document.dispatchEvent(new CustomEvent('lesson:show',{detail:id}));
+}
+navBtns.forEach(function(b,i){
+  b.addEventListener('click',function(){show(b.getAttribute('data-target'),true)});
+  b.addEventListener('keydown',function(e){
+    var j=null; if(e.key==='ArrowDown') j=Math.min(i+1,navBtns.length-1); if(e.key==='ArrowUp') j=Math.max(i-1,0);
+    if(e.key==='Home') j=0; if(e.key==='End') j=navBtns.length-1;
+    if(j!==null){ e.preventDefault(); navBtns[j].focus(); }
+  });
+});
+$$('[data-goto]').forEach(function(b){ b.addEventListener('click',function(){show(b.getAttribute('data-goto'),true)}); });
+
+function refreshProgress(){
+  var n=0; sections.forEach(function(s){ var d=!!state.done[s.id]; if(d) n++;
+    var c=$('#toc button[data-target="'+s.id+'"] .chk'); if(c){ c.textContent=d?'\u2713':''; }
+    var btn=$('[data-complete="'+s.id+'"]'); if(btn){ btn.setAttribute('aria-pressed', d?'true':'false'); btn.textContent=d?'Completed \u2713':'Mark this section complete'; }
+  });
+  var pct=Math.round(n/sections.length*100);
+  var bar=$('#prog'); if(bar){ bar.setAttribute('aria-valuenow',pct); var sp=$('span',bar); if(sp) sp.style.width=pct+'%'; }
+  var pt=$('#prog-txt'); if(pt) pt.textContent=n+' of '+sections.length+' sections complete';
+}
+$$('[data-complete]').forEach(function(b){ b.addEventListener('click',function(){
+  var id=b.getAttribute('data-complete'); state.done[id]=!state.done[id]; save(); refreshProgress();
+  announce(state.done[id]?'Section marked complete.':'Section marked not complete.');
+});});
+var reset=$('#reset-btn');
+if(reset){ reset.addEventListener('click',function(){ state.done={}; state.checks={}; save(); refreshProgress();
+  $$('.checklist input').forEach(function(c){c.checked=false}); announce('Progress cleared.'); }); }
+
+/* persistent checklists */
+$$('.checklist input[type=checkbox]').forEach(function(c){
+  if(state.checks[c.id]) c.checked=true;
+  c.addEventListener('change',function(){ state.checks[c.id]=c.checked; save(); });
+});
+
+/* reveal buttons */
+$$('[data-reveal]').forEach(function(b){
+  var t=document.getElementById(b.getAttribute('data-reveal')); if(!t) return;
+  b.setAttribute('aria-controls',t.id); b.setAttribute('aria-expanded', t.hidden?'false':'true');
+  var shown=b.getAttribute('data-shown-label'), hid=b.textContent;
+  b.addEventListener('click',function(){ t.hidden=!t.hidden; b.setAttribute('aria-expanded', t.hidden?'false':'true'); if(shown) b.textContent=t.hidden?hid:shown; });
+});
+
+/* ---------------- SPICE numbers ---------------- */
+var SUFFIX=[['meg',1e6],['mil',25.4e-6],['f',1e-15],['p',1e-12],['n',1e-9],['u',1e-6],['m',1e-3],['k',1e3],['g',1e9],['t',1e12]];
+function parseSpice(raw){
+  var s=String(raw==null?'':raw);
+  var t=s.trim();
+  if(!t) return {ok:false,msg:'Nothing entered. Type a value such as 1k or 15.9k.'};
+  if(/\s/.test(t)) return {ok:false,msg:'This value contains a space. The simulator stops reading at the space, so the value is rejected when you run the simulation. Delete the space.'};
+  var m=t.match(/^([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5]*)$/);
+  if(!m) return {ok:false,msg:'A value has to start with a number and can only be followed by letters (a scale suffix and, optionally, a unit).'};
+  var num=parseFloat(m[1]); var tail=m[2].replace('\u00b5','u'); var low=tail.toLowerCase();
+  var mult=1, suf='';
+  for(var i=0;i<SUFFIX.length;i++){ if(low.indexOf(SUFFIX[i][0])===0){ mult=SUFFIX[i][1]; suf=SUFFIX[i][0]; break; } }
+  var r={ok:true,value:num*mult,num:num,suffix:suf,ignored:tail.slice(suf.length),notes:[]};
+  if(suf==='m' && tail.charAt(0)==='M') r.notes.push('Capital M still means milli (\u00d70.001) in SPICE. For mega (\u00d71,000,000) type MEG.');
+  if(m[2].charAt(0)==='\u00b5') r.notes.push('The \u00b5 symbol is not reliable in SPICE. Type u for micro.');
+  if(r.ignored) r.notes.push('The letters "'+r.ignored+'" are ignored. They are just a label for people reading the schematic.');
+  return r;
+}
+var ENG=[[1e12,'T'],[1e9,'G'],[1e6,'MEG'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'u'],[1e-9,'n'],[1e-12,'p'],[1e-15,'f']];
+function eng(v,unit,digits){
+  if(v===0) return '0 '+(unit||'');
+  var a=Math.abs(v);
+  for(var i=0;i<ENG.length;i++){ if(a>=ENG[i][0]*0.9995){ var x=v/ENG[i][0]; var d=digits==null?3:digits;
+      var str=Number(x.toPrecision(d)).toString(); var p=ENG[i][1]; if(p==='u') p='\u00b5'; if(p==='MEG') p='M';
+      return str+' '+p+(unit||''); } }
+  return v.toExponential(2)+' '+(unit||'');
+}
+function fmtHz(f){ if(f>=1000){ var k=f/1000; return (k<10? k.toFixed(2): k<100? k.toFixed(1) : Math.round(k))+' kHz'; } return Math.round(f)+' Hz'; }
+
+/* ---------------- tiny SVG plotter ---------------- */
+function el(tag,attrs,parent,text){ var e=document.createElementNS(NS,tag); for(var k in attrs){ if(attrs.hasOwnProperty(k)) e.setAttribute(k,attrs[k]); } if(text!=null) e.textContent=text; if(parent) parent.appendChild(e); return e; }
+var clipN=0;
+function plot(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var W=cfg.w||640, H=cfg.h||290, L=68, R=34, T=12, B=cfg.xlabel===false?26:52;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-L-R, ph=H-T-B;
+  var lg=function(v){return Math.log(v)/Math.LN10};
+  var X= cfg.xlog ? function(v){return L+(lg(v)-lg(cfg.xmin))/(lg(cfg.xmax)-lg(cfg.xmin))*pw} : function(v){return L+(v-cfg.xmin)/(cfg.xmax-cfg.xmin)*pw};
+  var Y= function(v){return T+(1-(v-cfg.ymin)/(cfg.ymax-cfg.ymin))*ph};
+  el('rect',{x:L,y:T,width:pw,height:ph,'class':'pl-bg'},svg);
+  var g=el('g',{'aria-hidden':'true'},svg);
+  (cfg.xminor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-minor'},g); });
+  (cfg.yminor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-minor'},g); });
+  (cfg.xmajor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-major'},g);
+    el('text',{x:X(v),y:T+ph+15,'text-anchor':'middle','class':'pl-tick'},g,cfg.xfmt?cfg.xfmt(v):v); });
+  (cfg.ymajor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-major'},g);
+    el('text',{x:L-6,y:Y(v)+4,'text-anchor':'end','class':'pl-tick'},g,cfg.yfmt?cfg.yfmt(v):v); });
+  if(cfg.xlabel) el('text',{x:L+pw,y:H-6,'text-anchor':'end','class':'pl-axis'},g,cfg.xlabel);
+  var cid='pc'+(++clipN);
+  var cp=el('clipPath',{id:cid},svg); el('rect',{x:L,y:T,width:pw,height:ph},cp);
+  var tg=el('g',{'clip-path':'url(#'+cid+')'},svg);
+  (cfg.hlines||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-hline'},tg); });
+  (cfg.traces||[]).forEach(function(tr){
+    var d=''; for(var i=0;i<tr.pts.length;i++){ var yy=Y(tr.pts[i][1]); if(yy<-2000) yy=-2000; if(yy>4000) yy=4000; d+=(i?'L':'M')+X(tr.pts[i][0]).toFixed(1)+' '+yy.toFixed(1); }
+    el('path',{d:d,'class':'pl-trace '+(tr.cls||'')},tg);
+  });
+  var lx=L+4;
+  (cfg.traces||[]).forEach(function(tr){ if(!tr.name) return; var t=el('text',{x:lx,y:H-6,'class':'pl-leg '+(tr.cls||'')},g,'\u25a0 '+tr.name); lx+=tr.name.length*7.4+26; });
+  var over=el('g',{},svg);
+  return {X:X,Y:Y,L:L,T:T,pw:pw,ph:ph,over:over,svg:svg,
+    invX: cfg.xlog ? function(px){ return Math.pow(10, lg(cfg.xmin)+(px-L)/pw*(lg(cfg.xmax)-lg(cfg.xmin))); } : function(px){ return cfg.xmin+(px-L)/pw*(cfg.xmax-cfg.xmin); }};
+}
+function svgPoint(svg,evt){ var r=svg.getBoundingClientRect(); var vb=svg.viewBox.baseVal; return {x:(evt.clientX-r.left)/r.width*vb.width, y:(evt.clientY-r.top)/r.height*vb.height}; }
+function logGrid(xmin,xmax,mode){
+  var maj=[],min=[]; var d0=Math.floor(Math.log(xmin)/Math.LN10), d1=Math.ceil(Math.log(xmax)/Math.LN10);
+  for(var d=d0; d<=d1; d++){ var b=Math.pow(10,d);
+    if(mode==='auto'){ [1,3].forEach(function(k){ var v=k*b; if(v>=xmin*0.999&&v<=xmax*1.001) maj.push(v); }); }
+    else { if(b>=xmin*0.999&&b<=xmax*1.001) maj.push(b); for(var k=2;k<10;k++){ var v=k*b; if(v>xmin&&v<xmax) min.push(v);} }
+  }
+  return {maj:maj,min:min};
+}
+function linTicks(a,b,step){ var o=[]; for(var v=Math.ceil(a/step-1e-9)*step; v<=b+1e-9; v+=step) o.push(Math.round(v/step)*step); return o; }
+
+/* ---------------- clickable schematic parts ---------------- */
+var PARTS=readJSON('parts-data')||{};
+function showPart(panel,id){
+  var p=PARTS[id]; if(!p||!panel) return;
+  while(panel.firstChild) panel.removeChild(panel.firstChild);
+  var h=document.createElement('h4'); h.textContent=p.name; panel.appendChild(h);
+  if(p.what){ var w=document.createElement('p'); w.textContent=p.what; panel.appendChild(w); }
+  if(p.props){ var dl=document.createElement('dl'); dl.className='kv';
+    p.props.forEach(function(kv){ var dt=document.createElement('dt'); dt.textContent=kv[0]; var dd=document.createElement('dd'); dd.textContent=kv[1]; dl.appendChild(dt); dl.appendChild(dd); });
+    panel.appendChild(dl); }
+  if(p.here){ var q=document.createElement('p'); var b=document.createElement('strong'); b.textContent='In this circuit: '; q.appendChild(b); q.appendChild(document.createTextNode(p.here)); panel.appendChild(q); }
+}
+$$('svg.schem').forEach(function(svg){
+  var panel=document.getElementById(svg.getAttribute('data-panel'));
+  $$('.part',svg).forEach(function(g){
+    var act=function(){ $$('.part',svg).forEach(function(o){o.classList.remove('sel')}); g.classList.add('sel'); showPart(panel,g.getAttribute('data-part')); };
+    g.addEventListener('click',act);
+    g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } });
+  });
+});
+/* stage highlighter: buttons with data-stage-for=svgId data-stage=name */
+$$('[data-stage-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var svg=document.getElementById(b.getAttribute('data-stage-for')); var st=b.getAttribute('data-stage');
+    $$('[data-stage-for="'+svg.id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('[data-stages]',svg).forEach(function(n){ var list=n.getAttribute('data-stages').split(' ');
+      if(st==='all' || list.indexOf(st)>=0) n.classList.remove('dimmed'); else n.classList.add('dimmed'); });
+    var d=document.getElementById(svg.id+'-stage-desc'); var S=readJSON(svg.id+'-stages');
+    if(d&&S&&S[st]){ d.textContent=S[st]; }
+  });
+});
+
+/* ---------------- quiz engine ---------------- */
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildQuiz(box){
+  var data=readJSON('quiz-'+box.getAttribute('data-quiz')); if(!data) return;
+  while(box.firstChild) box.removeChild(box.firstChild);
+  var score=0, answered=0;
+  var sc=document.createElement('p'); sc.className='score'; sc.setAttribute('aria-live','polite');
+  data.forEach(function(item,qi){
+    var q=document.createElement('div'); q.className='q'; q.setAttribute('role','group');
+    var qt=document.createElement('p'); qt.className='qt'; qt.id=box.getAttribute('data-quiz')+'-q'+qi; qt.textContent=(qi+1)+'. '+item.q; q.appendChild(qt);
+    q.setAttribute('aria-labelledby',qt.id);
+    var ch=document.createElement('div'); ch.className='choices'; q.appendChild(ch);
+    var fb=document.createElement('p'); fb.className='fb'; fb.setAttribute('aria-live','polite');
+    var idx=item.choices.map(function(_,i){return i});
+    var order=item.keepOrder? idx : shuffle(idx);
+    var btns=[];
+    order.forEach(function(ci){
+      var b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=item.choices[ci];
+      b.setAttribute('data-ci',ci);
+      b.addEventListener('click',function(){
+        var right= ci===item.answer;
+        btns.forEach(function(x){ x.disabled=true;
+          if(+x.getAttribute('data-ci')===item.answer){ x.classList.add('right'); x.textContent=item.choices[item.answer]+'  \u2713 correct answer'; } });
+        if(!right){ b.classList.add('wrong'); b.textContent=item.choices[ci]+'  \u2717 your answer'; }
+        fb.textContent=(right?'Correct. ':'Not quite. ')+item.explain;
+        answered++; if(right) score++;
+        sc.textContent='Score: '+score+' of '+answered+' answered ('+data.length+' questions total)';
+      });
+      btns.push(b); ch.appendChild(b);
+    });
+    q.appendChild(fb); box.appendChild(q);
+  });
+  box.appendChild(sc);
+  var again=document.createElement('button'); again.type='button'; again.className='btn'; again.textContent='Reset quiz and shuffle';
+  again.addEventListener('click',function(){ buildQuiz(box); var f=box.querySelector('.choice'); if(f) f.focus(); });
+  box.appendChild(again);
+}
+$$('.quiz[data-quiz]').forEach(buildQuiz);
+
+/* ---------------- SPICE value checker widgets ---------------- */
+$$('[data-spice-check]').forEach(function(w){
+  var inp=$('input',w), btn=$('button',w), out=$('.result',w);
+  var run=function(){ var r=parseSpice(inp.value); out.className='result '+(r.ok?'ok':'no');
+    if(!r.ok){ out.textContent='Error: '+r.msg; return; }
+    var plain=Number(r.value.toPrecision(6)); var s='The simulator reads "'+inp.value.trim()+'" as '+(r.suffix? eng(r.value,'',4).trim()+', which is '+plain : plain)+'.';
+    if(r.suffix) s+=' Suffix "'+r.suffix+'" multiplies '+r.num+' by '+(SUFFIX.filter(function(x){return x[0]===r.suffix})[0][1]).toExponential(0).replace('e',' \u00d7 10^').replace('+','')+'.';
+    if(r.notes.length) s+=' Note: '+r.notes.join(' ');
+    out.textContent=s; };
+  btn.addEventListener('click',run);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+  $$('[data-try]',w).forEach(function(t){ t.addEventListener('click',function(){ inp.value=t.getAttribute('data-try'); run(); }); });
+});
+
+/* ---------------- settings-form checkers ---------------- */
+$$('form.sim-settings').forEach(function(f){
+  var spec=readJSON(f.getAttribute('data-spec')); var out=$('.result',f);
+  f.addEventListener('submit',function(e){
+    e.preventDefault(); var bad=[];
+    spec.forEach(function(s){
+      var n=f.elements[s.name]; if(!n) return; var v=n.value;
+      if(s.type==='select'){ if(v!==s.want) bad.push(s.label+': choose '+s.wantText+'.'); return; }
+      if(s.type==='check'){ if(n.checked!==s.want) bad.push(s.label+': '+(s.want?'tick it.':'leave it unticked.')); return; }
+      if(s.type==='text'){ if(v.trim().toLowerCase()!==String(s.want).toLowerCase()) bad.push(s.label+': "'+v.trim()+'" should be '+s.want+'. '+(s.hint||'')); return; }
+      var r=parseSpice(v); if(!r.ok){ bad.push(s.label+': '+r.msg); return; }
+      if(Math.abs(r.value-s.want)>Math.abs(s.want)*1e-6) bad.push(s.label+': "'+v.trim()+'" is '+eng(r.value,s.unit||'',4).trim()+', but the lab asks for '+eng(s.want,s.unit||'',4).trim()+'. '+(s.hint||''));
+    });
+    out.className='result '+(bad.length?'no':'ok');
+    out.textContent= bad.length ? ('Check these: '+bad.join(' ')) : (f.getAttribute('data-ok')||'All settings match the lab.');
+  });
+});
+
+/* ---------------- glossary tooltips ---------------- */
+var GL=readJSON('glossary-data')||[], GMAP={};
+GL.forEach(function(g){ [g.term].concat(g.aka||[]).forEach(function(k){ GMAP[k.toLowerCase()]=g; }); });
+function lookup(t){
+  t=String(t).toLowerCase().replace(/\s+/g,' ').trim();
+  var c=[t, t.replace(/\s*\(.*\)$/,''), t.replace(/'s$/,'')];
+  for(var i=0;i<c.length;i++){ var k=c[i]; if(GMAP[k]) return GMAP[k]; if(/s$/.test(k)&&GMAP[k.slice(0,-1)]) return GMAP[k.slice(0,-1)]; if(/es$/.test(k)&&GMAP[k.slice(0,-2)]) return GMAP[k.slice(0,-2)]; }
+  return null;
+}
+var tip=document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+var tipFor=null, hideTimer=null;
+function placeTip(el){
+  var r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight, vw=document.documentElement.clientWidth;
+  var left=Math.max(8, Math.min(r.left, vw-tw-8));
+  var top=r.bottom+6; if(top+th>window.innerHeight-8 && r.top-th-6>8) top=r.top-th-6;
+  tip.style.left=(left+window.pageXOffset)+'px'; tip.style.top=(top+window.pageYOffset)+'px';
+}
+function showTip(el){
+  var g=lookup(el.textContent); if(!g) return;
+  clearTimeout(hideTimer);
+  if(tipFor&&tipFor!==el) tipFor.removeAttribute('aria-describedby');
+  tipFor=el;
+  while(tip.firstChild) tip.removeChild(tip.firstChild);
+  var b=document.createElement('strong'); b.textContent=g.term+': '; tip.appendChild(b);
+  tip.appendChild(document.createTextNode(g.def));
+  tip.hidden=false; el.setAttribute('aria-describedby','tip'); placeTip(el);
+}
+function hideTip(now){
+  clearTimeout(hideTimer);
+  var go=function(){ tip.hidden=true; if(tipFor){ tipFor.removeAttribute('aria-describedby'); tipFor=null; } };
+  if(now) go(); else hideTimer=setTimeout(go,180);
+}
+$$('.term').forEach(function(el){
+  if(!lookup(el.textContent)) return;
+  el.classList.add('has-tip'); el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',function(){showTip(el)});
+  el.addEventListener('mouseleave',function(){hideTip(false)});
+  el.addEventListener('focus',function(){showTip(el)});
+  el.addEventListener('blur',function(){hideTip(true)});
+  el.addEventListener('click',function(e){ e.stopPropagation(); if(tipFor===el&&!tip.hidden) hideTip(true); else showTip(el); });
+});
+tip.addEventListener('mouseenter',function(){clearTimeout(hideTimer)});
+tip.addEventListener('mouseleave',function(){hideTip(false)});
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!tip.hidden) hideTip(true); });
+document.addEventListener('click',function(){ if(!tip.hidden) hideTip(true); });
+window.addEventListener('resize',function(){ if(tipFor&&!tip.hidden) placeTip(tipFor); });
+
+/* ---------------- overlay highlighter ----------------
+   Buttons: data-ovl-for="svgId" data-ovl="name" ("none" clears).
+   Overlays inside the svg: <g class="ovl" data-ovl="name" hidden>.
+   Descriptions: JSON script id "svgId-ovl" {name: text}. */
+$$('[data-ovl-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var id=b.getAttribute('data-ovl-for'), svg=document.getElementById(id), name=b.getAttribute('data-ovl');
+    if(!svg) return;
+    $$('[data-ovl-for="'+id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('.ovl',svg).forEach(function(g){ var list=(g.getAttribute('data-ovl')||'').split(' ');
+      if(name!=='none' && (name==='all'||list.indexOf(name)>=0)) g.removeAttribute('hidden'); else g.setAttribute('hidden',''); });
+    var d=document.getElementById(id+'-ovl-desc'), S=readJSON(id+'-ovl');
+    if(d&&S) d.textContent=S[name]||'';
+  });
+});
+
+/* ---------------- predict-then-check boxes ----------------
+   <div class="predict" data-answer="5.14" data-tol="0.03" data-unit="V" data-reveal-after="2">
+     ...<input> <button class="chk"> <p class="result"> <button class="show" hidden> <div class="worked" hidden> */
+$$('.predict').forEach(function(box){
+  var inp=$('input',box), chk=$('button.chk',box), out=$('.result',box), show=$('button.show',box), worked=$('.worked',box);
+  var ans=parseFloat(box.getAttribute('data-answer')), tol=parseFloat(box.getAttribute('data-tol')||'0.02'), unit=box.getAttribute('data-unit')||'';
+  var after=parseInt(box.getAttribute('data-reveal-after')||'2',10), tries=0;
+  var go=function(){
+    var r=parseSpice(inp.value);
+    if(!r.ok){ out.className='result no'; out.textContent=r.msg; return; }
+    tries++;
+    var ok=Math.abs(r.value-ans)<=Math.abs(ans)*tol+1e-12;
+    out.className='result '+(ok?'ok':'no');
+    out.textContent= ok ? ('Yes: '+eng(r.value,unit,4)+' is right. Now confirm it with your simulation.')
+      : ('Not yet: '+eng(r.value,unit,4)+' doesn\u2019t match. '+(r.value>ans?'Your value is too high.':'Your value is too low.')+' Check each step and try again.');
+    if((ok||tries>=after)&&show) show.hidden=false;
+  };
+  chk.addEventListener('click',go);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); go(); } });
+  if(show&&worked){ show.addEventListener('click',function(){ worked.hidden=!worked.hidden; show.setAttribute('aria-expanded',worked.hidden?'false':'true'); show.textContent=worked.hidden?'Show the worked answer':'Hide the worked answer'; }); show.setAttribute('aria-expanded','false'); }
+});
+
+window.LESSON={$:$, $$:$$, el:el, plot:plot, logGrid:logGrid, linTicks:linTicks, parseSpice:parseSpice, eng:eng, fmtHz:fmtHz, svgPoint:svgPoint, readJSON:readJSON, announce:announce, state:state, save:save};
+
+refreshProgress();
+window.addEventListener('hashchange',function(){ var h=(location.hash||'').slice(1); if(h && sections.some(function(x){return x.id===h;})) show(h,true); });
+var start=(location.hash||'').slice(1);
+if(!document.getElementById(start)) start=state.current;
+show(start && document.getElementById(start) ? start : sections[0].id, false);
+})();
+</script>
+<script>
+(function(){
+var L=window.LESSON, $=L.$, $$=L.$$, el=L.el;
+function rows(dl,list){ while(dl.firstChild) dl.removeChild(dl.firstChild); list.forEach(function(r){ var dt=document.createElement('dt'); dt.textContent=r[0]; var dd=document.createElement('dd'); dd.textContent=r[1]; dl.appendChild(dt); dl.appendChild(dd); }); }
+function clear(n){ while(n.firstChild) n.removeChild(n.firstChild); }
+/* ---------- in-amp ---------- */
+function ia(){
+  var r=+$('#ia-r').value, rb=L.parseSpice($('#ia-rb').value).value, cm=$('#ia-cm').checked?1:0;
+  $('#ia-ro').textContent=L.eng(r,'\u03a9',5);
+  var vp=3+cm, vn=6*10000/(r+10000)+cm, vd=vp-vn;
+  var g1=1+2*10000/rb, g2=100, ideal=g1*g2*vd;
+  var a1=vn-(g1-1)/2*vd, b1=vp+(g1-1)/2*vd;   /* U1A output (buffer of IN-), U1B output */
+  var lim=16.5, out=Math.max(-lim,Math.min(lim,ideal)), clip=Math.abs(ideal)>lim;
+  var s1clip=Math.max(Math.abs(a1),Math.abs(b1))>lim;
+  rows($('#ia-read'),[['IN+',vp.toFixed(4)+' V'],['IN-',vn.toFixed(4)+' V'],['Difference IN+ \u2212 IN-',(vd*1000).toFixed(3)+' mV'],
+    ['Stage 1 gain 1 + 2RA \u00f7 RB',g1.toFixed(1)],['Stage 2 gain RF \u00f7 RIN',String(g2)],['Overall gain',(g1*g2).toFixed(0)],['OUT',out.toFixed(3)+' V'+(clip?' (clipped)':'')]]);
+  var m=$('#ia-meter'); clear(m);
+  var X=function(v){ return 20+(v+18)/36*260; };
+  el('rect',{x:20,y:24,width:260,height:18,'class':'pl-bg'},m);
+  el('rect',{x:Math.min(X(0),X(out)),y:24,width:Math.abs(X(out)-X(0)),height:18,'class':'bar-fill'},m);
+  [-18,-9,0,9,18].forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:20,y2:46,'class':'pl-major'},m); el('text',{x:X(v),y:60,'text-anchor':'middle','class':'pl-tick'},m,v+' V'); });
+  [-lim,lim].forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:18,y2:48,'class':'pl-vline'},m); });
+  el('text',{x:150,y:14,'text-anchor':'middle','class':'pl-note'},m,'OUT = '+out.toFixed(2)+' V');
+  var say;
+  if(Math.abs(vd)<1e-7) say='Balanced: the difference is zero, so OUT is 0 V'+(cm?' even though both inputs rose by 1 V. The common-mode change is rejected.':'.');
+  else say='An imbalance of '+Math.abs(vd*1000).toFixed(2)+' mV is multiplied by '+(g1*g2).toFixed(0)+'. '+(clip?'That would exceed what the LM324 can output from \u00b118 V supplies (about \u00b116.5 V), so the output clips.':'')
+    +(s1clip?' The input stage itself would saturate.':'')+(cm?' Adding 1 V to both inputs changes nothing at OUT: only the difference counts.':'');
+  if(rb!==1000) say+=' RB alone changes the gain: that\u2019s how real instrumentation amplifiers are adjusted.';
+  $('#ia-say').textContent=say;
+}
+$('#ia-r').addEventListener('input',ia); ['#ia-rb','#ia-cm'].forEach(function(k){ $(k).addEventListener('change',ia); });
+$('#ia-bal').addEventListener('click',function(){ $('#ia-r').value=10000; ia(); });
+ia();
+/* ---------- differential pair ---------- */
+function dp(){
+  var d=+$('#dp-d').value, c=+$('#dp-c').value, It=1.18e-3;
+  $('#dp-do').textContent=d.toFixed(2)+' V'; $('#dp-co').textContent=c.toFixed(1)+' V';
+  var i1=It/2*(1+Math.tanh(d/0.6)), i2=It-i1;
+  var vd1=15-i1*1e4, vd2=15-i2*1e4;
+  rows($('#dp-read'),[['Tail current (Q1)',(It*1000).toFixed(2)+' mA'],['J1 drain current',(i1*1000).toFixed(3)+' mA'],['J2 drain current',(i2*1000).toFixed(3)+' mA'],
+    ['J1 drain voltage',vd1.toFixed(2)+' V'],['J2 drain voltage',vd2.toFixed(2)+' V'],['Difference to the next stage',(vd2-vd1).toFixed(2)+' V']]);
+  var b=$('#dp-bars'); clear(b);
+  var H=function(i){ return i/It*100; };
+  [[i1,'J1',60],[i2,'J2',180]].forEach(function(r){ el('rect',{x:r[2],y:120-H(r[0]),width:60,height:H(r[0]),'class':'bar-fill'},b); el('text',{x:r[2]+30,y:138,'text-anchor':'middle','class':'pl-tick'},b,r[1]); el('text',{x:r[2]+30,y:114-H(r[0]),'text-anchor':'middle','class':'pl-note'},b,(r[0]*1000).toFixed(2)+' mA'); });
+  el('line',{x1:40,x2:260,y1:120,y2:120,'class':'pl-major'},b);
+  el('line',{x1:40,x2:260,y1:20,y2:20,'class':'pl-vline'},b);
+  el('text',{x:262,y:24,'class':'pl-note'},b,'tail');
+  $('#dp-say').textContent=(Math.abs(d)<0.01?'Equal inputs: the tail current splits evenly. ':'The difference steers the current toward the '+(d>0?'J1':'J2')+' side, and the drain voltages move in opposite directions. ')
+    +(c!==0?'Moving both inputs together (common mode) changes nothing here: the tail current is fixed by Q1, so the split stays the same.':'The two currents always add up to the tail current.');
+}
+['#dp-d','#dp-c'].forEach(function(k){ $(k).addEventListener('input',dp); });
+dp();
+})();
+</script>
+</body>
+</html>

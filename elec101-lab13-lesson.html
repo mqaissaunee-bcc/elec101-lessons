@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ELEC 101 Lab 13 Companion: Buses, multiplexers and counters</title>
+<meta name="description" content="Companion lesson for the optional ELEC 101 Lab 13 in Q Circuits: time-division multiplexing, buses and bus entries, a 16-line multiplexer and demultiplexer, and a glitchless MOD 10 counter.">
+<style>
+:root{
+  --paper:#EDF2E4; --sheet:#F8FAF4; --ink:#1D2721; --ink-2:#46544B;
+  --grid:#D6E2CB; --rule:#9FB39A; --accent:#2B6149; --accent-ink:#FFFFFF;
+  --accent-soft:#DCEBDF; --probe:#AE2A20; --probe-soft:#F6E1DE;
+  --trace:#1F4FA3; --trace-2:#AE2A20; --focus:#1F4FA3; --warn:#7A5000; --warn-soft:#F5EACB;
+  --font-body: Charter, "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-tech: Bahnschrift, "DIN Alternate", "Roboto Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --radius:3px; --gap:1rem;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+    --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+    --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+    --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111713; --sheet:#18201B; --ink:#E1E9DA; --ink-2:#AAB8A7;
+  --grid:#1F2A23; --rule:#3E5044; --accent:#86C9A5; --accent-ink:#0D1410;
+  --accent-soft:#223329; --probe:#FF9486; --probe-soft:#3A2522;
+  --trace:#8FB3FF; --trace-2:#FF9486; --focus:#8FB3FF; --warn:#F0C36A; --warn-soft:#352C18;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family:var(--font-body); font-size:clamp(1rem, .95rem + .25vw, 1.0625rem); line-height:1.62;
+}
+img,svg{max-width:100%}
+[hidden], svg[hidden], svg [hidden]{display:none!important}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+.skip-link{position:absolute; left:-999px; top:0; background:var(--accent); color:var(--accent-ink); padding:.6rem 1rem; z-index:10}
+.skip-link:focus{left:.5rem; top:.5rem}
+.visually-hidden{position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+
+/* ---------- title block header (the signature element) ---------- */
+.tb-wrap{max-width:1240px; margin:0 auto; padding:1rem 1rem 0}
+.titleblock{
+  display:grid; grid-template-columns: 1fr; border:2px solid var(--ink); background:var(--sheet);
+  font-family:var(--font-tech);
+}
+.titleblock > div{border-top:1px solid var(--ink); padding:.35rem .7rem; min-width:0}
+.titleblock > div:first-child{border-top:0}
+.tb-k{display:block; font-size:.72rem; color:var(--ink-2); letter-spacing:.02em}
+.tb-v{display:block; font-size:1rem; font-weight:600}
+.tb-title .tb-v{font-size:clamp(1.5rem, 1.1rem + 2vw, 2.4rem); font-weight:700; line-height:1.1; letter-spacing:-.01em}
+.tb-title{padding:.7rem .8rem!important}
+.tb-row{display:grid; grid-template-columns:repeat(2, minmax(0,1fr))}
+.tb-row > div{padding:.35rem .7rem; border-left:1px solid var(--ink)}
+.tb-row > div:nth-child(odd){border-left:0}
+.tb-row > div:nth-child(n+3){border-top:1px solid var(--ink)}
+.tb-tools{display:flex; gap:.5rem; align-items:center; justify-content:space-between; flex-wrap:wrap}
+@media (min-width: 820px){
+  .titleblock{grid-template-columns: 1.5fr 1fr}
+  .titleblock > div.tb-title{border-top:0; border-right:1px solid var(--ink); grid-row: span 2}
+  .titleblock > div.tb-grid{border-top:0}
+  .titleblock > div.tb-tools{grid-column:2}
+}
+
+/* ---------- layout ---------- */
+.layout{max-width:1240px; margin:0 auto; padding:1rem; display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .layout{grid-template-columns: 16rem minmax(0,1fr)} }
+nav.toc{font-family:var(--font-tech)}
+.toc-inner{background:var(--sheet); border:1px solid var(--rule); padding:.75rem}
+@media (min-width: 900px){ .toc-inner{position:sticky; top:1rem} }
+.toc h2{font-size:.95rem; margin:0 0 .5rem}
+.toc ol{list-style:none; margin:0; padding:0; counter-reset:sub}
+.toc li{margin:0}
+.toc button{
+  width:100%; text-align:left; min-height:44px; padding:.45rem .5rem; border:0; border-left:3px solid transparent;
+  background:transparent; color:var(--ink); font:inherit; font-size:.93rem; cursor:pointer; display:flex; gap:.5rem; align-items:flex-start;
+}
+.toc button:hover{background:var(--accent-soft)}
+.toc button[aria-current="step"]{border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
+.toc .num{min-width:2.2em; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.toc .chk{margin-left:auto; color:var(--accent); font-weight:700}
+.progress-wrap{margin-top:.75rem; font-size:.85rem}
+.bar{height:8px; background:var(--grid); border:1px solid var(--rule)}
+.bar > span{display:block; height:100%; width:0; background:var(--accent); transition:width .3s}
+
+main{min-width:0}
+section.lesson{background:var(--sheet); border:1px solid var(--rule); padding:clamp(1rem, .6rem + 2vw, 2.25rem)}
+.prose{max-width:70ch}
+h2,h3,h4{font-family:var(--font-tech); line-height:1.2; letter-spacing:-.005em}
+h2{font-size:clamp(1.45rem, 1.2rem + 1vw, 1.95rem); margin:0 0 .25rem}
+h3{font-size:1.28rem; margin:2.2rem 0 .5rem; padding-top:.9rem; border-top:1px solid var(--rule)}
+h4{font-size:1.05rem; margin:1.4rem 0 .35rem}
+.sub-num{font-family:var(--font-tech); color:var(--accent); font-weight:700; font-size:.95rem; margin:0}
+.lede{font-size:1.1em; color:var(--ink-2); margin-top:.25rem}
+.term{font-family:var(--font-tech); font-weight:600}
+code,.mono{font-family:ui-monospace, "Cascadia Mono", Consolas, Menlo, monospace; font-size:.92em; background:var(--accent-soft); padding:.05em .3em; border-radius:var(--radius)}
+kbd{font-family:var(--font-tech); border:1px solid var(--rule); border-bottom-width:2px; padding:0 .35em; border-radius:var(--radius); background:var(--paper)}
+
+.callout{border-left:4px solid var(--accent); background:var(--accent-soft); padding:.75rem 1rem; margin:1.25rem 0; max-width:70ch}
+.callout.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.callout.probe{border-left-color:var(--probe); background:var(--probe-soft)}
+.callout > :first-child{margin-top:0} .callout > :last-child{margin-bottom:0}
+.callout strong.k{font-family:var(--font-tech)}
+
+.steps{counter-reset:st; list-style:none; padding:0; max-width:70ch}
+.steps > li{counter-increment:st; position:relative; padding:.35rem 0 .35rem 2.6rem; border-bottom:1px dashed var(--rule)}
+.steps > li::before{content:counter(st); position:absolute; left:0; top:.35rem; width:1.9rem; height:1.9rem; border:1.5px solid var(--ink); display:grid; place-items:center; font-family:var(--font-tech); font-weight:700; font-size:.9rem}
+
+.table-wrap{overflow-x:auto; margin:1rem 0; max-width:100%}
+table{border-collapse:collapse; width:100%; font-size:.95rem; min-width:480px}
+th,td{border:1px solid var(--rule); padding:.45rem .6rem; text-align:left; vertical-align:top}
+th{font-family:var(--font-tech); background:var(--paper)}
+caption{text-align:left; font-family:var(--font-tech); font-weight:600; padding:.25rem 0}
+
+/* ---------- figures / schematics ---------- */
+figure{margin:1.25rem 0}
+figcaption{font-family:var(--font-tech); font-size:.9rem; color:var(--ink-2); margin-top:.4rem}
+.schem-box{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 1080px){ .schem-box{grid-template-columns: minmax(0,1.6fr) minmax(240px,1fr)} }
+@media (min-width: 1080px){ .schem-box.wide{grid-template-columns:1fr} }
+.drawing{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.drawing svg{display:block; width:100%; height:auto; min-width:420px}
+.schem{font-family:var(--font-tech)}
+.schem .w{stroke:var(--ink); stroke-width:2; fill:none; stroke-linecap:square}
+.schem .fill{fill:var(--ink)}
+.schem .dot{fill:var(--ink)}
+.schem .lbl{fill:var(--ink); font-size:14px; font-weight:600}
+.schem .val{fill:var(--ink-2); font-size:13px}
+.schem .net{fill:var(--accent); font-size:14px; font-weight:700}
+.schem .bad{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .bad-dot{fill:var(--probe)}
+.schem .bad-txt{fill:var(--probe); font-size:13px; font-weight:700}
+.schem .probe{fill:var(--probe)}
+.schem .probe-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.schem .hit{fill:transparent; stroke:none}
+.schem .part{cursor:pointer}
+.schem .part:hover .hit, .schem .part:focus .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-dasharray:4 3}
+.schem .part:focus{outline:none}
+.schem .part.sel .hit{fill:var(--accent-soft); stroke:var(--accent); stroke-width:2}
+.schem .dimmed{opacity:.18; transition:opacity .2s}
+.schem .ov-v{fill:var(--accent); font-size:13px; font-weight:700}
+.schem .ov-box{fill:var(--sheet); stroke:var(--accent); stroke-width:1.5}
+.schem .ov-i{fill:var(--trace); font-size:12.5px; font-weight:700}
+.schem .ov-ibox{fill:var(--sheet); stroke:var(--trace); stroke-width:1.5}
+.schem .arrow{stroke:var(--trace); stroke-width:2; fill:none}
+.schem .arrowhead{fill:var(--trace)}
+.schem .spot{fill:transparent; stroke:transparent; stroke-width:2; cursor:pointer}
+.schem .spot:hover, .schem .spot:focus{stroke:var(--focus); stroke-dasharray:5 3; fill:transparent}
+.schem .spot.found{stroke:var(--probe); stroke-dasharray:none; fill:var(--probe-soft); fill-opacity:.35}
+.schem .spot:focus{outline:none}
+.schem .spot-num{fill:var(--probe); font-size:13px; font-weight:700}
+
+.info-panel{border:1.5px solid var(--ink); background:var(--paper); padding:.85rem 1rem; align-self:start; font-size:.95rem}
+.info-panel h4{margin:0 0 .35rem}
+.info-panel .kv{display:grid; grid-template-columns:auto 1fr; gap:.15rem .75rem; font-size:.9rem; margin:.5rem 0}
+.info-panel .kv dt{font-family:var(--font-tech); font-weight:600}
+.info-panel .kv dd{margin:0}
+.info-panel .hint{color:var(--ink-2); margin:0}
+
+/* component cards */
+.parts-grid{display:grid; gap:1rem; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); margin:1rem 0}
+.pcard{border:1px solid var(--rule); background:var(--paper); padding:.85rem 1rem}
+.pcard header{display:flex; gap:.75rem; align-items:center}
+.pcard svg{width:84px; height:56px; flex:none}
+.pcard h4{margin:0}
+.pcard .ref{font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2); margin:0}
+.pcard p{margin:.5rem 0 0; font-size:.95rem}
+.parts-grid{align-items:start}
+details.more{margin-top:.6rem; border-top:1px dashed var(--rule)}
+details.more > summary{cursor:pointer; font-family:var(--font-tech); font-weight:600; color:var(--accent); min-height:44px; display:flex; align-items:center; gap:.4rem; list-style:none}
+details.more > summary::-webkit-details-marker{display:none}
+details.more > summary::before{content:"+"; display:inline-grid; place-items:center; width:1.3rem; height:1.3rem; border:1.5px solid currentColor; font-size:.95rem; line-height:1}
+details.more[open] > summary::before{content:"\2212"}
+details.more .more-body{font-size:.95rem; padding-bottom:.4rem}
+details.more .more-body p{margin:.45rem 0}
+details.more .more-body ul{margin:.35rem 0; padding-left:1.1rem}
+details.more .more-body li{margin:.2rem 0}
+.size-ctl{display:flex; align-items:center; gap:.25rem}
+.size-ctl output{min-width:3.2em; text-align:center; font-weight:600}
+.tb-tools .btn{white-space:nowrap}
+a.btn{display:inline-flex; align-items:center; text-decoration:none}
+
+/* controls */
+button.btn, .btn{
+  font-family:var(--font-tech); font-size:.95rem; min-height:44px; min-width:44px; padding:.5rem .95rem;
+  border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius);
+}
+.btn:hover{background:var(--accent-soft)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--ink); color:var(--sheet)}
+.btn-row{display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0}
+.controls{display:flex; flex-wrap:wrap; gap:.75rem 1.25rem; align-items:end; margin:.75rem 0; font-family:var(--font-tech)}
+.field{display:flex; flex-direction:column; gap:.2rem; font-size:.9rem}
+.field input[type=text], .field input[type=number], .field select{
+  font:inherit; font-size:1rem; min-height:44px; padding:.35rem .5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink); border-radius:var(--radius); min-width:7rem
+}
+.field input[type=range]{min-height:44px; width:12rem; accent-color:var(--accent)}
+.field output{font-weight:700}
+fieldset{border:1px solid var(--rule); padding:.5rem .8rem; margin:0}
+legend{font-family:var(--font-tech); font-weight:600; padding:0 .3rem}
+.radio{display:flex; gap:.4rem; align-items:center; min-height:44px}
+.radio input{width:1.2rem; height:1.2rem; accent-color:var(--accent)}
+.result{font-family:var(--font-tech); margin:.5rem 0; padding:.6rem .8rem; border:1px solid var(--rule); background:var(--paper)}
+.result.ok{border-color:var(--accent); background:var(--accent-soft)}
+.result.no{border-color:var(--probe); background:var(--probe-soft)}
+.result:empty{display:none}
+
+/* simulator dialog mock */
+.dialog{border:2px solid var(--ink); background:var(--paper); max-width:640px; margin:1rem 0}
+.dialog-title{background:var(--ink); color:var(--sheet); font-family:var(--font-tech); font-weight:600; padding:.35rem .7rem}
+.dialog-body{padding:.8rem}
+
+/* plots */
+.plot-box{border:1.5px solid var(--ink); background:var(--sheet); padding:.5rem; overflow-x:auto}
+.plot-box svg{display:block; width:100%; height:auto; min-width:460px; font-family:var(--font-tech)}
+.pl-bg{fill:var(--sheet); stroke:var(--ink); stroke-width:1.2}
+.pl-major{stroke:var(--rule); stroke-width:1}
+.pl-minor{stroke:var(--rule); stroke-width:.8; stroke-dasharray:2 3; opacity:.8}
+.pl-tick{fill:var(--ink); font-size:11.5px}
+.pl-axis{fill:var(--ink); font-size:12.5px; font-weight:600}
+.pl-trace{fill:none; stroke:var(--trace); stroke-width:2}
+.pl-trace.t2{stroke:var(--trace-2)}
+.pl-trace.ghost{stroke:var(--ink-2); stroke-dasharray:5 4; stroke-width:1.5}
+.pl-leg{font-size:12px; fill:var(--trace); font-weight:600}
+.pl-leg.t2{fill:var(--trace-2)}
+.pl-cursor{stroke:var(--ink); stroke-width:1; stroke-dasharray:4 3}
+.pl-mark{fill:var(--probe)}
+.pl-mark-txt{fill:var(--probe); font-size:12px; font-weight:700}
+.pl-hline{stroke:var(--probe); stroke-width:1; stroke-dasharray:6 4}
+.readout{font-family:var(--font-tech); font-variant-numeric:tabular-nums; margin:.4rem 0; min-height:1.6em}
+
+/* quiz */
+.quiz{max-width:70ch}
+.q{border:1px solid var(--rule); background:var(--paper); padding:.9rem 1rem; margin:1rem 0}
+.q > p.qt{margin:0 0 .5rem; font-weight:600}
+.q .choices{display:grid; gap:.4rem}
+.q .choice{text-align:left; font-family:var(--font-body); font-size:1rem; min-height:44px; padding:.5rem .75rem; border:1.5px solid var(--rule); background:var(--sheet); color:var(--ink); cursor:pointer; border-radius:var(--radius)}
+.q .choice:hover{border-color:var(--ink)}
+.q .choice.right{border-color:var(--accent); background:var(--accent-soft)}
+.q .choice.wrong{border-color:var(--probe); background:var(--probe-soft)}
+.q .choice[disabled]{cursor:default}
+.q .fb{margin:.6rem 0 0}
+.q .fb:empty{display:none}
+.score{font-family:var(--font-tech); font-weight:700}
+
+.pager{display:flex; justify-content:space-between; gap:.5rem; flex-wrap:wrap; margin-top:2.5rem; padding-top:1rem; border-top:2px solid var(--ink)}
+.done-note{font-family:var(--font-tech); color:var(--accent); font-weight:600}
+
+.compare > *, .schem-box > *, .cols-2 > *{min-width:0}
+.compare{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 900px){ .compare{grid-template-columns:1fr 1fr} }
+.checklist{list-style:none; padding:0; max-width:70ch}
+.checklist li{display:flex; gap:.6rem; align-items:flex-start; padding:.3rem 0}
+.checklist input{width:1.25rem; height:1.25rem; margin-top:.25rem; accent-color:var(--accent); flex:none}
+dl.gloss{max-width:70ch}
+dl.gloss dt{font-family:var(--font-tech); font-weight:700; margin-top:.7rem}
+dl.gloss dd{margin:0 0 0 1rem}
+.cols-2{display:grid; gap:1rem; grid-template-columns:1fr}
+@media (min-width: 760px){ .cols-2{grid-template-columns:1fr 1fr} }
+
+.term.has-tip{border-bottom:1.5px dotted var(--accent); cursor:help}
+.term.has-tip:hover,.term.has-tip:focus-visible{background:var(--accent-soft)}
+#tip{position:absolute; z-index:60; max-width:min(22rem, calc(100vw - 16px)); background:var(--ink); color:var(--sheet); padding:.55rem .75rem; font-family:var(--font-body); font-size:.92rem; line-height:1.45; border-radius:var(--radius); box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#tip strong{font-family:var(--font-tech)}
+#tip a{color:inherit}
+.demo{border:2px solid var(--ink); background:var(--paper); padding:clamp(.75rem,.5rem + 1vw,1.25rem); margin:1.25rem 0}
+.demo > h4:first-child{margin-top:0}
+.demo-grid{display:grid; gap:1rem; grid-template-columns:1fr; align-items:start}
+@media (min-width: 900px){ .demo-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.demo-grid > *{min-width:0}
+.drawing.small svg{min-width:280px}
+.demo-plots{display:grid; gap:1rem; margin-top:1rem; grid-template-columns:minmax(0,1fr)}
+.demo-plots > *{min-width:0}
+.readouts{display:grid; grid-template-columns:auto 1fr; gap:.2rem .9rem; margin:0; font-family:var(--font-tech); font-variant-numeric:tabular-nums}
+.readouts dt{color:var(--ink-2)}
+.readouts dd{margin:0; font-weight:700}
+.flag{font-family:var(--font-tech); font-weight:700; padding:.1rem .45rem; border:1.5px solid currentColor; display:inline-block}
+.flag.bad{color:var(--probe)} .flag.good{color:var(--accent)}
+.pl-trace.dash{stroke-dasharray:7 4}
+.bar-fill{fill:var(--accent)}
+.schem .bus{stroke-width:5; stroke-linecap:square}
+.schem .pin{font:600 9.5px var(--font-tech); fill:var(--ink-2)}
+svg .pl-trace.lane{stroke-width:2.2; stroke-dasharray:none}
+.lane-x{fill:var(--warn-soft); stroke:var(--warn); stroke-width:1; stroke-dasharray:3 2}
+.led{display:inline-grid; place-items:center; min-width:3.2rem; min-height:3.2rem; border-radius:50%; border:2px solid var(--ink); font-family:var(--font-tech); font-weight:700; font-size:1.2rem; background:var(--sheet); color:var(--ink)}
+.led.on{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+.led.x{background:var(--warn-soft); border-color:var(--warn); border-style:dashed}
+.bitbtn{min-width:3.2rem!important; font-size:1.1rem!important; font-weight:700}
+.bitbtn[aria-pressed="true"]{background:var(--accent)!important; color:var(--accent-ink)!important; border-color:var(--accent)!important}
+.io-row{display:flex; flex-wrap:wrap; gap:1rem 1.5rem; align-items:center; margin:.75rem 0}
+.io-row .io{display:flex; flex-direction:column; align-items:center; gap:.25rem; font-family:var(--font-tech); font-weight:600}
+.tt table{min-width:0; width:auto}
+.tt td, .tt th{text-align:center; min-width:3rem}
+.tt select{font:inherit; min-height:40px; min-width:3.5rem; border:1.5px solid var(--ink); background:var(--sheet); color:var(--ink)}
+tr.hl td{background:var(--accent-soft); font-weight:700}
+.pl-vline{stroke:var(--ink-2); stroke-width:1; stroke-dasharray:3 3}
+.pl-rail{stroke:var(--probe); stroke-width:1.2; stroke-dasharray:8 4}
+.pl-note{fill:var(--ink-2); font-size:11.5px; font-weight:600}
+.schem .flow{fill:none; stroke:var(--trace); stroke-width:5; stroke-linecap:round; stroke-dasharray:0 18; animation:flow 1s linear infinite}
+.schem .flow.paused{animation-play-state:paused}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.schem .sw{stroke:var(--ink); stroke-width:2.5; stroke-linecap:round; transition:transform .25s}
+.schem .contact{fill:var(--sheet); stroke:var(--ink); stroke-width:2}
+.schem .shortw{stroke:var(--probe); stroke-width:2.5; fill:none}
+.schem .ovl polyline,.schem .ovl path{fill:none; stroke:var(--probe); stroke-width:9; stroke-opacity:.35; stroke-linecap:round; stroke-linejoin:round}
+.schem .ovl.alt polyline,.schem .ovl.alt path{stroke:var(--trace)}
+.schem .ovl circle{fill:none; stroke:var(--probe); stroke-width:3}
+.pl-trace.c0{stroke:var(--trace)} .pl-trace.c1{stroke:var(--trace-2); stroke-dasharray:8 4} .pl-trace.c2{stroke:var(--accent); stroke-dasharray:2 3}
+.pl-trace.c3{stroke:var(--warn); stroke-dasharray:12 3 2 3} .pl-trace.c4{stroke:var(--ink-2); stroke-dasharray:5 5} .pl-trace.c5{stroke:var(--ink)}
+.pl-leg.c1{fill:var(--trace-2)} .pl-leg.c2{fill:var(--accent)} .pl-leg.c3{fill:var(--warn)} .pl-leg.c4,.pl-leg.c5{fill:var(--ink)}
+pre.netlist{font-family:ui-monospace,"Cascadia Mono",Consolas,Menlo,monospace; background:var(--sheet); border:1.5px solid var(--ink); padding:.75rem 1rem; overflow-x:auto; margin:.5rem 0; line-height:1.5}
+.predict{border:1.5px dashed var(--accent); padding:.75rem 1rem; margin:1rem 0; max-width:70ch; background:var(--sheet)}
+.predict > p:first-child{margin-top:0}
+footer.site{max-width:1240px; margin:0 auto; padding:1rem 1rem 2rem; font-family:var(--font-tech); font-size:.85rem; color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important; scroll-behavior:auto!important} }
+@media print{
+  body{background:#fff}
+  nav.toc, .pager, .tb-tools, .btn-row, .skip-link{display:none!important}
+  section.lesson{display:block!important; border:0; page-break-after:always}
+  section.lesson[hidden]{display:block!important}
+  .layout{display:block}
+}
+</style>
+</head>
+<body data-lab="13">
+<a href="#main" class="skip-link">Skip to main content</a>
+<header class="tb-wrap">
+  <div class="titleblock">
+    <div class="tb-title"><span class="tb-k">Title</span><h1 class="tb-v" style="margin:0">Lab 13: Buses, multiplexers and counters</h1><span class="tb-k" style="margin-top:.35rem">Multiplexing, buses and bus entries, the 74151A and 74154, and a MOD 10 counter in Q Circuits</span></div>
+    <div class="tb-grid tb-row">
+      <div><span class="tb-k">Course</span><span class="tb-v">ELEC 101 Lab Companion</span></div>
+      <div><span class="tb-k">Organization</span><span class="tb-v">Brookdale Community College</span></div>
+      <div><span class="tb-k">Now on</span><span class="tb-v" id="sheet-title">&nbsp;</span></div>
+      <div><span class="tb-k">Sheet</span><span class="tb-v" id="sheet-no">1</span></div>
+    </div>
+    <div class="tb-tools">
+      <a class="btn" href="index.html">All labs</a>
+      <a class="btn" href="glossary.html" target="_blank" rel="noopener">Glossary (new tab)</a>
+      <div class="size-ctl" role="group" aria-label="Text size">
+        <button type="button" class="btn" id="fs-down" aria-label="Decrease text size">A−</button>
+        <output id="fs-val" aria-live="polite">100%</output>
+        <button type="button" class="btn" id="fs-up" aria-label="Increase text size">A+</button>
+      </div>
+      <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+      <button type="button" class="btn" id="reset-btn">Clear my progress</button>
+    </div>
+  </div>
+</header>
+<div class="layout">
+  <nav class="toc" id="toc" aria-label="Lesson sections">
+    <div class="toc-inner">
+      <h2>Sections</h2>
+      <ol><li><button type="button" data-target="s13-1" aria-current="false"><span class="num">13.1</span><span>Multiplexing</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-2" aria-current="false"><span class="num">13.2</span><span>Buses, bus entries and ports</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-3" aria-current="false"><span class="num">13.3</span><span>The 74151A and 74154</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-4" aria-current="false"><span class="num">13.4</span><span>Lab 13A: the multiplexer</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-5" aria-current="false"><span class="num">13.5</span><span>Lab 13B: the demultiplexer</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-6" aria-current="false"><span class="num">13.6</span><span>Lab 13C: MOD 10 counter</span><span class="chk" aria-hidden="true"></span></button></li><li><button type="button" data-target="s13-7" aria-current="false"><span class="num">13.7</span><span>Troubleshooting and wrap-up</span><span class="chk" aria-hidden="true"></span></button></li></ol>
+      <div class="progress-wrap">
+        <div class="bar" id="prog" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <p id="prog-txt" style="margin:.35rem 0 0">0 complete</p>
+      </div>
+    </div>
+  </nav>
+  <main id="main" tabindex="-1">
+<section class="lesson" id="s13-1" data-title="Multiplexing" aria-labelledby="s13-1-h" hidden><p class="sub-num">Section 13.1</p><h2 id="s13-1-h">Multiplexing</h2><p class="lede prose">Sending many signals over one line, and a round-trip demo.</p>
+<div class="callout prose"><p><strong class="k">Optional lab.</strong> The handout marks Lab 13 as optional: it must be completed to be eligible for a grade of B.</p></div>
+<div class="prose">
+<p>Sending 16 signals over a long distance on 16 separate wires is expensive. A <span class="term">multiplexer</span> (mux) sends them over <em>one</em> line instead, taking turns: first D0, then D1, and so on. This is time-division multiplexing, a kind of parallel-to-serial conversion. At the far end a <span class="term">demultiplexer</span> (demux) routes each moment of the incoming signal back to its own line: serial-to-parallel.</p>
+<p>Both ends must agree on whose turn it is. That's what the four <span class="term">select lines</span> S3 to S0 do: together they count from 0 to 15 (2⁴ = 16 choices).</p>
+</div>
+<div class="demo" id="mx">
+<h4>Round trip: 13A into 13B</h4>
+<p class="prose">Set the 16 data bits, choose a selection, and watch the bit travel through the multiplexer and back out of the demultiplexer.</p>
+<div class="io-row" id="mx-data" role="group" aria-label="Data bits D0 to D15"></div>
+<div class="controls">
+  <div class="field"><label for="mx-sel">Selection (S3 S2 S1 S0)</label><input type="range" id="mx-sel" min="0" max="15" value="5"><output id="mx-selo" for="mx-sel"></output></div>
+  <button type="button" class="btn primary" id="mx-send">Send all 16 in turn</button>
+</div>
+<dl class="readouts" id="mx-read" aria-live="polite"></dl>
+<p class="prose" style="margin:.5rem 0 .25rem"><strong>Recovered lines (13B's data bus):</strong></p>
+<div class="io-row" id="mx-out" aria-live="polite"></div>
+<p class="result ok" id="mx-say" aria-live="polite"></p>
+<div class="plot-box"><svg id="mx-plot" role="img" aria-label="Timing diagram of the select count and MUXOutput while all 16 bits are sent"></svg></div>
+</div>
+<div class="pager"><span></span><button type="button" class="btn" data-complete="s13-1" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-2">Next: Buses, bus entries and ports</button></div></section>
+<section class="lesson" id="s13-2" data-title="Buses, bus entries and ports" aria-labelledby="s13-2-h" hidden><p class="sub-num">Section 13.2</p><h2 id="s13-2-h">Buses, bus entries and ports</h2><p class="lede prose">How signals join a bus by name, and when lines connect.</p>
+<div class="prose">
+<p>A <span class="term">bus</span> is a group of signals drawn as a single thick line, to keep busy schematics readable. It isn't a wire: the signals on it stay separate and join it <strong>by name</strong>.</p>
+</div>
+<div class="table-wrap"><table>
+<caption>Connecting to buses and wires</caption>
+<thead><tr><th scope="col">You draw</th><th scope="col">Connected?</th></tr></thead>
+<tbody>
+<tr><td>A wire that ends on another wire</td><td>Yes (junction dot)</td></tr>
+<tr><td>A bus that ends on another bus</td><td>Yes</td></tr>
+<tr><td>A wire that ends on a bus</td><td><strong>No.</strong> Use a bus entry and a net name</td></tr>
+<tr><td>A <span class="term">bus entry</span> from a wire named D3 to the bus D[0:15]</td><td>Yes: D3 is one of the bus's signals</td></tr>
+<tr><td>Two bus entries at the same point on a bus</td><td>Only if their wires have the same name</td></tr>
+<tr><td>Two wires or objects with the same net name</td><td>Yes, wherever they are</td></tr>
+</tbody></table></div>
+<div class="prose">
+<h3>The Q Circuits tools</h3>
+<ul>
+<li><strong>Bus</strong> (<kbd>Y</kbd>) draws the thick line. A net alias on the bus can take a bus name such as <code>D[0:15]</code>, meaning signals D0 to D15.</li>
+<li><strong>Bus entry</strong> (Digital tab) is the short diagonal. Put its diagonal end on the bus and run a wire from its other end; then name that wire (D0, D1 …). ⇆ (Mirror horizontally) points an entry the other way.</li>
+<li><strong>Port</strong> (Digital tab) is PSpice's PORTLEFT/PORTRIGHT: a named connection drawn as an arrow. Rotate it 180° to point the other way.</li>
+<li>A wire run straight onto a bus is flagged under Parts and connections.</li>
+</ul>
+</div>
+<div class="prose"><h3>Connected or not?</h3></div>
+<div class="quiz" data-quiz="bus13"></div>
+<div class="pager"><button type="button" class="btn" data-goto="s13-1">Previous section</button><button type="button" class="btn" data-complete="s13-2" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-3">Next: The 74151A and 74154</button></div></section>
+<section class="lesson" id="s13-3" data-title="The 74151A and 74154" aria-labelledby="s13-3-h" hidden><p class="sub-num">Section 13.3</p><h2 id="s13-3-h">The 74151A and 74154</h2><p class="lede prose">Function tables, and how the mux and demux fit together.</p>
+<div class="prose"><p>Two new 7400-family chips do the real work in 13A and 13B.</p></div>
+<div class="cols-2">
+<div class="table-wrap"><table>
+<caption>74151A multiplexer</caption>
+<thead><tr><th scope="col">E̅</th><th scope="col">S2 S1 S0</th><th scope="col">Z</th><th scope="col">Z̅</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>any</td><td>0</td><td>1</td></tr>
+<tr><td>0</td><td>000</td><td>I0</td><td>not I0</td></tr>
+<tr><td>0</td><td>001</td><td>I1</td><td>not I1</td></tr>
+<tr><td>0</td><td>…</td><td>…</td><td>…</td></tr>
+<tr><td>0</td><td>111</td><td>I7</td><td>not I7</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table>
+<caption>74154 decoder</caption>
+<thead><tr><th scope="col">G̅1 G̅2</th><th scope="col">D C B A</th><th scope="col">Output k</th><th scope="col">Other outputs</th></tr></thead>
+<tbody>
+<tr><td>not both 0</td><td>any</td><td>1</td><td>1</td></tr>
+<tr><td>0 0</td><td>k in binary</td><td>0</td><td>1</td></tr>
+</tbody></table></div>
+</div>
+<div class="prose">
+<h3>How the pieces fit</h3>
+<ol>
+<li><strong>Two 8-line muxes make one 16-line mux.</strong> S0–S2 go to both chips. S3 enables U1 directly (active-low) and U2 through an inverter, so S3 = 0 picks from D0–D7 and S3 = 1 from D8–D15.</li>
+<li><strong>The disabled chip outputs 0</strong>, so combining the two Z outputs with a gate passes only the selected bit. The handout uses a 7402 NOR, which also inverts it: MUXOutput = NOT D[selected].</li>
+<li><strong>The demux uses that inversion.</strong> MUXInput goes to both of the 74154's active-low enables. When the data bit was 1, MUXInput is 0, the decoder is enabled, and the selected output goes low.</li>
+<li><strong>The inverters undo the active-low outputs.</strong> The selected line reads 1, and every other line reads 0. When the data bit was 0, the decoder is disabled and all 16 lines read 0. Either way, the selected line matches the original bit.</li>
+</ol>
+<p>Try it in the round-trip demo in 13.1.</p>
+</div>
+<div class="pager"><button type="button" class="btn" data-goto="s13-2">Previous section</button><button type="button" class="btn" data-complete="s13-3" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-4">Next: Lab 13A: the multiplexer</button></div></section>
+<section class="lesson" id="s13-4" data-title="Lab 13A: the multiplexer" aria-labelledby="s13-4-h" hidden><p class="sub-num">Section 13.4</p><h2 id="s13-4-h">Lab 13A: the multiplexer</h2><p class="lede prose">Draw two 74151As with a 16-line data bus.</p>
+<div class="prose">
+<p>Open <strong>13A · 16-line multiplexer with a bus</strong>. This lab is marked on the drawing alone; there's no simulation to run.</p>
+</div>
+<div class="schem-box wide">
+  <div class="drawing" style="max-width:720px"><svg class="schem" id="s13a" viewBox="40 60 680 790" role="group" aria-labelledby="s13a-t s13a-d" data-panel="p13a"><title id="s13a-t">Lab 13A 16-line to 1-line multiplexer</title><desc id="s13a-d">A vertical data bus D[0:15] on the left. Sixteen bus entries feed wires D0 to D7 into U1&#x27;s inputs I0 to I7 and D8 to D15 into U2&#x27;s inputs. Select lines S0, S1 and S2 run to both 74151As. S3 drives U1&#x27;s enable directly and U2&#x27;s enable through inverter U3A. Both Z outputs feed the 7402 NOR gate U4A, whose output goes to the port MUXOutput.</desc><polyline class="w" points="140,760 140,300 300,300"/><polyline class="w" points="140,680 300,680"/><polyline class="w" points="160,780 160,320 300,320"/><polyline class="w" points="160,700 300,700"/><polyline class="w" points="180,800 180,340 300,340"/><polyline class="w" points="180,720 300,720"/><polyline class="w" points="200,820 200,100 300,100"/><polyline class="w" points="200,440 220,440"/><polyline class="w" points="300,440 300,480"/><polyline class="w" points="400,140 440,140 440,280 480,280"/><polyline class="w" points="400,520 440,520 440,320 480,320"/><polyline class="w" points="560,300 600,300"/><polyline class="w" points="120,120 300,120"/><polyline class="w" points="120,500 300,500"/><polyline class="w" points="120,140 300,140"/><polyline class="w" points="120,520 300,520"/><polyline class="w" points="120,160 300,160"/><polyline class="w" points="120,540 300,540"/><polyline class="w" points="120,180 300,180"/><polyline class="w" points="120,560 300,560"/><polyline class="w" points="120,200 300,200"/><polyline class="w" points="120,580 300,580"/><polyline class="w" points="120,220 300,220"/><polyline class="w" points="120,600 300,600"/><polyline class="w" points="120,240 300,240"/><polyline class="w" points="120,620 300,620"/><polyline class="w" points="120,260 300,260"/><polyline class="w" points="120,640 300,640"/><line class="w bus" x1="100" y1="100" x2="100" y2="680"/><g class="part" data-part="MUX1" tabindex="0" role="button" aria-label="U1, 74151A 8-to-1 multiplexer"><rect class="hit" x="298" y="72" width="104" height="282" rx="3"/><path class="w" d="M320 90 H380 V350 H320 Z"/><path class="w" d="M300 120 h20"/><path class="w" d="M300 140 h20"/><path class="w" d="M300 160 h20"/><path class="w" d="M300 180 h20"/><path class="w" d="M300 200 h20"/><path class="w" d="M300 220 h20"/><path class="w" d="M300 240 h20"/><path class="w" d="M300 260 h20"/><path class="w" d="M300 300 h20"/><path class="w" d="M300 320 h20"/><path class="w" d="M300 340 h20"/><path class="w" d="M300 100 h12"/><circle class="w" cx="316" cy="100" r="4"/><path class="w" d="M380 140 h20 M380 180 h4"/><circle class="w" cx="388" cy="180" r="4"/><path class="w" d="M392 180 h8"/><text class="pin" x="324" y="104" text-anchor="start" >E̅</text><text class="pin" x="324" y="124" text-anchor="start" >I0</text><text class="pin" x="324" y="144" text-anchor="start" >I1</text><text class="pin" x="324" y="164" text-anchor="start" >I2</text><text class="pin" x="324" y="184" text-anchor="start" >I3</text><text class="pin" x="324" y="204" text-anchor="start" >I4</text><text class="pin" x="324" y="224" text-anchor="start" >I5</text><text class="pin" x="324" y="244" text-anchor="start" >I6</text><text class="pin" x="324" y="264" text-anchor="start" >I7</text><text class="pin" x="324" y="304" text-anchor="start" >S0</text><text class="pin" x="324" y="324" text-anchor="start" >S1</text><text class="pin" x="324" y="344" text-anchor="start" >S2</text><text class="pin" x="376" y="144" text-anchor="end" >Z</text><text class="pin" x="376" y="184" text-anchor="end" >Z̅</text><text class="lbl" x="324" y="84" text-anchor="start" >U1</text><text class="val" x="324" y="366" text-anchor="start" >74151A</text></g><g class="part" data-part="MUX2" tabindex="0" role="button" aria-label="U2, 74151A 8-to-1 multiplexer"><rect class="hit" x="298" y="452" width="104" height="282" rx="3"/><path class="w" d="M320 470 H380 V730 H320 Z"/><path class="w" d="M300 500 h20"/><path class="w" d="M300 520 h20"/><path class="w" d="M300 540 h20"/><path class="w" d="M300 560 h20"/><path class="w" d="M300 580 h20"/><path class="w" d="M300 600 h20"/><path class="w" d="M300 620 h20"/><path class="w" d="M300 640 h20"/><path class="w" d="M300 680 h20"/><path class="w" d="M300 700 h20"/><path class="w" d="M300 720 h20"/><path class="w" d="M300 480 h12"/><circle class="w" cx="316" cy="480" r="4"/><path class="w" d="M380 520 h20 M380 560 h4"/><circle class="w" cx="388" cy="560" r="4"/><path class="w" d="M392 560 h8"/><text class="pin" x="324" y="484" text-anchor="start" >E̅</text><text class="pin" x="324" y="504" text-anchor="start" >I0</text><text class="pin" x="324" y="524" text-anchor="start" >I1</text><text class="pin" x="324" y="544" text-anchor="start" >I2</text><text class="pin" x="324" y="564" text-anchor="start" >I3</text><text class="pin" x="324" y="584" text-anchor="start" >I4</text><text class="pin" x="324" y="604" text-anchor="start" >I5</text><text class="pin" x="324" y="624" text-anchor="start" >I6</text><text class="pin" x="324" y="644" text-anchor="start" >I7</text><text class="pin" x="324" y="684" text-anchor="start" >S0</text><text class="pin" x="324" y="704" text-anchor="start" >S1</text><text class="pin" x="324" y="724" text-anchor="start" >S2</text><text class="pin" x="376" y="524" text-anchor="end" >Z</text><text class="pin" x="376" y="564" text-anchor="end" >Z̅</text><text class="lbl" x="324" y="464" text-anchor="start" >U2</text><text class="val" x="324" y="746" text-anchor="start" >74151A</text></g><g class="part" data-part="INV3" tabindex="0" role="button" aria-label="U3A, 7404 NOT"><rect class="hit" x="218" y="404" width="84" height="72" rx="3"/><g transform="translate(220 440)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g><text class="lbl" x="238" y="406" text-anchor="start" >U3A</text><text class="val" x="272" y="406" text-anchor="start" >7404</text></g><g class="part" data-part="NOR4" tabindex="0" role="button" aria-label="U4A, 7402 NOR"><rect class="hit" x="478" y="264" width="84" height="72" rx="3"/><g transform="translate(480 300)"><path class="w" d="M12 -30Q27 0 12 30Q42 30 64 0Q42 -30 12 -30Z"/><path class="w" d="M64 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 -20H22"/><path class="w" d="M0 20H22"/><path class="w" d="M72 0H80"/></g><text class="lbl" x="498" y="266" text-anchor="start" >U4A</text><text class="val" x="498" y="344" text-anchor="start" >7402</text></g><g class="part" data-part="PORTO" tabindex="0" role="button" aria-label="Port MUXOutput"><rect class="hit" x="598" y="288" width="94" height="24" rx="3"/><path class="w" d="M600 300 l12 -10 h78 v20 h-78 z"/><text class="net" x="650" y="304" text-anchor="middle" >MUXOutput</text></g><path class="w" d="M120 120 L100 140"/><path class="w" d="M120 500 L100 520"/><path class="w" d="M120 140 L100 160"/><path class="w" d="M120 520 L100 540"/><path class="w" d="M120 160 L100 180"/><path class="w" d="M120 540 L100 560"/><path class="w" d="M120 180 L100 200"/><path class="w" d="M120 560 L100 580"/><path class="w" d="M120 200 L100 220"/><path class="w" d="M120 580 L100 600"/><path class="w" d="M120 220 L100 240"/><path class="w" d="M120 600 L100 620"/><path class="w" d="M120 240 L100 260"/><path class="w" d="M120 620 L100 640"/><path class="w" d="M120 260 L100 280"/><path class="w" d="M120 640 L100 660"/><circle class="dot" cx="140" cy="680" r="4"/><circle class="dot" cx="160" cy="700" r="4"/><circle class="dot" cx="180" cy="720" r="4"/><circle class="dot" cx="200" cy="440" r="4"/><text class="net" x="90" y="92" text-anchor="start" >D[0:15]</text><text class="net" x="132" y="776" text-anchor="start" >S0</text><text class="net" x="152" y="796" text-anchor="start" >S1</text><text class="net" x="172" y="816" text-anchor="start" >S2</text><text class="net" x="192" y="836" text-anchor="start" >S3</text><text class="net" x="244" y="117" text-anchor="start" >D0</text><text class="net" x="244" y="497" text-anchor="start" >D8</text><text class="net" x="244" y="137" text-anchor="start" >D1</text><text class="net" x="244" y="517" text-anchor="start" >D9</text><text class="net" x="244" y="157" text-anchor="start" >D2</text><text class="net" x="244" y="537" text-anchor="start" >D10</text><text class="net" x="244" y="177" text-anchor="start" >D3</text><text class="net" x="244" y="557" text-anchor="start" >D11</text><text class="net" x="244" y="197" text-anchor="start" >D4</text><text class="net" x="244" y="577" text-anchor="start" >D12</text><text class="net" x="244" y="217" text-anchor="start" >D5</text><text class="net" x="244" y="597" text-anchor="start" >D13</text><text class="net" x="244" y="237" text-anchor="start" >D6</text><text class="net" x="244" y="617" text-anchor="start" >D14</text><text class="net" x="244" y="257" text-anchor="start" >D7</text><text class="net" x="244" y="637" text-anchor="start" >D15</text><text class="val" x="92" y="704" text-anchor="middle" >Data bus</text></svg></div>
+  <div class="info-panel" id="p13a" aria-live="polite"><p class="hint">Select a chip, gate or port.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 13A</code> in the circuit name box.</li>
+<li>Place two <strong>74151A</strong> multiplexers, <code>U1</code> above <code>U2</code>, from the Digital tab.</li>
+<li>Pick <strong>Bus</strong> (<kbd>Y</kbd>) and draw a vertical bus to the left of both. Optionally name it <code>D[0:15]</code> with a net alias on the bus.</li>
+<li>For each data input, place a <strong>Bus entry</strong> with its diagonal end on the bus, and run a wire from it to the input. U1's I0–I7 take D0–D7; U2's I0–I7 take D8–D15. Name each wire <code>D0</code> … <code>D15</code>: the name is what connects a wire to the bus.</li>
+<li>Run select lines <code>S0</code>, <code>S1</code> and <code>S2</code> to both chips' S0, S1 and S2 pins, and name them. Where they cross the data wires there must be no dot.</li>
+<li><code>S3</code> goes straight to U1's E̅, and through a 7404 inverter (<code>U3A</code>) to U2's E̅.</li>
+<li>Wire both Z outputs into a <strong>7402 NOR</strong> (<code>U4A</code>), and its output to a <strong>Port</strong> named <code>MUXOutput</code>. The Z̅ outputs stay open.</li>
+<li>Optionally add Text labels such as Data Bus and Select Inputs, as the handout does. Then press Check my work.</li>
+</ol>
+<div class="callout prose"><p><strong class="k">Handout naming.</strong> The handout's text calls the select inputs A0–A3, but its figure labels them S0–S3. The Q Circuits exercise follows the figure: use S0–S3.</p></div>
+<div class="pager"><button type="button" class="btn" data-goto="s13-3">Previous section</button><button type="button" class="btn" data-complete="s13-4" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-5">Next: Lab 13B: the demultiplexer</button></div></section>
+<section class="lesson" id="s13-5" data-title="Lab 13B: the demultiplexer" aria-labelledby="s13-5-h" hidden><p class="sub-num">Section 13.5</p><h2 id="s13-5-h">Lab 13B: the demultiplexer</h2><p class="lede prose">Draw a 74154 and sixteen inverters back onto a bus.</p>
+<div class="prose">
+<p>Open <strong>13B · 16-line demultiplexer with a bus</strong>. It's also marked on the drawing alone.</p>
+</div>
+<div class="schem-box wide">
+  <div class="drawing"><svg class="schem" id="s13b" viewBox="-20 0 1080 800" role="group" aria-labelledby="s13b-t s13b-d" data-panel="p13b"><title id="s13b-t">Lab 13B 1-line to 16-line demultiplexer</title><desc id="s13b-d">A 74154 decoder U1 with select lines S0 to S3 on inputs A to D and the port MUXInput on both enables. Each output Y0 to Y15 goes through its own 7404 inverter to a wire named D0 to D15, which joins the data bus on the right through a bus entry.</desc><polyline class="w" points="140,360 200,360"/><polyline class="w" points="140,340 200,340"/><polyline class="w" points="140,320 200,320"/><polyline class="w" points="140,300 200,300"/><polyline class="w" points="100,440 200,440"/><polyline class="w" points="160,440 160,460 200,460"/><polyline class="w" points="300,550 340,550"/><polyline class="w" points="340,630 340,760"/><polyline class="w" points="340,760 980,760"/><polyline class="w" points="300,530 400,530"/><polyline class="w" points="400,610 400,740"/><polyline class="w" points="400,740 980,740"/><polyline class="w" points="300,510 460,510"/><polyline class="w" points="460,590 460,720"/><polyline class="w" points="460,720 980,720"/><polyline class="w" points="300,490 520,490"/><polyline class="w" points="520,570 520,700"/><polyline class="w" points="520,700 980,700"/><polyline class="w" points="300,470 580,470"/><polyline class="w" points="580,550 580,680"/><polyline class="w" points="580,680 980,680"/><polyline class="w" points="300,450 640,450"/><polyline class="w" points="640,530 640,660"/><polyline class="w" points="640,660 980,660"/><polyline class="w" points="300,430 700,430"/><polyline class="w" points="700,510 700,640"/><polyline class="w" points="700,640 980,640"/><polyline class="w" points="300,410 760,410"/><polyline class="w" points="760,490 760,620"/><polyline class="w" points="760,620 980,620"/><polyline class="w" points="300,390 760,390"/><polyline class="w" points="760,310 760,200"/><polyline class="w" points="760,200 980,200"/><polyline class="w" points="300,370 700,370"/><polyline class="w" points="700,290 700,180"/><polyline class="w" points="700,180 980,180"/><polyline class="w" points="300,350 640,350"/><polyline class="w" points="640,270 640,160"/><polyline class="w" points="640,160 980,160"/><polyline class="w" points="300,330 580,330"/><polyline class="w" points="580,250 580,140"/><polyline class="w" points="580,140 980,140"/><polyline class="w" points="300,310 520,310"/><polyline class="w" points="520,230 520,120"/><polyline class="w" points="520,120 980,120"/><polyline class="w" points="300,290 460,290"/><polyline class="w" points="460,210 460,100"/><polyline class="w" points="460,100 980,100"/><polyline class="w" points="300,270 400,270"/><polyline class="w" points="400,190 400,80"/><polyline class="w" points="400,80 980,80"/><polyline class="w" points="300,250 340,250"/><polyline class="w" points="340,170 340,60"/><polyline class="w" points="340,60 980,60"/><line class="w bus" x1="1000" y1="20" x2="1000" y2="780"/><g class="part" data-part="DEC1" tabindex="0" role="button" aria-label="U1, 74154 4-to-16 decoder"><rect class="hit" x="198" y="212" width="104" height="380" rx="3"/><path class="w" d="M220 230 H280 V570 H220 Z"/><path class="w" d="M200 360 h20"/><text class="pin" x="224" y="364" text-anchor="start" >A</text><path class="w" d="M200 340 h20"/><text class="pin" x="224" y="344" text-anchor="start" >B</text><path class="w" d="M200 320 h20"/><text class="pin" x="224" y="324" text-anchor="start" >C</text><path class="w" d="M200 300 h20"/><text class="pin" x="224" y="304" text-anchor="start" >D</text><path class="w" d="M200 460 h12"/><circle class="w" cx="216" cy="460" r="4"/><text class="pin" x="224" y="464" text-anchor="start" >G̅1</text><path class="w" d="M200 440 h12"/><circle class="w" cx="216" cy="440" r="4"/><text class="pin" x="224" y="444" text-anchor="start" >G̅2</text><path class="w" d="M280 550 h4"/><circle class="w" cx="288" cy="550" r="4"/><path class="w" d="M292 550 h8"/><text class="pin" x="276" y="554" text-anchor="end" >Y0</text><path class="w" d="M280 530 h4"/><circle class="w" cx="288" cy="530" r="4"/><path class="w" d="M292 530 h8"/><text class="pin" x="276" y="534" text-anchor="end" >Y1</text><path class="w" d="M280 510 h4"/><circle class="w" cx="288" cy="510" r="4"/><path class="w" d="M292 510 h8"/><text class="pin" x="276" y="514" text-anchor="end" >Y2</text><path class="w" d="M280 490 h4"/><circle class="w" cx="288" cy="490" r="4"/><path class="w" d="M292 490 h8"/><text class="pin" x="276" y="494" text-anchor="end" >Y3</text><path class="w" d="M280 470 h4"/><circle class="w" cx="288" cy="470" r="4"/><path class="w" d="M292 470 h8"/><text class="pin" x="276" y="474" text-anchor="end" >Y4</text><path class="w" d="M280 450 h4"/><circle class="w" cx="288" cy="450" r="4"/><path class="w" d="M292 450 h8"/><text class="pin" x="276" y="454" text-anchor="end" >Y5</text><path class="w" d="M280 430 h4"/><circle class="w" cx="288" cy="430" r="4"/><path class="w" d="M292 430 h8"/><text class="pin" x="276" y="434" text-anchor="end" >Y6</text><path class="w" d="M280 410 h4"/><circle class="w" cx="288" cy="410" r="4"/><path class="w" d="M292 410 h8"/><text class="pin" x="276" y="414" text-anchor="end" >Y7</text><path class="w" d="M280 390 h4"/><circle class="w" cx="288" cy="390" r="4"/><path class="w" d="M292 390 h8"/><text class="pin" x="276" y="394" text-anchor="end" >Y8</text><path class="w" d="M280 370 h4"/><circle class="w" cx="288" cy="370" r="4"/><path class="w" d="M292 370 h8"/><text class="pin" x="276" y="374" text-anchor="end" >Y9</text><path class="w" d="M280 350 h4"/><circle class="w" cx="288" cy="350" r="4"/><path class="w" d="M292 350 h8"/><text class="pin" x="276" y="354" text-anchor="end" >Y10</text><path class="w" d="M280 330 h4"/><circle class="w" cx="288" cy="330" r="4"/><path class="w" d="M292 330 h8"/><text class="pin" x="276" y="334" text-anchor="end" >Y11</text><path class="w" d="M280 310 h4"/><circle class="w" cx="288" cy="310" r="4"/><path class="w" d="M292 310 h8"/><text class="pin" x="276" y="314" text-anchor="end" >Y12</text><path class="w" d="M280 290 h4"/><circle class="w" cx="288" cy="290" r="4"/><path class="w" d="M292 290 h8"/><text class="pin" x="276" y="294" text-anchor="end" >Y13</text><path class="w" d="M280 270 h4"/><circle class="w" cx="288" cy="270" r="4"/><path class="w" d="M292 270 h8"/><text class="pin" x="276" y="274" text-anchor="end" >Y14</text><path class="w" d="M280 250 h4"/><circle class="w" cx="288" cy="250" r="4"/><path class="w" d="M292 250 h8"/><text class="pin" x="276" y="254" text-anchor="end" >Y15</text><text class="lbl" x="224" y="224" text-anchor="start" >U1</text><text class="val" x="224" y="586" text-anchor="start" >74154</text></g><g class="part" data-part="PORTI" tabindex="0" role="button" aria-label="Port MUXInput"><rect class="hit" x="8" y="428" width="94" height="24" rx="3"/><g transform="rotate(180 100 440)"><path class="w" d="M100 440 l12 -10 h78 v20 h-78 z"/></g><text class="net" x="50" y="444" text-anchor="middle" >MUXInput</text></g><g class="part" data-part="INVS" tabindex="0" role="button" aria-label="U2A, 7404 NOT"><rect class="hit" x="318" y="548" width="44" height="84" rx="3"/><g transform="rotate(90 340 550)"><g transform="translate(340 550)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="362" y="594" text-anchor="start" >U2A</text><text class="val" x="362" y="608" text-anchor="start" >7404</text></g><path class="w" d="M980 760 L1000 780"/><g transform="rotate(90 400 530)"><g transform="translate(400 530)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="422" y="574" text-anchor="start" >U2B</text><text class="val" x="422" y="588" text-anchor="start" >7404</text><path class="w" d="M980 740 L1000 760"/><g transform="rotate(90 460 510)"><g transform="translate(460 510)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="482" y="554" text-anchor="start" >U2C</text><text class="val" x="482" y="568" text-anchor="start" >7404</text><path class="w" d="M980 720 L1000 740"/><g transform="rotate(90 520 490)"><g transform="translate(520 490)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="542" y="534" text-anchor="start" >U2D</text><text class="val" x="542" y="548" text-anchor="start" >7404</text><path class="w" d="M980 700 L1000 720"/><g transform="rotate(90 580 470)"><g transform="translate(580 470)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="602" y="514" text-anchor="start" >U2E</text><text class="val" x="602" y="528" text-anchor="start" >7404</text><path class="w" d="M980 680 L1000 700"/><g transform="rotate(90 640 450)"><g transform="translate(640 450)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="662" y="494" text-anchor="start" >U2F</text><text class="val" x="662" y="508" text-anchor="start" >7404</text><path class="w" d="M980 660 L1000 680"/><g transform="rotate(90 700 430)"><g transform="translate(700 430)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="722" y="474" text-anchor="start" >U3A</text><text class="val" x="722" y="488" text-anchor="start" >7404</text><path class="w" d="M980 640 L1000 660"/><g transform="rotate(90 760 410)"><g transform="translate(760 410)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="782" y="454" text-anchor="start" >U3B</text><text class="val" x="782" y="468" text-anchor="start" >7404</text><path class="w" d="M980 620 L1000 640"/><g transform="rotate(270 760 390)"><g transform="translate(760 390)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="782" y="350" text-anchor="start" >U3C</text><text class="val" x="782" y="364" text-anchor="start" >7404</text><path class="w" d="M980 200 L1000 220"/><g transform="rotate(270 700 370)"><g transform="translate(700 370)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="722" y="330" text-anchor="start" >U3D</text><text class="val" x="722" y="344" text-anchor="start" >7404</text><path class="w" d="M980 180 L1000 200"/><g transform="rotate(270 640 350)"><g transform="translate(640 350)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="662" y="310" text-anchor="start" >U3E</text><text class="val" x="662" y="324" text-anchor="start" >7404</text><path class="w" d="M980 160 L1000 180"/><g transform="rotate(270 580 330)"><g transform="translate(580 330)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="602" y="290" text-anchor="start" >U3F</text><text class="val" x="602" y="304" text-anchor="start" >7404</text><path class="w" d="M980 140 L1000 160"/><g transform="rotate(270 520 310)"><g transform="translate(520 310)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="542" y="270" text-anchor="start" >U4A</text><text class="val" x="542" y="284" text-anchor="start" >7404</text><path class="w" d="M980 120 L1000 140"/><g transform="rotate(270 460 290)"><g transform="translate(460 290)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="482" y="250" text-anchor="start" >U4B</text><text class="val" x="482" y="264" text-anchor="start" >7404</text><path class="w" d="M980 100 L1000 120"/><g transform="rotate(270 400 270)"><g transform="translate(400 270)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="422" y="230" text-anchor="start" >U4C</text><text class="val" x="422" y="244" text-anchor="start" >7404</text><path class="w" d="M980 80 L1000 100"/><g transform="rotate(270 340 250)"><g transform="translate(340 250)"><path class="w" d="M15 -18L15 18L58 0Z"/><path class="w" d="M58 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M0 0H15"/><path class="w" d="M66 0H80"/></g></g><text class="lbl" x="362" y="210" text-anchor="start" >U4D</text><text class="val" x="362" y="224" text-anchor="start" >7404</text><path class="w" d="M980 60 L1000 80"/><circle class="dot" cx="160" cy="440" r="4"/><text class="net" x="136" y="356" text-anchor="end" >S0</text><text class="net" x="136" y="336" text-anchor="end" >S1</text><text class="net" x="136" y="316" text-anchor="end" >S2</text><text class="net" x="136" y="296" text-anchor="end" >S3</text><text class="net" x="1006" y="24" text-anchor="start" >D[0:15]</text><text class="net" x="944" y="757" text-anchor="start" >D0</text><text class="net" x="944" y="737" text-anchor="start" >D1</text><text class="net" x="944" y="717" text-anchor="start" >D2</text><text class="net" x="944" y="697" text-anchor="start" >D3</text><text class="net" x="944" y="677" text-anchor="start" >D4</text><text class="net" x="944" y="657" text-anchor="start" >D5</text><text class="net" x="944" y="637" text-anchor="start" >D6</text><text class="net" x="944" y="617" text-anchor="start" >D7</text><text class="net" x="944" y="197" text-anchor="start" >D8</text><text class="net" x="944" y="177" text-anchor="start" >D9</text><text class="net" x="944" y="157" text-anchor="start" >D10</text><text class="net" x="944" y="137" text-anchor="start" >D11</text><text class="net" x="944" y="117" text-anchor="start" >D12</text><text class="net" x="944" y="97" text-anchor="start" >D13</text><text class="net" x="944" y="77" text-anchor="start" >D14</text><text class="net" x="944" y="57" text-anchor="start" >D15</text></svg></div>
+  <div class="info-panel" id="p13b" aria-live="polite"><p class="hint">Select the decoder, the port, or the first inverter.</p></div>
+</div>
+<ol class="steps">
+<li>Type <code>LAB 13B</code> in the circuit name box.</li>
+<li>Place a <strong>74154</strong> decoder, <code>U1</code>. Wire its A, B, C and D inputs to wires named <code>S0</code>, <code>S1</code>, <code>S2</code> and <code>S3</code>.</li>
+<li>Place a <strong>Port</strong>, rotate it 180° so it points right, name it <code>MUXInput</code>, and wire it to both G̅1 and G̅2.</li>
+<li>Place sixteen <strong>NOT</strong> (7404) inverters, one per output. The handout names them U2A–U2F, U3A–U3F and U4A–U4D. Standing them upright (press <kbd>O</kbd>) keeps the drawing narrow, as the handout's does.</li>
+<li>Wire each output Yk to its own inverter, and each inverter's output to a wire named <code>Dk</code>.</li>
+<li>Draw a vertical bus on the right. Each Dk wire reaches it through a Bus entry (⇆ points the entries the other way).</li>
+<li>Where wires cross there must be no dot. Press Check my work.</li>
+</ol>
+<div class="callout prose"><p><strong class="k">About the inverter names.</strong> The handout's text and figure name the 7404s differently. The check doesn't look at the names, only that each Yk passes through its own inverter to Dk.</p></div>
+<div class="pager"><button type="button" class="btn" data-goto="s13-4">Previous section</button><button type="button" class="btn" data-complete="s13-5" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-6">Next: Lab 13C: MOD 10 counter</button></div></section>
+<section class="lesson" id="s13-6" data-title="Lab 13C: MOD 10 counter" aria-labelledby="s13-6-h" hidden><p class="sub-num">Section 13.6</p><h2 id="s13-6-h">Lab 13C: MOD 10 counter</h2><p class="lede prose">A synchronous decade counter, drawn and simulated.</p>
+<div class="prose">
+<p>Open <strong>13C · Glitchless MOD 10 counter</strong>. It's Lab 11D's synchronous counter with extra gating, so it counts 0 to 9 and starts again: a decade, or BCD, counter (<span class="term">modulus</span> 10).</p>
+<p>The handout only asks you to draw 13C. The Q Circuits exercise also runs it, a natural follow-on to 11D, and asks you to read the count at three moments.</p>
+<h3>How it stops at 9</h3>
+<p>A plain 4-bit counter would go 9 → 10. Two tricks prevent that. QB's toggle condition includes QD̅, so at 9 (1001) QB stays 0. And QD's condition includes QD · QA, which is true only at 9, so QD turns off. Together, 1001 becomes 0000. Because every flip-flop changes on the same clock edge, the counter never passes through 10 even briefly: that's what “glitchless” means.</p>
+</div>
+<div class="btn-row" role="group" aria-label="Highlight part of the counter">
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="clk" aria-pressed="false">Clock</button>
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="ta" aria-pressed="false">QA condition</button>
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="tb" aria-pressed="false">QB</button>
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="tc" aria-pressed="false">QC</button>
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="td" aria-pressed="false">QD</button>
+  <button type="button" class="btn" data-ovl-for="s13c" data-ovl="none" aria-pressed="true">Clear</button>
+</div>
+<p class="result ok" id="s13c-ovl-desc" aria-live="polite">Choose a path to highlight it, or select a part.</p>
+<div class="schem-box wide">
+  <div class="drawing"><svg class="schem" id="s13c" viewBox="20 -30 1130 590" role="group" aria-labelledby="s13c-t s13c-d" data-panel="p13c"><title id="s13c-t">Lab 13C glitchless MOD 10 counter</title><desc id="s13c-d">Four 7473 flip-flops share the clock. U1A toggles every clock. U3A (QA and QD-bar) drives U1B. U3B (U3A and QB) drives U2A. U3C (QD and QA) and U3D (U3B and QC) feed the OR gate U4A, which drives U2B. All CLR inputs are tied to logic 1. Outputs QA to QD.</desc><polyline class="w" points="140,260 200,260"/><polyline class="w" points="160,260 160,340 200,340"/><polyline class="w" points="160,340 160,420"/><polyline class="w" points="160,420 1040,420"/><polyline class="w" points="240,380 240,420"/><polyline class="w" points="500,380 500,420"/><polyline class="w" points="760,380 760,420"/><polyline class="w" points="1040,380 1040,420"/><polyline class="w" points="120,480 960,480"/><polyline class="w" points="180,480 180,300 200,300"/><polyline class="w" points="440,480 440,300 460,300"/><polyline class="w" points="680,480 680,300 720,300"/><polyline class="w" points="960,480 960,300 1000,300"/><polyline class="w" points="280,260 300,260"/><polyline class="w" points="300,60 300,260"/><polyline class="w" points="300,140 340,140"/><polyline class="w" points="300,80 880,80"/><polyline class="w" points="1080,340 1120,340 1120,540 320,540 320,180 340,180"/><polyline class="w" points="420,120 420,340"/><polyline class="w" points="420,260 460,260"/><polyline class="w" points="420,340 460,340"/><polyline class="w" points="420,120 580,120 580,140 600,140"/><polyline class="w" points="540,260 560,260"/><polyline class="w" points="560,60 560,260"/><polyline class="w" points="560,180 600,180"/><polyline class="w" points="680,160 700,160"/><polyline class="w" points="700,100 700,340"/><polyline class="w" points="700,260 720,260"/><polyline class="w" points="700,340 720,340"/><polyline class="w" points="700,100 860,100 860,140 880,140"/><polyline class="w" points="800,260 820,260"/><polyline class="w" points="820,60 820,260"/><polyline class="w" points="820,180 880,180"/><polyline class="w" points="1080,260 1100,260 1100,0 860,0 860,40 880,40"/><polyline class="w" points="960,60 980,60 980,100 1000,100"/><polyline class="w" points="960,160 980,160 980,140 1000,140"/><polyline class="w" points="1080,120 1080,200 980,200 980,340 1000,340"/><polyline class="w" points="980,260 1000,260"/><g class="part" data-part="FFU1A" tabindex="0" role="button" aria-label="U1A, 7473 JK flip-flop"><rect class="hit" x="198" y="220" width="84" height="164" rx="3"/><g transform="translate(200 300)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="220" y="234" text-anchor="start" >U1A</text></g><g class="part" data-part="FFU1B" tabindex="0" role="button" aria-label="U1B, 7473 JK flip-flop"><rect class="hit" x="458" y="220" width="84" height="164" rx="3"/><g transform="translate(460 300)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="480" y="234" text-anchor="start" >U1B</text></g><g class="part" data-part="FFU2A" tabindex="0" role="button" aria-label="U2A, 7473 JK flip-flop"><rect class="hit" x="718" y="220" width="84" height="164" rx="3"/><g transform="translate(720 300)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="740" y="234" text-anchor="start" >U2A</text></g><g class="part" data-part="FFU2B" tabindex="0" role="button" aria-label="U2B, 7473 JK flip-flop"><rect class="hit" x="998" y="220" width="84" height="164" rx="3"/><g transform="translate(1000 300)"><path class="w" d="M20 -60H60V60H20Z"/><path class="w" d="M0 -40H20"/><path class="w" d="M0 0H12"/><path class="w" d="M12 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M20 -6L28 0L20 6"/><path class="w" d="M0 40H20"/><path class="w" d="M60 -40H80"/><path class="w" d="M60 40H64"/><path class="w" d="M64 40a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M72 40H80"/><path class="w" d="M40 60V64"/><path class="w" d="M36 68a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path class="w" d="M40 72V80"/><text class="val" x="24" y="-36">J</text><text class="val" x="30" y="4">CLK</text><text class="val" x="24" y="44">K</text><text class="val" x="56" y="-36" text-anchor="end">Q</text><text class="val" x="56" y="44" text-anchor="end">Q̅</text><text class="val" x="40" y="57" text-anchor="middle">CLR</text></g><text class="lbl" x="1020" y="234" text-anchor="start" >U2B</text></g><g class="part" data-part="G3A" tabindex="0" role="button" aria-label="U3A, 7408 AND"><rect class="hit" x="338" y="124" width="84" height="72" rx="3"/><g transform="translate(340 160)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="358" y="126" text-anchor="start" >U3A</text><text class="val" x="358" y="204" text-anchor="start" >7408</text></g><g class="part" data-part="G3B" tabindex="0" role="button" aria-label="U3B, 7408 AND"><rect class="hit" x="598" y="124" width="84" height="72" rx="3"/><g transform="translate(600 160)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="618" y="126" text-anchor="start" >U3B</text><text class="val" x="618" y="204" text-anchor="start" >7408</text></g><g class="part" data-part="G3C" tabindex="0" role="button" aria-label="U3C, 7408 AND"><rect class="hit" x="878" y="24" width="84" height="72" rx="3"/><g transform="translate(880 60)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="898" y="26" text-anchor="start" >U3C</text><text class="val" x="898" y="104" text-anchor="start" >7408</text></g><g class="part" data-part="G3D" tabindex="0" role="button" aria-label="U3D, 7408 AND"><rect class="hit" x="878" y="124" width="84" height="72" rx="3"/><g transform="translate(880 160)"><path class="w" d="M15 -30H35A30 30 0 0 1 35 30H15Z"/><path class="w" d="M0 -20H15"/><path class="w" d="M0 20H15"/><path class="w" d="M65 0H80"/></g><text class="lbl" x="898" y="126" text-anchor="start" >U3D</text><text class="val" x="898" y="204" text-anchor="start" >7408</text></g><g class="part" data-part="G4A" tabindex="0" role="button" aria-label="U4A, 7432 OR"><rect class="hit" x="998" y="84" width="84" height="72" rx="3"/><g transform="translate(1000 120)"><path class="w" d="M12 -30Q27 0 12 30Q45 30 70 0Q45 -30 12 -30Z"/><path class="w" d="M0 -20H22"/><path class="w" d="M0 20H22"/><path class="w" d="M70 0H80"/></g><text class="lbl" x="1018" y="86" text-anchor="start" >U4A</text><text class="val" x="1018" y="164" text-anchor="start" >7432</text></g><g class="part" data-part="HI" tabindex="0" role="button" aria-label="Logic 1 ($D_HI)"><rect class="hit" x="96" y="248" width="48" height="24" rx="3"/><g transform="translate(140 260)"><path class="w" d="M-40 -9H-12L0 0L-12 9H-40Z"/><text class="val" x="-35" y="4">HI</text></g></g><g class="part" data-part="CK" tabindex="0" role="button" aria-label="DSTM1, DigClock"><rect class="hit" x="34" y="454" width="90" height="54" rx="3"/><g transform="translate(120 480)"><path class="w" d="M-80 -10H-14L0 0L-14 10H-80Z"/><text class="val" x="-75" y="4">DigClock</text></g><text class="lbl" x="42" y="466" text-anchor="start" >DSTM1</text><text class="val" x="42" y="504" text-anchor="start" >.5m / .5m, 1→0</text></g><circle class="dot" cx="160" cy="260" r="4"/><circle class="dot" cx="160" cy="340" r="4"/><circle class="dot" cx="240" cy="420" r="4"/><circle class="dot" cx="500" cy="420" r="4"/><circle class="dot" cx="760" cy="420" r="4"/><circle class="dot" cx="180" cy="480" r="4"/><circle class="dot" cx="440" cy="480" r="4"/><circle class="dot" cx="680" cy="480" r="4"/><circle class="dot" cx="300" cy="140" r="4"/><circle class="dot" cx="300" cy="80" r="4"/><circle class="dot" cx="420" cy="260" r="4"/><circle class="dot" cx="560" cy="180" r="4"/><circle class="dot" cx="700" cy="160" r="4"/><circle class="dot" cx="700" cy="260" r="4"/><circle class="dot" cx="820" cy="180" r="4"/><circle class="dot" cx="980" cy="260" r="4"/><circle class="dot" cx="420" cy="160" r="4"/><text class="net" x="132" y="474" text-anchor="start" >CLOCK</text><text class="net" x="304" y="56" text-anchor="start" >QA</text><text class="net" x="564" y="56" text-anchor="start" >QB</text><text class="net" x="824" y="56" text-anchor="start" >QC</text><text class="net" x="1104" y="-4" text-anchor="start" >QD</text><text class="val" x="170" y="436" text-anchor="start" >CLR bus (logic 1)</text><g class="ovl alt" data-ovl="clk" hidden aria-hidden="true"><polyline points="120,480 960,480"/><polyline points="180,480 180,300 200,300"/><polyline points="440,480 440,300 460,300"/><polyline points="680,480 680,300 720,300"/><polyline points="960,480 960,300 1000,300"/></g><g class="ovl" data-ovl="ta" hidden aria-hidden="true"><polyline points="140,260 200,260"/><polyline points="160,260 160,340 200,340"/></g><g class="ovl" data-ovl="tb" hidden aria-hidden="true"><polyline points="300,140 340,140"/><polyline points="1080,340 1120,340 1120,540 320,540 320,180 340,180"/><polyline points="420,160 420,340"/><polyline points="420,260 460,260"/><polyline points="420,340 460,340"/></g><g class="ovl" data-ovl="tc" hidden aria-hidden="true"><polyline points="420,120 580,120 580,140 600,140"/><polyline points="560,180 600,180"/><polyline points="680,160 700,160 700,340"/><polyline points="700,260 720,260"/><polyline points="700,340 720,340"/></g><g class="ovl" data-ovl="td" hidden aria-hidden="true"><polyline points="300,80 880,80"/><polyline points="1100,260 1100,0 860,0 860,40 880,40"/><polyline points="700,100 860,100 860,140 880,140"/><polyline points="820,180 880,180"/><polyline points="960,60 980,60 980,100 1000,100"/><polyline points="960,160 980,160 980,140 1000,140"/><polyline points="1080,120 1080,200 980,200 980,340 1000,340"/><polyline points="980,260 1000,260"/></g></svg></div>
+  <div class="info-panel" id="p13c" aria-live="polite"><p class="hint">Select a part.</p></div>
+</div>
+
+<div class="demo" id="bc">
+<h4>MOD 10 counter explorer</h4>
+<div class="io-row">
+  <button type="button" class="btn primary" id="bc-step">Clock pulse</button>
+  <button type="button" class="btn" id="bc-run" aria-pressed="false">Run</button>
+  <div class="field"><label for="bc-set">Jump to state</label><select id="bc-set"><option value="0">0 (0000)</option><option value="1">1 (0001)</option><option value="2">2 (0010)</option><option value="3">3 (0011)</option><option value="4">4 (0100)</option><option value="5">5 (0101)</option><option value="6">6 (0110)</option><option value="7">7 (0111)</option><option value="8">8 (1000)</option><option value="9">9 (1001)</option><option value="10">10 (1010)</option><option value="11">11 (1011)</option><option value="12">12 (1100)</option><option value="13">13 (1101)</option><option value="14">14 (1110)</option><option value="15">15 (1111)</option></select></div>
+<div class="io"><span class="led" id="bc-qD">0</span><span>QD</span></div><div class="io"><span class="led" id="bc-qC">0</span><span>QC</span></div><div class="io"><span class="led" id="bc-qB">0</span><span>QB</span></div><div class="io"><span class="led" id="bc-qA">0</span><span>QA</span></div>
+  <div class="io"><span class="led" id="bc-dec" style="border-radius:6px;min-width:4rem">0</span><span>Count</span></div>
+</div>
+<div class="table-wrap"><table><caption>Toggle conditions right now (J = K for each flip-flop)</caption>
+<thead><tr><th scope="col">Bit</th><th scope="col">Condition</th><th scope="col">Value</th></tr></thead><tbody id="bc-conds"></tbody></table></div>
+<p class="result ok" id="bc-say" aria-live="polite"></p>
+<div class="plot-box"><svg id="bc-plot" tabindex="0" role="img" aria-label="Timing diagram of CLOCK, QD, QC, QB and QA over 12 ms. Use left and right arrow keys to move the cursor."></svg></div>
+<p class="readout" id="bc-read" aria-live="polite">Cursor: move over the diagram.</p>
+</div>
+
+<div class="prose"><h3>Build it in Q Circuits</h3></div>
+<ol class="steps">
+<li>Type <code>LAB 13C</code> in the circuit name box.</li>
+<li>Place four <strong>7473</strong>s (<code>U1A</code>, <code>U1B</code>, <code>U2A</code>, <code>U2B</code>), four <strong>7408</strong> ANDs (<code>U3A</code>–<code>U3D</code>) and a <strong>7432</strong> OR (<code>U4A</code>). Name the Q outputs <code>QA</code>, <code>QB</code>, <code>QC</code> and <code>QD</code>.</li>
+<li>Place a <strong>$D_HI</strong> on U1A's J and K, and tie every CLR to it. Place a <strong>DigClock</strong>, <code>DSTM1</code> (OFFTIME <code>.5m</code>, ONTIME <code>.5m</code>, STARTVAL <code>1</code>, OPPVAL <code>0</code>), and run its wire, named <code>CLOCK</code>, to every CLK.</li>
+<li>U3A takes QA and QD's Q̅ (U2B's Q̅ output); it drives U1B's J and K.</li>
+<li>U3B takes U3A's output and QB; it drives U2A's J and K.</li>
+<li>U3C takes QD and QA. U3D takes U3B's output and QC. U4A takes both, and drives U2B's J and K.</li>
+<li>Transient: Stop time <code>12m</code>, Time step <code>0.1m</code>, <strong>Initialize flip-flops to 0</strong>. Probe CLOCK, QD, QC, QB and QA, and run.</li>
+<li>Read QD QC QB QA as a binary number for the questions, and press Check my work.</li>
+</ol>
+<form class="sim-settings dialog" data-spec="spec-13c" data-ok="All settings match Lab 13C." novalidate>
+  <div class="dialog-title">Analysis (Lab 13C)</div>
+  <div class="dialog-body">
+    <div class="controls">
+      <div class="field"><label for="c13-type">Analysis</label><select id="c13-type" name="atype"><option value="op">Operating point</option><option value="dc">DC sweep</option><option value="ac">AC sweep</option><option value="tran">Transient</option></select></div>
+      <div class="field"><label for="c13-stop">Stop time</label><input type="text" id="c13-stop" name="stop" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="c13-step">Time step</label><input type="text" id="c13-step" name="step" autocomplete="off" spellcheck="false"></div>
+      <div class="field"><label for="c13-ff">Initialize flip-flops to</label><select id="c13-ff" name="ff"><option value="X">X (unknown)</option><option value="0">0</option><option value="1">1</option></select></div>
+      <button type="submit" class="btn primary">Check settings</button>
+    </div>
+    <p class="result" aria-live="polite"></p>
+  </div>
+</form>
+<div class="pager"><button type="button" class="btn" data-goto="s13-5">Previous section</button><button type="button" class="btn" data-complete="s13-6" aria-pressed="false">Mark this section complete</button><button type="button" class="btn primary" data-goto="s13-7">Next: Troubleshooting and wrap-up</button></div></section>
+<section class="lesson" id="s13-7" data-title="Troubleshooting and wrap-up" aria-labelledby="s13-7-h" hidden><p class="sub-num">Section 13.7</p><h2 id="s13-7-h">Troubleshooting and wrap-up</h2><p class="lede prose">Common fixes, a quiz, the checklist and the vocabulary.</p>
+<div class="prose"><h3>When something looks wrong</h3></div>
+<div class="table-wrap"><table>
+<caption>Common Lab 13 problems and fixes</caption>
+<thead><tr><th scope="col">What Check my work says</th><th scope="col">Likely cause</th><th scope="col">Fix</th></tr></thead>
+<tbody>
+<tr><td>Dk has no bus entry</td><td>The wire runs straight to the bus</td><td>Add a Bus entry between the wire and the bus</td></tr>
+<tr><td>The bus entry on Dk does not reach the bus</td><td>The entry's diagonal end is off the bus line</td><td>Drag it so its diagonal end touches the bus; use ⇆ if it points the wrong way</td></tr>
+<tr><td>Nothing is named Dk</td><td>A wire is unnamed, or its name has a typo</td><td>Add a net alias on the wire</td></tr>
+<tr><td>A select or data pin is on the wrong net</td><td>A dot where two wires only cross</td><td>Redraw so the wire passes straight across</td></tr>
+<tr><td>No inverter takes Yk</td><td>An output was skipped or two share an inverter</td><td>One inverter per output</td></tr>
+<tr><td>13C counts past 9</td><td>U3A takes QD instead of QD̅, or U3C/U3D are swapped</td><td>Use the highlight buttons to compare each path</td></tr>
+</tbody></table></div>
+<div class="prose"><h3>Check your understanding</h3></div>
+<div class="quiz" data-quiz="lab13"></div>
+<div class="prose"><h3>Before you finish</h3><p>Your instructor will tell you how to submit. In Q Circuits, a lab is done when Check my work passes every check and the lab shows ✓ Passed.</p></div>
+<ul class="checklist">
+<li><input type="checkbox" id="c13s1"><label for="c13s1">13A: LAB 13A; two 74151As, 7404 and 7402; data bus with 16 bus entries and names D0–D15; selects S0–S3; port MUXOutput.</label></li>
+<li><input type="checkbox" id="c13s2"><label for="c13s2">13B: LAB 13B; 74154; MUXInput on both enables; 16 inverters; D0–D15 to the bus through bus entries.</label></li>
+<li><input type="checkbox" id="c13s3"><label for="c13s3">13C: LAB 13C; counter wired as shown; clock .5m/.5m starting at 1; 12m / 0.1m; flip-flops initialized to 0; probes; readings.</label></li>
+<li><input type="checkbox" id="c13s4"><label for="c13s4">All three labs show ✓ Passed.</label></li>
+</ul>
+<div class="prose">
+<h3>Glossary</h3>
+<p>Dotted-underlined words in the lesson show their definition when you point at, tap or tab to them. The <a href="glossary.html" target="_blank" rel="noopener">full course glossary (opens in a new tab)</a> is searchable.</p>
+<dl class="gloss">
+<dt>Multiplexer / demultiplexer</dt><dd>Many lines onto one, and back again.</dd>
+<dt>Select lines</dt><dd>The inputs that choose which line is connected.</dd>
+<dt>Bus</dt><dd>A group of signals drawn as one thick line, joined by name.</dd>
+<dt>Bus entry</dt><dd>The diagonal that ties a named wire to a bus.</dd>
+<dt>Port</dt><dd>A named connection drawn as an arrow.</dd>
+<dt>Decoder</dt><dd>Turns a binary number into one active output.</dd>
+<dt>Modulus</dt><dd>How many states a counter cycles through.</dd>
+</dl>
+</div>
+<div class="callout prose"><p><strong class="k">Next.</strong> <a href="elec101-lab14-lesson.html">Lab 14 lesson: Instrumentation and operational amplifiers</a></p></div><div class="pager"><button type="button" class="btn" data-goto="s13-6">Previous section</button><button type="button" class="btn" data-complete="s13-7" aria-pressed="false">Mark this section complete</button><span></span></div></section>
+  </main>
+</div>
+<p id="live" class="visually-hidden" aria-live="polite"></p>
+<footer class="site"><p>Built for ELEC 101 (Schematic Capture and Simulation) at Brookdale Community College, 2026. This lesson accompanies the Lab 13 handout; follow the handout for exact submission steps.</p></footer>
+<script type="application/json" id="parts-data">{"MUX1": {"name": "U1: 74151A multiplexer", "what": "An 8-line to 1-line data selector. S2 S1 S0 choose which input, I0 to I7, appears at Z. Z\u0305 is its complement.", "props": [["Toolbar", "Digital \u203a 74151A"], ["Enable E\u0305", "active-low: 0 = on; when off, Z = 0"]], "here": "Carries D0 to D7. Its enable is S3, so it's on for selections 0 to 7."}, "MUX2": {"name": "U2: 74151A multiplexer", "what": "The second 8-to-1 selector.", "props": [["Inputs", "D8 to D15"]], "here": "Its enable is NOT S3, so it's on for selections 8 to 15."}, "INV3": {"name": "U3A: 7404 inverter", "what": "Makes sure exactly one of U1 and U2 is enabled.", "props": [["Toolbar", "Digital \u203a NOT"]]}, "NOR4": {"name": "U4A: 7402 NOR", "what": "Combines the two Z outputs. Only the enabled chip can output 1, so the NOR passes the selected bit, inverted.", "props": [["Device", "7402"]], "here": "MUXOutput is therefore NOT D[selected]. The 13B demultiplexer is built to expect that."}, "PORTO": {"name": "Port MUXOutput", "what": "A named connection drawn as an arrow (PSpice's PORTLEFT). It connects by name, like a net alias.", "props": [["Toolbar", "Digital \u203a Port"], ["Name", "MUXOutput"]]}, "DEC1": {"name": "U1: 74154 decoder", "what": "A 4-line to 16-line decoder. When both G\u0305 enables are low, the output Yk matching D C B A = k goes low; every other output stays high.", "props": [["Toolbar", "Digital \u203a 74154"], ["Outputs", "active-low"]], "here": "Its enables take MUXInput, so the selected output goes low only when the data bit was 1."}, "PORTI": {"name": "Port MUXInput", "what": "The incoming serial signal. Rotated 180\u00b0 so it points into the circuit (PSpice's PORTRIGHT).", "props": [["Name", "MUXInput"]]}, "INVS": {"name": "7404 inverters (U2A to U4D)", "what": "Sixteen inverters, one per output, turning the 74154's active-low outputs back into normal data.", "props": [["Names", "U2A\u2013U2F, U3A\u2013U3F, U4A\u2013U4D"], ["Rotation", "stand them upright (O)"]], "here": "Each output Yk must go through its own inverter to Dk; that's what the lab checks."}, "FFU1A": {"name": "U1A: bit A (1s)", "what": "Toggles every clock.", "props": [["Output", "QA"]]}, "FFU1B": {"name": "U1B: bit B (2s)", "what": "J and K from U3A.", "props": [["Output", "QB"]]}, "FFU2A": {"name": "U2A: bit C (4s)", "what": "J and K from U3B.", "props": [["Output", "QC"]]}, "FFU2B": {"name": "U2B: bit D (8s)", "what": "J and K from U4A. Its Q\u0305 output feeds back to U3A.", "props": [["Output", "QD"]]}, "G3A": {"name": "U3A: 7408 AND", "what": "QA AND QD\u0305.", "props": [["Device", "7408"]]}, "G3B": {"name": "U3B: 7408 AND", "what": "U3A's output AND QB.", "props": [["Device", "7408"]]}, "G3C": {"name": "U3C: 7408 AND", "what": "QD AND QA: true only at count 9.", "props": [["Device", "7408"]]}, "G3D": {"name": "U3D: 7408 AND", "what": "U3B's output AND QC: true only at count 7.", "props": [["Device", "7408"]]}, "G4A": {"name": "U4A: 7432 OR", "what": "Toggles QD at 7 and at 9.", "props": [["Device", "7432"]]}, "HI": {"name": "$D_HI: logic 1", "what": "Feeds U1A's J and K and every CLR.", "props": [["Toolbar", "Digital \u203a $D_HI"]]}, "CK": {"name": "DSTM1: DigClock", "what": "The counter's clock.", "props": [["OFFTIME / ONTIME", ".5m / .5m"], ["STARTVAL / OPPVAL", "1 / 0"]], "here": "Falling edges at 0.5, 1.5, 2.5 \u2026 ms: one count every millisecond."}}</script>
+<script type="application/json" id="s13c-ovl">{"clk": "One clock drives all four flip-flops: the counter is synchronous, so every bit changes at the same instant and no false counts (glitches) appear.", "ta": "U1A's J and K are tied to logic 1: QA toggles on every clock.", "tb": "U3A = QA AND QD\u0305. QB toggles when QA is 1, except when QD is 1 (at 9), which stops the count going to 10.", "tc": "U3B = QA \u00b7 QD\u0305 \u00b7 QB. QC toggles when QA and QB are both 1 (at 3 and 7).", "td": "U4A = (QD \u00b7 QA) + (QA \u00b7 QB \u00b7 QC \u00b7 QD\u0305). QD toggles on at 7 \u2192 8, and off at 9 \u2192 0.", "none": ""}</script>
+<script type="application/json" id="spec-13c">[{"name": "atype", "type": "select", "want": "tran", "label": "Analysis", "wantText": "Transient"}, {"name": "stop", "want": 0.012, "unit": "s", "label": "Stop time", "hint": "Type 12m."}, {"name": "step", "want": 0.0001, "unit": "s", "label": "Time step", "hint": "Type 0.1m."}, {"name": "ff", "type": "select", "want": "0", "label": "Initialize flip-flops to", "wantText": "0"}]</script>
+<script type="application/json" id="quiz-lab13">[{"q": "What does a multiplexer do?", "choices": ["Sends several signals over one line by taking turns", "Adds several numbers", "Amplifies a signal", "Stores data"], "answer": 0, "explain": "It's time-division multiplexing: a kind of parallel-to-serial conversion."}, {"q": "What does a demultiplexer do?", "choices": ["Sends one incoming line to one of many outputs", "Combines many inputs", "Counts pulses", "Inverts every signal"], "answer": 0, "explain": "It's the receiving end: serial-to-parallel."}, {"q": "How many select lines does a 16-line multiplexer need?", "choices": ["4", "16", "8", "2"], "answer": 0, "explain": "2\u2074 = 16."}, {"q": "Why is a bus drawn as one thick line?", "choices": ["It stands for many wires, keeping the drawing readable", "It carries more current", "It is a power line", "It's a ground"], "answer": 0, "explain": "It's a drawing convention: the bus itself isn't a node."}, {"q": "What does the bus name D[0:15] mean?", "choices": ["Sixteen signals, D0 to D15", "Signal D0 divided by 15", "Two signals, D0 and D15", "A 15 V supply"], "answer": 0, "explain": "The name defines which nets the bus carries."}, {"q": "In 13A, why does S3 go through an inverter to U2's enable?", "choices": ["So exactly one of U1 and U2 is enabled at a time", "To speed up U2", "To invert the data", "To make U2 count"], "answer": 0, "explain": "S3 = 0 enables U1 (D0\u2013D7); S3 = 1 enables U2 (D8\u2013D15)."}, {"q": "The 74154's outputs are active-low. What does 13B do about it?", "choices": ["Passes each output through a 7404 inverter", "Nothing", "Uses a pull-up resistor", "Reverses the bus"], "answer": 0, "explain": "The inverters restore normal data before it reaches the bus."}, {"q": "What does MOD 10 mean for the 13C counter?", "choices": ["It counts through 10 states, 0 to 9, then repeats", "It counts to 10 and stops", "It divides by 100", "It uses 10 flip-flops"], "answer": 0, "explain": "A decade (BCD) counter."}, {"q": "At count 9 (1001), why doesn't QB toggle on the next clock?", "choices": ["U3A is QA AND QD\u0305, and QD is 1", "QA is 0", "The clock stops", "QB is cleared"], "answer": 0, "explain": "Blocking QB is what makes 9 roll over to 0 instead of 10."}, {"q": "Why is the 13C counter called glitchless?", "choices": ["All flip-flops switch together on one clock, so no false counts appear in between", "It has no gates", "It uses a special chip", "It never resets"], "answer": 0, "explain": "Counters that reset by detecting 10 briefly show 10; this one never enters it."}, {"q": "What does a port do in Q Circuits?", "choices": ["Connects a signal by name, drawn as an arrow", "Supplies power", "Adds a probe", "Inverts a signal"], "answer": 0, "explain": "It's PSpice's PORTLEFT/PORTRIGHT."}]</script>
+<script type="application/json" id="quiz-bus13">[{"q": "A wire is drawn straight to a bus line and stops on it, with no bus entry. Is the signal on the bus?", "choices": ["No: a wire and a bus connect only by name, through a bus entry", "Yes: the wire touches the bus"], "answer": 0, "explain": "Q Circuits warns about this: wires join a bus only through a bus entry and a net name."}, {"q": "A wire named D3 reaches the bus D[0:15] through a bus entry. Is it part of the bus?", "choices": ["Yes: D3 is one of the signals D[0:15] names", "No: bus entries don't connect anything"], "answer": 0, "explain": "The bus name D[0:15] stands for D0 to D15; the wire's name D3 ties it in."}, {"q": "Two bus entries touch the bus at the same point. One wire is D4, the other D5. Are D4 and D5 connected?", "choices": ["No: signals on a bus stay separate", "Yes: they meet at the same point"], "answer": 0, "explain": "That's the advantage of bus entries: many signals share a bus without joining."}, {"q": "A wire ends in the middle of another wire (a junction dot appears). Are they connected?", "choices": ["Yes", "No"], "answer": 0, "explain": "Wire to wire is a physical connection."}, {"q": "Two wires cross, and neither ends at the crossing (no dot). Are they connected?", "choices": ["No", "Yes"], "answer": 0, "explain": "Crossings only connect where a wire ends on the other."}, {"q": "Two separate wires, far apart, are both given the net alias D5. Are they connected?", "choices": ["Yes: the same name is the same net", "No: they don't touch"], "answer": 0, "explain": "Names connect, just as the bus name does."}]</script>
+<script type="application/json" id="glossary-data">[{"term": "AC (alternating current)", "def": "Current or voltage that keeps reversing direction, usually as a smooth sine wave.", "labs": [5], "aka": ["ac", "alternating current"]}, {"term": "AC sweep", "def": "An analysis that feeds the circuit a sine wave at many frequencies and plots how the output changes with frequency.", "labs": [5], "aka": ["ac sweep analysis"]}, {"term": "Amplitude", "def": "How big a wave is: the distance from its centre line to its peak.", "labs": [5], "aka": []}, {"term": "Analysis panel", "def": "The Q Circuits panel where you choose what the simulator calculates (Operating point, DC sweep, Transient or AC sweep) and its settings.", "labs": [5], "aka": []}, {"term": "Anode", "def": "The terminal of a diode that current enters when the diode conducts. It's the triangle side of the symbol.", "labs": [5], "aka": []}, {"term": "Band-pass filter", "def": "A filter that passes a middle range of frequencies and weakens both lower and higher ones. Lab 5A's circuit is one.", "labs": [5], "aka": ["band-pass"]}, {"term": "Bandwidth", "def": "The range of frequencies between a circuit's two cutoff (\u22123 dB) points.", "labs": [5], "aka": []}, {"term": "Base", "def": "The control lead of a transistor. A small base current controls a much larger collector current.", "labs": [4], "aka": []}, {"term": "Bias point", "def": "PSpice's name for the Operating point analysis: the steady DC voltages and currents in a circuit.", "labs": [5], "aka": []}, {"term": "Block diagram", "def": "A drawing that shows a system as labelled boxes, such as amplifier or filter, rather than individual parts.", "labs": [4], "aka": []}, {"term": "Breakdown voltage", "def": "The reverse voltage at which a diode starts conducting backward. A Zener diode is designed to do this safely; the D1N750's is 4.7 V.", "labs": [5], "aka": []}, {"term": "Capacitor", "def": "A part made of two conductors separated by an insulator. It blocks steady DC and passes changing signals, more easily at higher frequencies.", "labs": [5], "aka": []}, {"term": "Cathode", "def": "The terminal of a diode that current leaves when the diode conducts. It's the bar side of the symbol, and a painted band on a real part.", "labs": [5], "aka": []}, {"term": "Circuit name box", "def": "The box at the top of the Q Circuits page where you type the lab name. It does the job of a title block.", "labs": [4], "aka": []}, {"term": "Clipping", "def": "When an amplifier's output tries to go beyond its supply voltage and is flattened at the limit.", "labs": [5], "aka": ["clips"]}, {"term": "Closed circuit", "def": "A complete, unbroken loop that current can flow around.", "labs": [4], "aka": []}, {"term": "Collector", "def": "The transistor lead where the main current enters an NPN transistor.", "labs": [4], "aka": []}, {"term": "Corner frequency", "def": "The frequency where a filter's output has fallen to 70.7% of its passband value (\u22123 dB). For an RC filter it's 1 \u00f7 (2\u03c0RC).", "labs": [5], "aka": ["cutoff frequency", "cutoff frequencies", "corner frequencies", "\u22123 dB point", "-3 db point"]}, {"term": "Current", "def": "The flow of electric charge, measured in amperes (A). 1 mA is one thousandth of an ampere.", "labs": [4], "aka": ["current (i)"]}, {"term": "DC (direct current)", "def": "Current or voltage that stays steady and flows in one direction.", "labs": [4], "aka": ["dc", "direct current"]}, {"term": "DC sweep", "def": "An analysis that steps a source's DC value through a range and plots the results against it.", "labs": [7], "aka": []}, {"term": "Decibel (dB)", "def": "A logarithmic unit for gain: 20 \u00d7 log\u2081\u2080 of the voltage ratio. \u00d710 is +20 dB, \u00d71 is 0 dB, \u00d70.707 is \u22123 dB.", "labs": [5], "aka": ["decibel", "decibels", "db"]}, {"term": "Diode", "def": "A part that lets current flow easily in one direction only, from anode to cathode, once about 0.7 V is across it.", "labs": [5], "aka": []}, {"term": "Emitter", "def": "The transistor lead where current leaves an NPN transistor. It's the lead with the arrow.", "labs": [4], "aka": []}, {"term": "Feedback", "def": "Sending part of an amplifier's output back to its input. In an op amp circuit, feedback sets the gain.", "labs": [5], "aka": []}, {"term": "Filter", "def": "A circuit that passes some frequencies and weakens others.", "labs": [5], "aka": []}, {"term": "Frequency", "def": "How many cycles a wave completes each second, measured in hertz (Hz). 1 kHz is 1,000 cycles per second.", "labs": [5], "aka": []}, {"term": "Frequency response", "def": "A graph of how a circuit's gain changes with frequency. An AC sweep produces one.", "labs": [5], "aka": []}, {"term": "Gain", "def": "How much a circuit multiplies a signal: output divided by input. Often given in decibels.", "labs": [5], "aka": []}, {"term": "Ground", "def": "The reference point defined as 0 V. Every voltage is measured from it. Also called node 0.", "labs": [4], "aka": ["ground (node 0)", "node 0"]}, {"term": "High-pass filter", "def": "A filter that passes high frequencies and weakens low ones.", "labs": [5], "aka": ["high-pass"]}, {"term": "Junction", "def": "A point where three or more connections meet, marked with a dot.", "labs": [4], "aka": ["junction dot"]}, {"term": "Load line", "def": "A straight line showing every combination of voltage and current the rest of the circuit allows. Where it crosses a part's curve is the operating point.", "labs": [5], "aka": []}, {"term": "Logarithmic scale", "def": "An axis where each factor of ten takes the same space, so 10 to 100 is as wide as 1,000 to 10,000.", "labs": [5], "aka": ["logarithmic", "log scale"]}, {"term": "Low-pass filter", "def": "A filter that passes low frequencies and weakens high ones.", "labs": [5], "aka": ["low-pass"]}, {"term": "Minor gridlines", "def": "The fainter lines between the main gridlines of a plot. On a log axis they mark 2, 3, 4 \u2026 9 times each decade.", "labs": [5], "aka": []}, {"term": "Net alias", "def": "A name attached to a wire, such as IN or OUT. It labels the node, and wires with the same name are connected.", "labs": [5, 6], "aka": ["net aliases"]}, {"term": "Netlist", "def": "The text version of a schematic: a list of every part and the nodes it connects to. It's what the simulator actually reads.", "labs": [4], "aka": []}, {"term": "Node", "def": "All the points joined together by wire. Every point on a node is at the same voltage.", "labs": [4], "aka": []}, {"term": "Non-inverting amplifier", "def": "An op amp circuit where the signal enters the + input. Its gain is 1 + RF \u00f7 RIN, and the output is in step with the input.", "labs": [5], "aka": ["non-inverting amplifiers"]}, {"term": "NPN transistor", "def": "A transistor made of N-type, P-type and N-type layers. Current flows in at the collector and out at the emitter.", "labs": [4], "aka": []}, {"term": "Ohm's law", "def": "The link between voltage, current and resistance: I = V \u00f7 R, or V = I \u00d7 R.", "labs": [4], "aka": []}, {"term": "Op amp (operational amplifier)", "def": "A very high-gain amplifier with + and \u2212 inputs. Resistors around it set the actual gain.", "labs": [5], "aka": ["op amp", "operational amplifier", "op amps"]}, {"term": "Open circuit", "def": "A break in the path. No current can flow through it.", "labs": [4], "aka": []}, {"term": "Open end", "def": "A wire end or pin connected to nothing. Q Circuits marks it with an open circle.", "labs": [4], "aka": []}, {"term": "Operating point", "def": "An analysis that calculates the steady DC voltage at every node. PSpice calls it Bias Point.", "labs": [4, 5], "aka": []}, {"term": "Orthogonal wiring", "def": "Wires drawn only as horizontal and vertical segments, the professional standard.", "labs": [4], "aka": ["orthogonal"]}, {"term": "Parallel", "def": "Parts connected across the same two nodes. They share the same voltage.", "labs": [4], "aka": []}, {"term": "Phase shift", "def": "How far one wave is shifted in time relative to another, measured in degrees; a full cycle is 360\u00b0.", "labs": [5], "aka": []}, {"term": "Plot", "def": "The Q Circuits graph of probed signals. Volts and amps are drawn in separate panes.", "labs": [5], "aka": []}, {"term": "PN junction", "def": "The boundary where P-type and N-type semiconductor meet. It's what makes a diode conduct in one direction.", "labs": [5], "aka": []}, {"term": "Power symbol", "def": "A named supply connection such as VCC or VEE. Every symbol with the same name is the same node.", "labs": [5, 6], "aka": []}, {"term": "Probe", "def": "A marker that tells the simulator what to graph: a wire for its voltage, or a part's body for its current. Placed with the Probe tool (B).", "labs": [5], "aka": ["probe tool", "probes"]}, {"term": "Reactance", "def": "A capacitor's (or inductor's) opposition to AC, in ohms. For a capacitor, X\u1d04 = 1 \u00f7 (2\u03c0fC), so it falls as frequency rises.", "labs": [5], "aka": []}, {"term": "Rectifier", "def": "A circuit that turns AC into DC. A single diode makes a half-wave rectifier, which passes only one half of each cycle.", "labs": [5], "aka": ["half-wave rectifier"]}, {"term": "Reference designator", "def": "A part's name on a schematic, such as R1, C2 or Q1.", "labs": [4], "aka": []}, {"term": "Resistance", "def": "How strongly a part opposes current, measured in ohms (\u03a9).", "labs": [4], "aka": ["resistance (r)"]}, {"term": "Resistor", "def": "A part that opposes current by a set amount, measured in ohms.", "labs": [4], "aka": []}, {"term": "Schematic", "def": "A drawing of a circuit that uses standard symbols to show every part, its value, and how the parts are connected.", "labs": [4], "aka": []}, {"term": "Series", "def": "Parts connected end to end with nothing branching off between them. They carry the same current.", "labs": [4], "aka": []}, {"term": "Series-parallel", "def": "A circuit that combines series and parallel connections.", "labs": [4], "aka": []}, {"term": "Short circuit", "def": "A path of (almost) zero resistance, such as a wire across a part, so current bypasses the part.", "labs": [4], "aka": ["short"]}, {"term": "Simulation", "def": "Using a computer to solve a circuit's equations and predict what a real circuit would do.", "labs": [5], "aka": []}, {"term": "SPICE", "def": "The family of circuit simulators that Q Circuits and PSpice are based on. It also names the value notation they share, such as 1k and .15u.", "labs": [4], "aka": []}, {"term": "Title block", "def": "The labelled box on a drawing that identifies it and its author. In Q Circuits the circuit name box does this job.", "labs": [4], "aka": []}, {"term": "Transient", "def": "An analysis that steps through time and plots signals the way an oscilloscope shows them.", "labs": [5], "aka": ["transient analysis"]}, {"term": "Value", "def": "The number that sets a part's size, such as 1k for a resistor or DC 12 for a source.", "labs": [4], "aka": []}, {"term": "Voltage", "def": "The electrical push that makes charge move, measured in volts (V). Always measured between two points.", "labs": [4], "aka": ["voltage (v)"]}, {"term": "Voltage divider", "def": "Two or more parts in series that share a voltage in proportion to their resistance (or reactance).", "labs": [4, 5], "aka": []}, {"term": "Wire", "def": "A connection with no resistance. Its length and shape don't matter, only what it connects.", "labs": [4], "aka": ["wires"]}, {"term": "Zener diode", "def": "A diode designed to conduct backward at a precise breakdown voltage. Used as a voltage reference.", "labs": [5], "aka": []}, {"term": "Branch", "def": "One of the separate paths current can take between two nodes in a parallel circuit.", "labs": [6], "aka": ["branches"]}, {"term": "Crossover", "def": "A place where two wires cross on a schematic without connecting. There is no dot, and in Q Circuits neither wire ends there.", "labs": [6], "aka": ["crossovers"]}, {"term": "Differential amplifier", "def": "An amplifier built from two matched transistors that responds to the difference between two inputs. Lab 6C draws one.", "labs": [6], "aka": []}, {"term": "Differential probe", "def": "A probe that measures the voltage between two nodes instead of from a node to ground, such as V(A,B). Placed with Diff probe (X).", "labs": [7], "aka": ["diff probe"]}, {"term": "Family of curves", "def": "Several traces on one plot, one for each value of a parameter, so you can compare them.", "labs": [7], "aka": []}, {"term": "Floating node", "def": "A node with no DC path to ground. The simulator can't work out its voltage.", "labs": [6], "aka": ["floating"]}, {"term": "Input node", "def": "The node where the signal enters a circuit. Looking from ground through the source, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Linear circuit", "def": "A circuit whose output is directly proportional to its input. Its DC sweep plot is a straight line.", "labs": [7], "aka": ["linear"]}, {"term": "Loading", "def": "When connecting more parts to a node draws current from it and lowers its voltage.", "labs": [7], "aka": ["load"]}, {"term": "Output node", "def": "The node where you measure a circuit's result. Looking from ground through the output part, it's the node on the other side.", "labs": [6], "aka": []}, {"term": "Parameter", "def": "A named value, such as RVAL, defined by a Parameter part and used in a part value inside curly braces: {RVAL}.", "labs": [7], "aka": ["parameters", "{rval}"]}, {"term": "Parametric sweep", "def": "Running the same analysis several times, once for each value of a parameter, and plotting all the results together.", "labs": [7], "aka": []}, {"term": "Slope", "def": "How steep a line is: how much the output changes for each 1 unit change of the input.", "labs": [7], "aka": []}, {"term": "Step", "def": "The spacing between values in a sweep. From \u221212 to 12 in steps of 0.1 gives 241 points. PSpice calls it Increment.", "labs": [7], "aka": ["increment"]}, {"term": "Sine source", "def": "A voltage source whose value is SIN(offset amplitude frequency), used for transient runs. PSpice calls it VSIN.", "labs": [5, 6], "aka": ["vsin"]}, {"term": "AC magnitude", "def": "The size of the test signal a source supplies during an AC sweep. PSpice's VAC source sets it with 1Vac.", "labs": [5, 6], "aka": ["vac"]}, {"term": "Q Circuits", "def": "The browser-based schematic and simulation tool used for the ELEC 101 labs.", "labs": [4], "aka": []}, {"term": "Axis ranges", "def": "The Q Circuits settings under the plot that fix the X and Y limits instead of fitting them automatically. PSpice calls this a User Defined data range.", "labs": [8, 9], "aka": ["axis range", "user defined range"]}, {"term": "Bode plot", "def": "A graph of gain in decibels against frequency on a logarithmic axis. An AC sweep with a probe in dB mode produces one.", "labs": [8], "aka": ["bode plots"]}, {"term": "Coupling", "def": "How much of a transformer's magnetic field links both windings, from 0 to 1. 1 would be a perfect transformer.", "labs": [8], "aka": ["coupling coefficient"]}, {"term": "Critical frequency", "def": "Another name for the corner (\u22123 dB) frequency: where the output has fallen 3 dB below its flat level.", "labs": [8], "aka": []}, {"term": "Decade", "def": "A factor of ten in frequency, such as 10 Hz to 100 Hz. On a log axis every decade is the same width.", "labs": [5, 8], "aka": ["decades"]}, {"term": "Duty cycle", "def": "The fraction of each period a pulse spends high: pulse width \u00f7 period, often given as a percentage.", "labs": [9], "aka": []}, {"term": "Fall time", "def": "How long a pulse takes to drop from its high level back to its low level (TF).", "labs": [9], "aka": ["tf"]}, {"term": "Inductor", "def": "A coil of wire that stores energy in a magnetic field. Its opposition to AC rises with frequency. Measured in henries (H).", "labs": [8], "aka": ["inductors", "inductance"]}, {"term": "Measurements table", "def": "The table under the Q Circuits plot that lists each trace's maximum, minimum and other values over the visible range.", "labs": [9], "aka": ["measurements"]}, {"term": "Nonperiodic waveform", "def": "A signal that never repeats in a regular pattern, such as random noise.", "labs": [9], "aka": ["nonperiodic"]}, {"term": "Period", "def": "The time for one complete cycle of a repeating waveform. Period = 1 \u00f7 frequency.", "labs": [9], "aka": ["per"]}, {"term": "Periodic waveform", "def": "A signal that repeats the same shape at regular intervals.", "labs": [9], "aka": ["periodic"]}, {"term": "Primary", "def": "The transformer winding connected to the source.", "labs": [8], "aka": ["primary winding"]}, {"term": "Pulse source", "def": "A source that switches between two voltages with set delay, rise, width, fall and period. PSpice calls it VPULSE.", "labs": [9], "aka": ["pulse", "vpulse"]}, {"term": "Pulse width", "def": "How long a pulse stays at its high level (PW).", "labs": [9], "aka": ["pw"]}, {"term": "Ramp", "def": "A waveform that rises steadily and then drops quickly, also called a sawtooth.", "labs": [9], "aka": ["sawtooth", "ramp wave"]}, {"term": "Rise time", "def": "How long a pulse takes to climb from its low level to its high level (TR).", "labs": [9], "aka": ["tr"]}, {"term": "Roll-off", "def": "The part of a frequency response where the gain falls steadily. A simple RC filter rolls off at 20 dB per decade.", "labs": [8], "aka": ["rolloff"]}, {"term": "Secondary", "def": "The transformer winding connected to the load.", "labs": [8], "aka": ["secondary winding"]}, {"term": "Square wave", "def": "A pulse waveform that switches sharply between two levels.", "labs": [9], "aka": ["square waves"]}, {"term": "Step-up transformer", "def": "A transformer whose output voltage is larger than its input. Its secondary inductance is larger than its primary.", "labs": [8], "aka": ["step-down transformer", "step-up"]}, {"term": "Time constant", "def": "For an RC circuit, \u03c4 = R \u00d7 C. In one time constant a capacitor charges 63% of the way; after about five it is essentially done.", "labs": [9], "aka": ["tau", "\u03c4"]}, {"term": "Transformer", "def": "Two coupled coils that transfer AC from one circuit to another, stepping the voltage up or down and isolating the two sides.", "labs": [8], "aka": ["transformers"]}, {"term": "Triangle wave", "def": "A waveform that rises and falls at equal, steady rates.", "labs": [9], "aka": ["triangle"]}, {"term": "Active-low", "def": "An input that does its job when it is 0, not 1. Its name usually has a bar or BAR, as in SBAR or CLR\u0305.", "labs": [11], "aka": ["active low"]}, {"term": "AND gate", "def": "A logic gate whose output is 1 only when all of its inputs are 1.", "labs": [10], "aka": ["and"]}, {"term": "Bit", "def": "A single binary digit: 0 or 1. It can stand for any two-way choice, such as off/on or false/true.", "labs": [10], "aka": ["bits"]}, {"term": "Boolean expression", "def": "A formula for a logic function, such as Q = A + B for OR or Q = A \u00b7 B for AND.", "labs": [10], "aka": ["boolean"]}, {"term": "Clear", "def": "A flip-flop input that forces Q to 0 regardless of the clock. On the 7473 it is active-low (CLR\u0305).", "labs": [11], "aka": ["clr"]}, {"term": "Clock", "def": "A digital signal that switches back and forth at a steady rate to tell sequential circuits when to act.", "labs": [11], "aka": ["clock signal"]}, {"term": "Combinational logic", "def": "Logic whose output depends only on its present inputs, with no memory. Every Lab 10 circuit is combinational.", "labs": [10, 11], "aka": []}, {"term": "Complement", "def": "The opposite logic level: the complement of 1 is 0. A NOT gate produces it. Written with a bar, as Q\u0305 (QBAR).", "labs": [10], "aka": ["complementation", "negation"]}, {"term": "Counter", "def": "A sequential circuit that steps through a sequence of binary numbers, one per clock pulse.", "labs": [11], "aka": ["binary counter"]}, {"term": "DigClock", "def": "The Q Circuits and PSpice digital clock source, set by OFFTIME, ONTIME, DELAY, STARTVAL and OPPVAL.", "labs": [11], "aka": ["digital clock"]}, {"term": "Digital stimulus", "def": "A digital source defined by a list of times and logic levels. PSpice calls it STIM1.", "labs": [10], "aka": ["stim1", "stimulus"]}, {"term": "Falling edge", "def": "The moment a signal changes from 1 to 0. The 7473 changes its output on the clock's falling edge.", "labs": [11], "aka": ["negative edge", "falling-edge"]}, {"term": "Flip-flop", "def": "A one-bit memory circuit that changes state only at a clock edge.", "labs": [11], "aka": ["flip-flops"]}, {"term": "Forbidden state", "def": "An input combination a latch should avoid. In a NAND latch, SBAR and RBAR both 0 drive Q and QBAR both to 1, and releasing both at once leaves the result unpredictable.", "labs": [11], "aka": ["invalid state"]}, {"term": "Integrated circuit", "def": "A chip containing many components. A 7400-series chip holds several gates, labelled A, B, C, D, as in U1A.", "labs": [10], "aka": ["ic", "chip"]}, {"term": "Inverter", "def": "A NOT gate: its output is the opposite of its input. The 7404 holds six of them.", "labs": [10], "aka": []}, {"term": "JK flip-flop", "def": "A flip-flop with inputs J and K: 0 0 holds, 1 0 sets Q to 1, 0 1 resets it to 0, and 1 1 toggles it.", "labs": [11], "aka": ["jk"]}, {"term": "Latch", "def": "A memory circuit that responds to its inputs as soon as they change, with no clock. Two cross-coupled NAND gates make an RS latch.", "labs": [11], "aka": ["rs latch", "sr latch"]}, {"term": "Logic gate", "def": "A circuit that produces a 0 or 1 output from one or more 0/1 inputs according to a fixed rule.", "labs": [10], "aka": ["gate", "gates", "logic gates"]}, {"term": "Logic lanes", "def": "The way Q Circuits plots digital signals: one 0/1 strip per probe, top to bottom in the order the probes were placed.", "labs": [10, 11], "aka": ["logic lane", "lanes"]}, {"term": "Logic level", "def": "The 0 or 1 a digital signal represents. In Q Circuits, 0 V is 0 and 5 V is 1, with the threshold at 2.5 V.", "labs": [10], "aka": ["logic state", "logic levels"]}, {"term": "Master-slave flip-flop", "def": "A flip-flop made of two latches: the master follows the inputs while the clock is high, and the slave copies it when the clock falls.", "labs": [11], "aka": ["master-slave"]}, {"term": "Modulus", "def": "How many different states a counter steps through before repeating. A 4-bit counter is MOD 16.", "labs": [11], "aka": ["mod"]}, {"term": "NAND gate", "def": "NOT AND: the output is 0 only when all inputs are 1.", "labs": [10], "aka": ["nand"]}, {"term": "NOR gate", "def": "NOT OR: the output is 1 only when all inputs are 0.", "labs": [10], "aka": ["nor"]}, {"term": "NOT gate", "def": "A gate with one input whose output is the opposite level. Also called an inverter.", "labs": [10], "aka": ["not"]}, {"term": "OR gate", "def": "A logic gate whose output is 1 when any input is 1.", "labs": [10], "aka": ["or"]}, {"term": "Propagation delay", "def": "The short time between a gate's input changing and its output responding, typically nanoseconds.", "labs": [11], "aka": []}, {"term": "Sequential logic", "def": "Logic whose output depends on past inputs as well as present ones, because it has memory. Latches, flip-flops and counters are sequential.", "labs": [11], "aka": []}, {"term": "Set and reset", "def": "Making a memory circuit's output 1 (set) or 0 (reset).", "labs": [11], "aka": ["set", "reset"]}, {"term": "Synchronous counter", "def": "A counter whose flip-flops all share one clock, so every bit changes at the same moment.", "labs": [11], "aka": []}, {"term": "Timing diagram", "def": "A plot of digital signals against time, one above another, used to read how a circuit behaves.", "labs": [10, 11], "aka": ["timing diagrams"]}, {"term": "Toggle", "def": "Switch to the opposite state. A JK flip-flop with J = K = 1 toggles at every clock edge.", "labs": [11], "aka": ["toggles"]}, {"term": "Truth table", "def": "A table listing a logic circuit's output for every combination of inputs.", "labs": [10], "aka": ["truth tables"]}, {"term": "TTL", "def": "Transistor-transistor logic, the family the 7400-series chips belong to. It uses about 0 V for 0 and 5 V for 1.", "labs": [10], "aka": []}, {"term": "Unknown state (X)", "def": "A logic value the simulator can't determine, drawn as X. Flip-flops start in X unless they are initialized.", "labs": [10, 11], "aka": ["x", "unknown"]}, {"term": "XOR gate", "def": "Exclusive OR: the output is 1 when the inputs differ.", "labs": [10, 11], "aka": ["xor", "exclusive or"]}, {"term": "Amplifier", "def": "A circuit that makes a signal larger.", "labs": [5, 12], "aka": ["amplifiers"]}, {"term": "Bias", "def": "The DC voltages and currents that put a transistor in its working range, so it can amplify.", "labs": [12], "aka": ["biasing"]}, {"term": "Bridge", "def": "Two voltage dividers side by side. A small change in one resistor shows up as a small voltage difference between the two junctions.", "labs": [14], "aka": ["wheatstone bridge"]}, {"term": "Bus", "def": "A group of signals drawn as one thick line. Signals join it by name, through bus entries.", "labs": [13], "aka": ["buses", "busses"]}, {"term": "Bus entry", "def": "The short diagonal line that ties a named wire to a bus.", "labs": [13], "aka": ["bus entries"]}, {"term": "Bypass capacitor", "def": "A capacitor that acts as a short circuit for AC across a resistor, so the resistor affects DC but not the signal.", "labs": [12], "aka": []}, {"term": "Cascade", "def": "Amplifier stages connected one after another. Their gains multiply, so their gains in dB add.", "labs": [12], "aka": []}, {"term": "Common mode", "def": "The voltage both inputs of a differential amplifier share. A good differential amplifier ignores it.", "labs": [14], "aka": ["common-mode"]}, {"term": "Common-emitter amplifier", "def": "A transistor amplifier with the input at the base and the output at the collector.", "labs": [12], "aka": ["common emitter"]}, {"term": "Coupling capacitor", "def": "A capacitor that passes an AC signal from one stage to the next while blocking DC.", "labs": [12], "aka": ["coupling capacitors"]}, {"term": "Current source", "def": "A circuit that supplies a steady current regardless of the voltage across it.", "labs": [14], "aka": ["current sink"]}, {"term": "Decoder", "def": "A circuit that turns a binary number into one active output line. The 74154 is a 4-to-16 decoder.", "labs": [13], "aka": []}, {"term": "Demultiplexer", "def": "A circuit that routes one input line to one of many outputs, chosen by select lines.", "labs": [13], "aka": ["demux"]}, {"term": "Differential pair", "def": "Two matched transistors sharing a current. The difference between their inputs steers the current from one to the other.", "labs": [14], "aka": []}, {"term": "Emitter follower", "def": "A transistor stage whose output (the emitter) follows its input with low output resistance.", "labs": [14], "aka": []}, {"term": "Gain-bandwidth product", "def": "For an op amp, gain \u00d7 bandwidth is roughly constant: about 1 MHz for the LM324.", "labs": [12], "aka": ["gbw"]}, {"term": "Instrumentation amplifier", "def": "An amplifier that boosts a small difference between two inputs and rejects what they have in common.", "labs": [14], "aka": []}, {"term": "JFET", "def": "Junction field-effect transistor: the gate voltage controls the current, and the gate draws almost no current.", "labs": [14], "aka": ["n-channel jfet"]}, {"term": "Mid-band gain", "def": "An amplifier's flat gain between its lower and upper \u22123 dB frequencies.", "labs": [12], "aka": []}, {"term": "Mirror", "def": "Flip a part left\u2013right or top\u2013bottom, as a reflection, without rotating it.", "labs": [14], "aka": ["mirrored", "mirroring"]}, {"term": "Multiplexer", "def": "A circuit that sends one of many inputs to a single output, chosen by select lines. Taking turns, it sends many signals over one line.", "labs": [13], "aka": ["mux"]}, {"term": "Port", "def": "A named connection drawn as an arrow (PSpice's PORTLEFT and PORTRIGHT).", "labs": [13], "aka": ["ports"]}, {"term": "Select lines", "def": "The inputs of a multiplexer or demultiplexer that choose which line is connected.", "labs": [13], "aka": ["select line", "select inputs"]}]</script>
+<script>
+(function(){
+  var PK='elec101-prefs-v1';
+  var prefs={}; try{ prefs=JSON.parse(localStorage.getItem(PK))||{}; }catch(e){ prefs={}; }
+  function savePrefs(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)); }catch(e){} }
+  var root=document.documentElement;
+  var STEPS=[0.85,0.9,1,1.1,1.2,1.35,1.5,1.7];
+  function applySize(){ var f=prefs.fs||1; root.style.fontSize=(f*100)+'%'; var o=document.getElementById('fs-val'); if(o) o.textContent=Math.round(f*100)+'%';
+    var d=document.getElementById('fs-down'), u=document.getElementById('fs-up'); if(d) d.disabled=f<=STEPS[0]; if(u) u.disabled=f>=STEPS[STEPS.length-1]; }
+  function step(dir){ var f=prefs.fs||1, i=STEPS.indexOf(f); if(i<0) i=2; i=Math.max(0,Math.min(STEPS.length-1,i+dir)); prefs.fs=STEPS[i]; savePrefs(); applySize(); }
+  var tb=document.getElementById('theme-btn');
+  function applyTheme(){ var t=prefs.theme; if(t==='light'||t==='dark') root.setAttribute('data-theme',t); else root.removeAttribute('data-theme'); if(tb) tb.textContent='Theme: '+(t||'auto'); }
+  var d=document.getElementById('fs-down'), u=document.getElementById('fs-up');
+  if(d) d.addEventListener('click',function(){step(-1)});
+  if(u) u.addEventListener('click',function(){step(1)});
+  document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.altKey){ if(e.key==='='||e.key==='+'){e.preventDefault();step(1);} if(e.key==='-'){e.preventDefault();step(-1);} } });
+  if(tb) tb.addEventListener('click',function(){ var order=[undefined,'light','dark']; var i=order.indexOf(prefs.theme); prefs.theme=order[(i+1)%3]; savePrefs(); applyTheme(); });
+  applySize(); applyTheme();
+})();
+</script>
+<script>
+(function(){
+'use strict';
+var $=function(s,r){return (r||document).querySelector(s)};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+var NS='http://www.w3.org/2000/svg';
+var LAB=document.body.getAttribute('data-lab');
+var KEY='elec101-lesson-'+LAB+'-v1';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function readJSON(id){var n=document.getElementById(id); if(!n) return null; try{return JSON.parse(n.textContent)}catch(e){return null}}
+var state=load(); state.done=state.done||{}; state.checks=state.checks||{};
+
+/* ---------------- navigation ---------------- */
+var sections=$$('main section.lesson');
+var navBtns=$$('#toc button[data-target]');
+var live=$('#live');
+function announce(msg){ if(live){ live.textContent=''; setTimeout(function(){live.textContent=msg},30);} }
+function show(id,focus){
+  var idx=-1;
+  sections.forEach(function(s,i){ var on=s.id===id; s.hidden=!on; if(on) idx=i; });
+  if(idx<0){ return show(sections[0].id,false); }
+  navBtns.forEach(function(b){ b.setAttribute('aria-current', b.getAttribute('data-target')===id ? 'step':'false'); });
+  var sn=$('#sheet-no'); if(sn) sn.textContent=(idx+1)+' of '+sections.length;
+  var st=$('#sheet-title'); if(st) st.textContent=sections[idx].getAttribute('data-title');
+  state.current=id; save();
+  if(focus){ var h=$('h2',sections[idx]); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});}
+    var m=$('#main'); if(m) window.scrollTo(0, Math.max(0, m.getBoundingClientRect().top + window.pageYOffset - 12)); }
+  if(history.replaceState){ try{history.replaceState(null,'','#'+id)}catch(e){} }
+  document.dispatchEvent(new CustomEvent('lesson:show',{detail:id}));
+}
+navBtns.forEach(function(b,i){
+  b.addEventListener('click',function(){show(b.getAttribute('data-target'),true)});
+  b.addEventListener('keydown',function(e){
+    var j=null; if(e.key==='ArrowDown') j=Math.min(i+1,navBtns.length-1); if(e.key==='ArrowUp') j=Math.max(i-1,0);
+    if(e.key==='Home') j=0; if(e.key==='End') j=navBtns.length-1;
+    if(j!==null){ e.preventDefault(); navBtns[j].focus(); }
+  });
+});
+$$('[data-goto]').forEach(function(b){ b.addEventListener('click',function(){show(b.getAttribute('data-goto'),true)}); });
+
+function refreshProgress(){
+  var n=0; sections.forEach(function(s){ var d=!!state.done[s.id]; if(d) n++;
+    var c=$('#toc button[data-target="'+s.id+'"] .chk'); if(c){ c.textContent=d?'\u2713':''; }
+    var btn=$('[data-complete="'+s.id+'"]'); if(btn){ btn.setAttribute('aria-pressed', d?'true':'false'); btn.textContent=d?'Completed \u2713':'Mark this section complete'; }
+  });
+  var pct=Math.round(n/sections.length*100);
+  var bar=$('#prog'); if(bar){ bar.setAttribute('aria-valuenow',pct); var sp=$('span',bar); if(sp) sp.style.width=pct+'%'; }
+  var pt=$('#prog-txt'); if(pt) pt.textContent=n+' of '+sections.length+' sections complete';
+}
+$$('[data-complete]').forEach(function(b){ b.addEventListener('click',function(){
+  var id=b.getAttribute('data-complete'); state.done[id]=!state.done[id]; save(); refreshProgress();
+  announce(state.done[id]?'Section marked complete.':'Section marked not complete.');
+});});
+var reset=$('#reset-btn');
+if(reset){ reset.addEventListener('click',function(){ state.done={}; state.checks={}; save(); refreshProgress();
+  $$('.checklist input').forEach(function(c){c.checked=false}); announce('Progress cleared.'); }); }
+
+/* persistent checklists */
+$$('.checklist input[type=checkbox]').forEach(function(c){
+  if(state.checks[c.id]) c.checked=true;
+  c.addEventListener('change',function(){ state.checks[c.id]=c.checked; save(); });
+});
+
+/* reveal buttons */
+$$('[data-reveal]').forEach(function(b){
+  var t=document.getElementById(b.getAttribute('data-reveal')); if(!t) return;
+  b.setAttribute('aria-controls',t.id); b.setAttribute('aria-expanded', t.hidden?'false':'true');
+  var shown=b.getAttribute('data-shown-label'), hid=b.textContent;
+  b.addEventListener('click',function(){ t.hidden=!t.hidden; b.setAttribute('aria-expanded', t.hidden?'false':'true'); if(shown) b.textContent=t.hidden?hid:shown; });
+});
+
+/* ---------------- SPICE numbers ---------------- */
+var SUFFIX=[['meg',1e6],['mil',25.4e-6],['f',1e-15],['p',1e-12],['n',1e-9],['u',1e-6],['m',1e-3],['k',1e3],['g',1e9],['t',1e12]];
+function parseSpice(raw){
+  var s=String(raw==null?'':raw);
+  var t=s.trim();
+  if(!t) return {ok:false,msg:'Nothing entered. Type a value such as 1k or 15.9k.'};
+  if(/\s/.test(t)) return {ok:false,msg:'This value contains a space. The simulator stops reading at the space, so the value is rejected when you run the simulation. Delete the space.'};
+  var m=t.match(/^([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)([A-Za-z\u00b5]*)$/);
+  if(!m) return {ok:false,msg:'A value has to start with a number and can only be followed by letters (a scale suffix and, optionally, a unit).'};
+  var num=parseFloat(m[1]); var tail=m[2].replace('\u00b5','u'); var low=tail.toLowerCase();
+  var mult=1, suf='';
+  for(var i=0;i<SUFFIX.length;i++){ if(low.indexOf(SUFFIX[i][0])===0){ mult=SUFFIX[i][1]; suf=SUFFIX[i][0]; break; } }
+  var r={ok:true,value:num*mult,num:num,suffix:suf,ignored:tail.slice(suf.length),notes:[]};
+  if(suf==='m' && tail.charAt(0)==='M') r.notes.push('Capital M still means milli (\u00d70.001) in SPICE. For mega (\u00d71,000,000) type MEG.');
+  if(m[2].charAt(0)==='\u00b5') r.notes.push('The \u00b5 symbol is not reliable in SPICE. Type u for micro.');
+  if(r.ignored) r.notes.push('The letters "'+r.ignored+'" are ignored. They are just a label for people reading the schematic.');
+  return r;
+}
+var ENG=[[1e12,'T'],[1e9,'G'],[1e6,'MEG'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'u'],[1e-9,'n'],[1e-12,'p'],[1e-15,'f']];
+function eng(v,unit,digits){
+  if(v===0) return '0 '+(unit||'');
+  var a=Math.abs(v);
+  for(var i=0;i<ENG.length;i++){ if(a>=ENG[i][0]*0.9995){ var x=v/ENG[i][0]; var d=digits==null?3:digits;
+      var str=Number(x.toPrecision(d)).toString(); var p=ENG[i][1]; if(p==='u') p='\u00b5'; if(p==='MEG') p='M';
+      return str+' '+p+(unit||''); } }
+  return v.toExponential(2)+' '+(unit||'');
+}
+function fmtHz(f){ if(f>=1000){ var k=f/1000; return (k<10? k.toFixed(2): k<100? k.toFixed(1) : Math.round(k))+' kHz'; } return Math.round(f)+' Hz'; }
+
+/* ---------------- tiny SVG plotter ---------------- */
+function el(tag,attrs,parent,text){ var e=document.createElementNS(NS,tag); for(var k in attrs){ if(attrs.hasOwnProperty(k)) e.setAttribute(k,attrs[k]); } if(text!=null) e.textContent=text; if(parent) parent.appendChild(e); return e; }
+var clipN=0;
+function plot(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var W=cfg.w||640, H=cfg.h||290, L=68, R=34, T=12, B=cfg.xlabel===false?26:52;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-L-R, ph=H-T-B;
+  var lg=function(v){return Math.log(v)/Math.LN10};
+  var X= cfg.xlog ? function(v){return L+(lg(v)-lg(cfg.xmin))/(lg(cfg.xmax)-lg(cfg.xmin))*pw} : function(v){return L+(v-cfg.xmin)/(cfg.xmax-cfg.xmin)*pw};
+  var Y= function(v){return T+(1-(v-cfg.ymin)/(cfg.ymax-cfg.ymin))*ph};
+  el('rect',{x:L,y:T,width:pw,height:ph,'class':'pl-bg'},svg);
+  var g=el('g',{'aria-hidden':'true'},svg);
+  (cfg.xminor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-minor'},g); });
+  (cfg.yminor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-minor'},g); });
+  (cfg.xmajor||[]).forEach(function(v){ el('line',{x1:X(v),x2:X(v),y1:T,y2:T+ph,'class':'pl-major'},g);
+    el('text',{x:X(v),y:T+ph+15,'text-anchor':'middle','class':'pl-tick'},g,cfg.xfmt?cfg.xfmt(v):v); });
+  (cfg.ymajor||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-major'},g);
+    el('text',{x:L-6,y:Y(v)+4,'text-anchor':'end','class':'pl-tick'},g,cfg.yfmt?cfg.yfmt(v):v); });
+  if(cfg.xlabel) el('text',{x:L+pw,y:H-6,'text-anchor':'end','class':'pl-axis'},g,cfg.xlabel);
+  var cid='pc'+(++clipN);
+  var cp=el('clipPath',{id:cid},svg); el('rect',{x:L,y:T,width:pw,height:ph},cp);
+  var tg=el('g',{'clip-path':'url(#'+cid+')'},svg);
+  (cfg.hlines||[]).forEach(function(v){ el('line',{x1:L,x2:L+pw,y1:Y(v),y2:Y(v),'class':'pl-hline'},tg); });
+  (cfg.traces||[]).forEach(function(tr){
+    var d=''; for(var i=0;i<tr.pts.length;i++){ var yy=Y(tr.pts[i][1]); if(yy<-2000) yy=-2000; if(yy>4000) yy=4000; d+=(i?'L':'M')+X(tr.pts[i][0]).toFixed(1)+' '+yy.toFixed(1); }
+    el('path',{d:d,'class':'pl-trace '+(tr.cls||'')},tg);
+  });
+  var lx=L+4;
+  (cfg.traces||[]).forEach(function(tr){ if(!tr.name) return; var t=el('text',{x:lx,y:H-6,'class':'pl-leg '+(tr.cls||'')},g,'\u25a0 '+tr.name); lx+=tr.name.length*7.4+26; });
+  var over=el('g',{},svg);
+  return {X:X,Y:Y,L:L,T:T,pw:pw,ph:ph,over:over,svg:svg,
+    invX: cfg.xlog ? function(px){ return Math.pow(10, lg(cfg.xmin)+(px-L)/pw*(lg(cfg.xmax)-lg(cfg.xmin))); } : function(px){ return cfg.xmin+(px-L)/pw*(cfg.xmax-cfg.xmin); }};
+}
+function svgPoint(svg,evt){ var r=svg.getBoundingClientRect(); var vb=svg.viewBox.baseVal; return {x:(evt.clientX-r.left)/r.width*vb.width, y:(evt.clientY-r.top)/r.height*vb.height}; }
+function logGrid(xmin,xmax,mode){
+  var maj=[],min=[]; var d0=Math.floor(Math.log(xmin)/Math.LN10), d1=Math.ceil(Math.log(xmax)/Math.LN10);
+  for(var d=d0; d<=d1; d++){ var b=Math.pow(10,d);
+    if(mode==='auto'){ [1,3].forEach(function(k){ var v=k*b; if(v>=xmin*0.999&&v<=xmax*1.001) maj.push(v); }); }
+    else { if(b>=xmin*0.999&&b<=xmax*1.001) maj.push(b); for(var k=2;k<10;k++){ var v=k*b; if(v>xmin&&v<xmax) min.push(v);} }
+  }
+  return {maj:maj,min:min};
+}
+function linTicks(a,b,step){ var o=[]; for(var v=Math.ceil(a/step-1e-9)*step; v<=b+1e-9; v+=step) o.push(Math.round(v/step)*step); return o; }
+
+/* ---------------- clickable schematic parts ---------------- */
+var PARTS=readJSON('parts-data')||{};
+function showPart(panel,id){
+  var p=PARTS[id]; if(!p||!panel) return;
+  while(panel.firstChild) panel.removeChild(panel.firstChild);
+  var h=document.createElement('h4'); h.textContent=p.name; panel.appendChild(h);
+  if(p.what){ var w=document.createElement('p'); w.textContent=p.what; panel.appendChild(w); }
+  if(p.props){ var dl=document.createElement('dl'); dl.className='kv';
+    p.props.forEach(function(kv){ var dt=document.createElement('dt'); dt.textContent=kv[0]; var dd=document.createElement('dd'); dd.textContent=kv[1]; dl.appendChild(dt); dl.appendChild(dd); });
+    panel.appendChild(dl); }
+  if(p.here){ var q=document.createElement('p'); var b=document.createElement('strong'); b.textContent='In this circuit: '; q.appendChild(b); q.appendChild(document.createTextNode(p.here)); panel.appendChild(q); }
+}
+$$('svg.schem').forEach(function(svg){
+  var panel=document.getElementById(svg.getAttribute('data-panel'));
+  $$('.part',svg).forEach(function(g){
+    var act=function(){ $$('.part',svg).forEach(function(o){o.classList.remove('sel')}); g.classList.add('sel'); showPart(panel,g.getAttribute('data-part')); };
+    g.addEventListener('click',act);
+    g.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); act(); } });
+  });
+});
+/* stage highlighter: buttons with data-stage-for=svgId data-stage=name */
+$$('[data-stage-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var svg=document.getElementById(b.getAttribute('data-stage-for')); var st=b.getAttribute('data-stage');
+    $$('[data-stage-for="'+svg.id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('[data-stages]',svg).forEach(function(n){ var list=n.getAttribute('data-stages').split(' ');
+      if(st==='all' || list.indexOf(st)>=0) n.classList.remove('dimmed'); else n.classList.add('dimmed'); });
+    var d=document.getElementById(svg.id+'-stage-desc'); var S=readJSON(svg.id+'-stages');
+    if(d&&S&&S[st]){ d.textContent=S[st]; }
+  });
+});
+
+/* ---------------- quiz engine ---------------- */
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function buildQuiz(box){
+  var data=readJSON('quiz-'+box.getAttribute('data-quiz')); if(!data) return;
+  while(box.firstChild) box.removeChild(box.firstChild);
+  var score=0, answered=0;
+  var sc=document.createElement('p'); sc.className='score'; sc.setAttribute('aria-live','polite');
+  data.forEach(function(item,qi){
+    var q=document.createElement('div'); q.className='q'; q.setAttribute('role','group');
+    var qt=document.createElement('p'); qt.className='qt'; qt.id=box.getAttribute('data-quiz')+'-q'+qi; qt.textContent=(qi+1)+'. '+item.q; q.appendChild(qt);
+    q.setAttribute('aria-labelledby',qt.id);
+    var ch=document.createElement('div'); ch.className='choices'; q.appendChild(ch);
+    var fb=document.createElement('p'); fb.className='fb'; fb.setAttribute('aria-live','polite');
+    var idx=item.choices.map(function(_,i){return i});
+    var order=item.keepOrder? idx : shuffle(idx);
+    var btns=[];
+    order.forEach(function(ci){
+      var b=document.createElement('button'); b.type='button'; b.className='choice'; b.textContent=item.choices[ci];
+      b.setAttribute('data-ci',ci);
+      b.addEventListener('click',function(){
+        var right= ci===item.answer;
+        btns.forEach(function(x){ x.disabled=true;
+          if(+x.getAttribute('data-ci')===item.answer){ x.classList.add('right'); x.textContent=item.choices[item.answer]+'  \u2713 correct answer'; } });
+        if(!right){ b.classList.add('wrong'); b.textContent=item.choices[ci]+'  \u2717 your answer'; }
+        fb.textContent=(right?'Correct. ':'Not quite. ')+item.explain;
+        answered++; if(right) score++;
+        sc.textContent='Score: '+score+' of '+answered+' answered ('+data.length+' questions total)';
+      });
+      btns.push(b); ch.appendChild(b);
+    });
+    q.appendChild(fb); box.appendChild(q);
+  });
+  box.appendChild(sc);
+  var again=document.createElement('button'); again.type='button'; again.className='btn'; again.textContent='Reset quiz and shuffle';
+  again.addEventListener('click',function(){ buildQuiz(box); var f=box.querySelector('.choice'); if(f) f.focus(); });
+  box.appendChild(again);
+}
+$$('.quiz[data-quiz]').forEach(buildQuiz);
+
+/* ---------------- SPICE value checker widgets ---------------- */
+$$('[data-spice-check]').forEach(function(w){
+  var inp=$('input',w), btn=$('button',w), out=$('.result',w);
+  var run=function(){ var r=parseSpice(inp.value); out.className='result '+(r.ok?'ok':'no');
+    if(!r.ok){ out.textContent='Error: '+r.msg; return; }
+    var plain=Number(r.value.toPrecision(6)); var s='The simulator reads "'+inp.value.trim()+'" as '+(r.suffix? eng(r.value,'',4).trim()+', which is '+plain : plain)+'.';
+    if(r.suffix) s+=' Suffix "'+r.suffix+'" multiplies '+r.num+' by '+(SUFFIX.filter(function(x){return x[0]===r.suffix})[0][1]).toExponential(0).replace('e',' \u00d7 10^').replace('+','')+'.';
+    if(r.notes.length) s+=' Note: '+r.notes.join(' ');
+    out.textContent=s; };
+  btn.addEventListener('click',run);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); run(); } });
+  $$('[data-try]',w).forEach(function(t){ t.addEventListener('click',function(){ inp.value=t.getAttribute('data-try'); run(); }); });
+});
+
+/* ---------------- settings-form checkers ---------------- */
+$$('form.sim-settings').forEach(function(f){
+  var spec=readJSON(f.getAttribute('data-spec')); var out=$('.result',f);
+  f.addEventListener('submit',function(e){
+    e.preventDefault(); var bad=[];
+    spec.forEach(function(s){
+      var n=f.elements[s.name]; if(!n) return; var v=n.value;
+      if(s.type==='select'){ if(v!==s.want) bad.push(s.label+': choose '+s.wantText+'.'); return; }
+      if(s.type==='check'){ if(n.checked!==s.want) bad.push(s.label+': '+(s.want?'tick it.':'leave it unticked.')); return; }
+      if(s.type==='text'){ if(v.trim().toLowerCase()!==String(s.want).toLowerCase()) bad.push(s.label+': "'+v.trim()+'" should be '+s.want+'. '+(s.hint||'')); return; }
+      var r=parseSpice(v); if(!r.ok){ bad.push(s.label+': '+r.msg); return; }
+      if(Math.abs(r.value-s.want)>Math.abs(s.want)*1e-6) bad.push(s.label+': "'+v.trim()+'" is '+eng(r.value,s.unit||'',4).trim()+', but the lab asks for '+eng(s.want,s.unit||'',4).trim()+'. '+(s.hint||''));
+    });
+    out.className='result '+(bad.length?'no':'ok');
+    out.textContent= bad.length ? ('Check these: '+bad.join(' ')) : (f.getAttribute('data-ok')||'All settings match the lab.');
+  });
+});
+
+/* ---------------- glossary tooltips ---------------- */
+var GL=readJSON('glossary-data')||[], GMAP={};
+GL.forEach(function(g){ [g.term].concat(g.aka||[]).forEach(function(k){ GMAP[k.toLowerCase()]=g; }); });
+function lookup(t){
+  t=String(t).toLowerCase().replace(/\s+/g,' ').trim();
+  var c=[t, t.replace(/\s*\(.*\)$/,''), t.replace(/'s$/,'')];
+  for(var i=0;i<c.length;i++){ var k=c[i]; if(GMAP[k]) return GMAP[k]; if(/s$/.test(k)&&GMAP[k.slice(0,-1)]) return GMAP[k.slice(0,-1)]; if(/es$/.test(k)&&GMAP[k.slice(0,-2)]) return GMAP[k.slice(0,-2)]; }
+  return null;
+}
+var tip=document.createElement('div'); tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+var tipFor=null, hideTimer=null;
+function placeTip(el){
+  var r=el.getBoundingClientRect(), tw=tip.offsetWidth, th=tip.offsetHeight, vw=document.documentElement.clientWidth;
+  var left=Math.max(8, Math.min(r.left, vw-tw-8));
+  var top=r.bottom+6; if(top+th>window.innerHeight-8 && r.top-th-6>8) top=r.top-th-6;
+  tip.style.left=(left+window.pageXOffset)+'px'; tip.style.top=(top+window.pageYOffset)+'px';
+}
+function showTip(el){
+  var g=lookup(el.textContent); if(!g) return;
+  clearTimeout(hideTimer);
+  if(tipFor&&tipFor!==el) tipFor.removeAttribute('aria-describedby');
+  tipFor=el;
+  while(tip.firstChild) tip.removeChild(tip.firstChild);
+  var b=document.createElement('strong'); b.textContent=g.term+': '; tip.appendChild(b);
+  tip.appendChild(document.createTextNode(g.def));
+  tip.hidden=false; el.setAttribute('aria-describedby','tip'); placeTip(el);
+}
+function hideTip(now){
+  clearTimeout(hideTimer);
+  var go=function(){ tip.hidden=true; if(tipFor){ tipFor.removeAttribute('aria-describedby'); tipFor=null; } };
+  if(now) go(); else hideTimer=setTimeout(go,180);
+}
+$$('.term').forEach(function(el){
+  if(!lookup(el.textContent)) return;
+  el.classList.add('has-tip'); el.setAttribute('tabindex','0');
+  el.addEventListener('mouseenter',function(){showTip(el)});
+  el.addEventListener('mouseleave',function(){hideTip(false)});
+  el.addEventListener('focus',function(){showTip(el)});
+  el.addEventListener('blur',function(){hideTip(true)});
+  el.addEventListener('click',function(e){ e.stopPropagation(); if(tipFor===el&&!tip.hidden) hideTip(true); else showTip(el); });
+});
+tip.addEventListener('mouseenter',function(){clearTimeout(hideTimer)});
+tip.addEventListener('mouseleave',function(){hideTip(false)});
+document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!tip.hidden) hideTip(true); });
+document.addEventListener('click',function(){ if(!tip.hidden) hideTip(true); });
+window.addEventListener('resize',function(){ if(tipFor&&!tip.hidden) placeTip(tipFor); });
+
+/* ---------------- overlay highlighter ----------------
+   Buttons: data-ovl-for="svgId" data-ovl="name" ("none" clears).
+   Overlays inside the svg: <g class="ovl" data-ovl="name" hidden>.
+   Descriptions: JSON script id "svgId-ovl" {name: text}. */
+$$('[data-ovl-for]').forEach(function(b){
+  b.addEventListener('click',function(){
+    var id=b.getAttribute('data-ovl-for'), svg=document.getElementById(id), name=b.getAttribute('data-ovl');
+    if(!svg) return;
+    $$('[data-ovl-for="'+id+'"]').forEach(function(o){ o.setAttribute('aria-pressed', o===b?'true':'false'); });
+    $$('.ovl',svg).forEach(function(g){ var list=(g.getAttribute('data-ovl')||'').split(' ');
+      if(name!=='none' && (name==='all'||list.indexOf(name)>=0)) g.removeAttribute('hidden'); else g.setAttribute('hidden',''); });
+    var d=document.getElementById(id+'-ovl-desc'), S=readJSON(id+'-ovl');
+    if(d&&S) d.textContent=S[name]||'';
+  });
+});
+
+/* ---------------- predict-then-check boxes ----------------
+   <div class="predict" data-answer="5.14" data-tol="0.03" data-unit="V" data-reveal-after="2">
+     ...<input> <button class="chk"> <p class="result"> <button class="show" hidden> <div class="worked" hidden> */
+$$('.predict').forEach(function(box){
+  var inp=$('input',box), chk=$('button.chk',box), out=$('.result',box), show=$('button.show',box), worked=$('.worked',box);
+  var ans=parseFloat(box.getAttribute('data-answer')), tol=parseFloat(box.getAttribute('data-tol')||'0.02'), unit=box.getAttribute('data-unit')||'';
+  var after=parseInt(box.getAttribute('data-reveal-after')||'2',10), tries=0;
+  var go=function(){
+    var r=parseSpice(inp.value);
+    if(!r.ok){ out.className='result no'; out.textContent=r.msg; return; }
+    tries++;
+    var ok=Math.abs(r.value-ans)<=Math.abs(ans)*tol+1e-12;
+    out.className='result '+(ok?'ok':'no');
+    out.textContent= ok ? ('Yes: '+eng(r.value,unit,4)+' is right. Now confirm it with your simulation.')
+      : ('Not yet: '+eng(r.value,unit,4)+' doesn\u2019t match. '+(r.value>ans?'Your value is too high.':'Your value is too low.')+' Check each step and try again.');
+    if((ok||tries>=after)&&show) show.hidden=false;
+  };
+  chk.addEventListener('click',go);
+  inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); go(); } });
+  if(show&&worked){ show.addEventListener('click',function(){ worked.hidden=!worked.hidden; show.setAttribute('aria-expanded',worked.hidden?'false':'true'); show.textContent=worked.hidden?'Show the worked answer':'Hide the worked answer'; }); show.setAttribute('aria-expanded','false'); }
+});
+
+window.LESSON={$:$, $$:$$, el:el, plot:plot, logGrid:logGrid, linTicks:linTicks, parseSpice:parseSpice, eng:eng, fmtHz:fmtHz, svgPoint:svgPoint, readJSON:readJSON, announce:announce, state:state, save:save};
+
+refreshProgress();
+window.addEventListener('hashchange',function(){ var h=(location.hash||'').slice(1); if(h && sections.some(function(x){return x.id===h;})) show(h,true); });
+var start=(location.hash||'').slice(1);
+if(!document.getElementById(start)) start=state.current;
+show(start && document.getElementById(start) ? start : sections[0].id, false);
+})();
+</script>
+<script>
+window.DIGI=(function(){
+var L=window.LESSON, el=L.el;
+function sigFromFn(fn,tmax,n){ var out=[], prev=null; n=n||2000;
+  for(var i=0;i<=n;i++){ var t=tmax*i/n, v=fn(t); if(v!==prev){ out.push([t,v]); prev=v; } } return out; }
+function valAt(sig,t){ var v=sig[0][1]; for(var i=0;i<sig.length;i++){ if(sig[i][0]<=t) v=sig[i][1]; else break; } return v; }
+function stimFn(text){ /* returns {fn, err, pts} */
+  var items=String(text||'').split(/[;,\n]+/).map(function(s){return s.trim();}).filter(Boolean), pts=[];
+  for(var i=0;i<items.length;i++){
+    var m=items[i].match(/^(\S+)\s+([01])$/);
+    if(!m) return {err:'"'+items[i]+'" should be a time and a 0 or 1, like 2m 1.'};
+    var r=L.parseSpice(m[1].replace(/s$/i,'')||'0');
+    if(!r.ok||r.value<0) return {err:'"'+m[1]+'" is not a time.'};
+    if(pts.length&&r.value<=pts[pts.length-1][0]) return {err:'The times must increase: '+m[1]+' comes after '+pts[pts.length-1][2]+'.'};
+    pts.push([r.value,+m[2],m[1]]);
+  }
+  if(!pts.length) return {err:'There are no commands.'};
+  return {pts:pts, fn:function(t){ var v=pts[0][1]; for(var k=0;k<pts.length;k++){ if(pts[k][0]<=t) v=pts[k][1]; } return v; }};
+}
+function clockFn(c){ /* c: {offtime, ontime, delay, startval, oppval} numbers */
+  return function(t){ var per=c.offtime+c.ontime, tt=t-c.delay; if(tt<c.offtime) return c.startval;
+    var ph=(tt-c.offtime)%per; return ph<c.ontime ? c.oppval : c.startval; };
+}
+var GATES={
+  AND:function(v){ return v.every(function(x){return x===1;})?1:0; },
+  NAND:function(v){ return v.every(function(x){return x===1;})?0:1; },
+  OR:function(v){ return v.some(function(x){return x===1;})?1:0; },
+  NOR:function(v){ return v.some(function(x){return x===1;})?0:1; },
+  XOR:function(v){ return v.reduce(function(a,b){return a^b;},0); },
+  NOT:function(v){ return v[0]?0:1; }
+};
+/* timing lanes. sigs: [{name, sig:[[t,v]], cls}] ; v may be 0, 1 or 'x' */
+function lanes(svg,cfg){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  var n=cfg.sigs.length, LH=30, G=10, Lm=78, Rm=18, T=8, B=40, W=640, H=T+n*(LH+G)+B;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  var pw=W-Lm-Rm, sc=cfg.unit[0];
+  var X=function(t){ return Lm+(t/cfg.tmax)*pw; };
+  var grid=el('g',{'aria-hidden':'true'},svg);
+  var st=cfg.tick||cfg.tmax/10;
+  for(var t=0;t<=cfg.tmax*1.0001;t+=st){ el('line',{x1:X(t),x2:X(t),y1:T,y2:T+n*(LH+G)-G,'class':'pl-major'},grid);
+    el('text',{x:X(t),y:T+n*(LH+G)+8,'text-anchor':'middle','class':'pl-tick'},grid,+(t/sc).toPrecision(4)+cfg.unit[1]); }
+  el('text',{x:Lm+pw/2,y:H-6,'text-anchor':'middle','class':'pl-axis'},grid,'Time');
+  (cfg.marks||[]).forEach(function(t){ el('line',{x1:X(t),x2:X(t),y1:T,y2:T+n*(LH+G)-G,'class':'pl-vline'},grid); });
+  cfg.sigs.forEach(function(s,i){
+    var y0=T+i*(LH+G), yH=y0+5, yL=y0+LH-5;
+    el('rect',{x:Lm,y:y0,width:pw,height:LH,'class':'pl-bg'},svg);
+    el('text',{x:Lm-18,y:y0+LH/2+4,'text-anchor':'end','class':'pl-leg '+(s.cls||'')},svg,s.name);
+    el('text',{x:Lm-5,y:yH+4,'text-anchor':'end','class':'pl-note'},svg,'1'); el('text',{x:Lm-5,y:yL+4,'text-anchor':'end','class':'pl-note'},svg,'0');
+    var d='', sig=s.sig;
+    for(var k=0;k<sig.length;k++){
+      var t0=sig[k][0], t1=k+1<sig.length?sig[k+1][0]:cfg.tmax, v=sig[k][1];
+      if(t0>cfg.tmax) break; t1=Math.min(t1,cfg.tmax);
+      if(v==='x'){ el('rect',{x:X(t0),y:yH,width:Math.max(0.5,X(t1)-X(t0)),height:yL-yH,'class':'lane-x'},svg); d+='M'+X(t1).toFixed(1)+' '+yL; continue; }
+      var y=v?yH:yL;
+      d+=(k===0||sig[k-1][1]==='x'?'M':'L')+X(t0).toFixed(1)+' '+y+'L'+X(t1).toFixed(1)+' '+y;
+    }
+    el('path',{d:d,'class':'pl-trace lane '+(s.cls||'')},svg);
+  });
+  var over=el('g',{},svg);
+  return {X:X,L:Lm,pw:pw,T:T,bottom:T+n*(LH+G)-G,over:over,invX:function(px){ return (px-Lm)/pw*cfg.tmax; }};
+}
+function attachCursor(svg,getP,read,sigs,unit,extra){
+  var cur=null;
+  function show(t){ var P=getP(); if(!P) return; t=Math.max(0,Math.min(P.tmax,t)); cur=t;
+    var old=svg.querySelector('.cur'); if(old) old.parentNode.removeChild(old);
+    var g=el('g',{'class':'cur'},P.over); el('line',{x1:P.X(t),x2:P.X(t),y1:P.T,y2:P.bottom,'class':'pl-cursor'},g);
+    read.textContent='Cursor: t = '+ +(t/unit()[0]).toPrecision(4)+' '+unit()[1]+'   '+sigs().map(function(s){ var v=valAt(s.sig,t); return s.name+' = '+(v==='x'?'X':v); }).join('   ')+(extra?extra(t):''); }
+  svg.addEventListener('pointermove',function(e){ var P=getP(); if(!P) return; var p=L.svgPoint(svg,e); if(p.x<P.L||p.x>P.L+P.pw) return; show(P.invX(p.x)); });
+  svg.addEventListener('keydown',function(e){ var P=getP(); if(!P) return; var s=P.tmax/100, c=cur==null?0:cur;
+    if(e.key==='ArrowRight'){ e.preventDefault(); show(c+s); } if(e.key==='ArrowLeft'){ e.preventDefault(); show(c-s); } });
+  return { refresh:function(){ if(cur!=null) show(cur); }, reset:function(){ cur=null; } };
+}
+/* truth-table exercises: <div class="tt" data-tt='{"inputs":["A","B"],"out":"Q","gate":"OR"}'> */
+function buildTT(box){
+  var cfg=JSON.parse(box.getAttribute('data-tt')), n=cfg.inputs.length, rows=1<<n;
+  var fn=cfg.fn ? cfg.fn : function(v){ return GATES[cfg.gate](v); };
+  var tb=document.createElement('table'), cap=document.createElement('caption'); cap.textContent=cfg.caption||('Truth table for '+cfg.out); tb.appendChild(cap);
+  var th=document.createElement('tr'); cfg.inputs.concat([cfg.out,'']).forEach(function(h,i){ var c=document.createElement('th'); c.setAttribute('scope','col'); c.textContent=h||'Check'; th.appendChild(c); });
+  var thead=document.createElement('thead'); thead.appendChild(th); tb.appendChild(thead);
+  var body=document.createElement('tbody'), sels=[];
+  for(var m=0;m<rows;m++){
+    var bits=[]; for(var i=0;i<n;i++) bits.push((m>>(n-1-i))&1);
+    var tr=document.createElement('tr');
+    bits.forEach(function(b){ var c=document.createElement('td'); c.textContent=b; tr.appendChild(c); });
+    var td=document.createElement('td'), sel=document.createElement('select');
+    sel.setAttribute('aria-label',cfg.out+' when '+cfg.inputs.map(function(x,i){return x+' = '+bits[i];}).join(', '));
+    ['?','0','1'].forEach(function(o){ var op=document.createElement('option'); op.value=o; op.textContent=o; sel.appendChild(op); });
+    td.appendChild(sel); tr.appendChild(td);
+    var mk=document.createElement('td'); tr.appendChild(mk);
+    sels.push({sel:sel,mk:mk,want:fn(bits)}); body.appendChild(tr);
+  }
+  tb.appendChild(body);
+  var wrap=document.createElement('div'); wrap.className='table-wrap'; wrap.appendChild(tb); box.appendChild(wrap);
+  var btn=document.createElement('button'); btn.type='button'; btn.className='btn primary'; btn.textContent='Check my table';
+  var out=document.createElement('p'); out.className='result'; out.setAttribute('aria-live','polite');
+  btn.addEventListener('click',function(){ var right=0, blank=0;
+    sels.forEach(function(s){ if(s.sel.value==='?'){ blank++; s.mk.textContent=''; return; } var ok=+s.sel.value===s.want; if(ok) right++; s.mk.textContent=ok?'\u2713':'\u2717 try again'; });
+    out.className='result '+(right===rows?'ok':'no');
+    out.textContent= right===rows ? 'All '+rows+' rows are right. '+(cfg.done||'') : right+' of '+rows+' right'+(blank?', '+blank+' still blank':'')+'. Read the timing diagram again for the rows marked \u2717.'; });
+  var row=document.createElement('div'); row.className='btn-row'; row.appendChild(btn); box.appendChild(row); box.appendChild(out);
+}
+L.$$('.tt[data-tt]').forEach(buildTT);
+return {sigFromFn:sigFromFn, valAt:valAt, stimFn:stimFn, clockFn:clockFn, GATES:GATES, lanes:lanes, attachCursor:attachCursor};
+})();
+
+(function(){
+var L=window.LESSON, D=window.DIGI, $=L.$, $$=L.$$, el=L.el;
+function rows(dl,list){ while(dl.firstChild) dl.removeChild(dl.firstChild); list.forEach(function(r){ var dt=document.createElement('dt'); dt.textContent=r[0]; var dd=document.createElement('dd'); dd.textContent=r[1]; dl.appendChild(dt); dl.appendChild(dd); }); }
+function led(id,v){ var e=$(id); e.textContent=v; e.className='led'+(v?' on':''); }
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var MS=[1e-3,' ms'];
+
+/* ---------- mux / demux ---------- */
+var DATA=[1,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1], mxTimer=null, recv=[];
+var dataBox=$('#mx-data'), outBox=$('#mx-out');
+function bin(n){ return ('000'+n.toString(2)).slice(-4); }
+function chain(sel){
+  var s3=(sel>>3)&1, s=sel&7;
+  var z1= s3===0 ? DATA[s] : 0, z2= s3===1 ? DATA[8+s] : 0;
+  var mo= (z1|z2) ? 0 : 1;
+  var en= mo===0;
+  var rec=[]; for(var k=0;k<16;k++){ var y= (en&&k===sel)?0:1; rec.push(1-y); }
+  return {s3:s3,z1:z1,z2:z2,mo:mo,en:en,rec:rec};
+}
+DATA.forEach(function(v,k){ var w=document.createElement('div'); w.className='io'; var b=document.createElement('button'); b.type='button'; b.className='btn bitbtn';
+  b.addEventListener('click',function(){ DATA[k]=1-DATA[k]; mxDraw(); }); w.appendChild(b); var sp=document.createElement('span'); sp.textContent='D'+k; w.appendChild(sp); dataBox.appendChild(w); });
+for(var k=0;k<16;k++){ var w=document.createElement('div'); w.className='io'; var l=document.createElement('span'); l.className='led'; l.style.minWidth='2.4rem'; l.style.minHeight='2.4rem'; l.id='mx-o'+k; w.appendChild(l); var sp=document.createElement('span'); sp.textContent='D'+k; w.appendChild(sp); outBox.appendChild(w); }
+function mxDraw(){
+  var sel=+$('#mx-sel').value, c=chain(sel);
+  $('#mx-selo').textContent=sel+' = '+bin(sel);
+  $$('#mx-data button').forEach(function(b,k){ b.textContent=DATA[k]; b.setAttribute('aria-pressed',DATA[k]?'true':'false'); b.setAttribute('aria-label','D'+k+' = '+DATA[k]+(k===sel?', selected':'')); b.style.outline= k===sel ? '3px solid var(--probe)' : ''; });
+  rows($('#mx-read'),[['Enabled chip',c.s3?'U2 (D8\u2013D15), because S3 = 1':'U1 (D0\u2013D7), because S3 = 0'],['U1 Z / U2 Z',c.z1+' / '+c.z2],['MUXOutput = NOT(Z1 OR Z2)',String(c.mo)],
+    ['74154 enabled?',c.en?'Yes (MUXInput = 0)':'No (MUXInput = 1): all outputs high'],['Selected data bit D'+sel,String(DATA[sel])]]);
+  for(var k=0;k<16;k++){ var v= mxTimer||recv.length ? (recv[k]!=null?recv[k]:0) : c.rec[k]; var e=$('#mx-o'+k); e.textContent=v; e.className='led'+(v?' on':''); e.style.outline= k===sel?'3px solid var(--probe)':''; }
+  if(!mxTimer&&!recv.length) $('#mx-say').textContent='Line D'+sel+' is recovered as '+c.rec[sel]+', matching the original '+DATA[sel]+'. '+(DATA[sel]?'The inverted bit (0) enabled the decoder, which pulled Y'+sel+' low; its inverter turned that into 1.':'The inverted bit (1) disabled the decoder, so every line reads 0, including D'+sel+', which is correct.')+' The other lines read 0 until their turn comes.';
+}
+$('#mx-sel').addEventListener('input',function(){ if(mxTimer){ clearInterval(mxTimer); mxTimer=null; } recv=[]; mxDraw(); });
+function mxLanes(){
+  var T=16e-3, selSig=[], moSig=[];
+  var bits=[0,1,2,3].map(function(b){ return D.sigFromFn(function(t){ return (Math.min(15,Math.floor(t/1e-3))>>b)&1; },T,1600); });
+  var mo=D.sigFromFn(function(t){ return chain(Math.min(15,Math.floor(t/1e-3))).mo; },T,1600);
+  D.lanes($('#mx-plot'),{tmax:T,unit:MS,tick:2e-3,sigs:[{name:'S3',sig:bits[3],cls:'c4'},{name:'S2',sig:bits[2],cls:'c3'},{name:'S1',sig:bits[1],cls:'c1'},{name:'S0',sig:bits[0],cls:'c0'},{name:'MUXOutput',sig:mo,cls:'c2'}]});
+}
+$('#mx-send').addEventListener('click',function(){
+  if(mxTimer){ clearInterval(mxTimer); mxTimer=null; }
+  recv=[]; var sel=0; $('#mx-sel').value=0;
+  function tick(){ var c=chain(sel); recv[sel]=c.rec[sel]; $('#mx-sel').value=sel; mxDraw();
+    $('#mx-say').textContent='Sending D'+sel+' ('+DATA[sel]+'): MUXOutput = '+c.mo+'. Each recovered line keeps the value it received on its turn, as a latch on the receiving end would.';
+    sel++; if(sel>15){ clearInterval(mxTimer); mxTimer=null; var ok=recv.every(function(v,k){return v===DATA[k];}); $('#mx-say').textContent='All 16 sent over one wire. '+(ok?'Every recovered bit matches the original.':'Some bits differ!'); } }
+  if(reduce){ for(var i=0;i<16;i++) tick(); } else { tick(); mxTimer=setInterval(tick,450); }
+  mxLanes();
+});
+DATA.forEach(function(){}); mxDraw(); mxLanes();
+$$('#mx-data button').forEach(function(b){ b.addEventListener('click',mxLanes); });
+
+/* ---------- MOD 10 counter ---------- */
+var q={A:0,B:0,C:0,D:0}, bcTimer=null;
+function conds(s){ var nd=1-s.D; var u3a=s.A&nd, u3b=u3a&s.B, u3c=s.D&s.A, u3d=u3b&s.C;
+  return {A:1,B:u3a,C:u3b,D:u3c|u3d,u3a:u3a,u3b:u3b,u3c:u3c,u3d:u3d}; }
+function val(s){ return s.A+2*s.B+4*s.C+8*s.D; }
+function bcShow(msg){ 'ABCD'.split('').forEach(function(k){ led('#bc-q'+k,q[k]); }); var d=val(q); $('#bc-dec').textContent=d; $('#bc-dec').className='led'+(d>9?' x':'');
+  var c=conds(q), tb=$('#bc-conds'); while(tb.firstChild) tb.removeChild(tb.firstChild);
+  [['QA','always 1 ($D_HI)',c.A],['QB','U3A = QA \u00b7 QD\u0305',c.B],['QC','U3B = U3A \u00b7 QB',c.C],['QD','U4A = (QD \u00b7 QA) + (U3B \u00b7 QC)',c.D]].forEach(function(r){
+    var tr=document.createElement('tr'); r.forEach(function(v,i){ var cc=document.createElement(i?'td':'th'); if(!i) cc.setAttribute('scope','row'); cc.textContent= i===2 ? (v?'1: toggles next':'0: holds') : v; tr.appendChild(cc); }); tb.appendChild(tr); });
+  if(msg) $('#bc-say').textContent=msg; }
+function bcPulse(){ var c=conds(q), before=val(q), flips=[];
+  'ABCD'.split('').forEach(function(k){ if(c[k]){ q[k]=1-q[k]; flips.push('Q'+k); } });
+  var after=val(q);
+  bcShow(before+' \u2192 '+after+'. '+(flips.length?flips.join(', ')+' toggled.':'Nothing toggled.')+(before===9&&after===0?' That\u2019s the rollover: QB was blocked by QD\u0305, and QD was switched off by QD \u00b7 QA.':'')
+    +(before>9?' '+before+' isn\u2019t a normal count; the gating still brings the counter back into 0\u20139 within two pulses.':'')); }
+$('#bc-step').addEventListener('click',bcPulse);
+$('#bc-set').addEventListener('change',function(){ var v=+this.value; q={A:v&1,B:(v>>1)&1,C:(v>>2)&1,D:(v>>3)&1}; bcShow(v>9?'State '+v+' never occurs in normal counting, but noise at power-up could put the counter here. Press Clock pulse to see it recover.':'Jumped to '+v+'.'); });
+var run=$('#bc-run');
+run.addEventListener('click',function(){ if(bcTimer){ clearInterval(bcTimer); bcTimer=null; run.textContent='Run'; run.setAttribute('aria-pressed','false'); return; }
+  run.textContent='Pause'; run.setAttribute('aria-pressed','true'); bcTimer=setInterval(bcPulse, reduce?1500:650); });
+bcShow('Starts at 0000 (flip-flops initialized to 0). Press Clock pulse to count.');
+var bd={};
+(function(){
+  var T=12e-3, N=4800, CK=D.clockFn({offtime:.5e-3,ontime:.5e-3,delay:0,startval:1,oppval:0});
+  var s={A:0,B:0,C:0,D:0}, prev=CK(0), sig={A:[[0,0]],B:[[0,0]],C:[[0,0]],D:[[0,0]]};
+  for(var i=1;i<=N;i++){ var t=T*i/N, c=CK(t);
+    if(prev===1&&c===0){ var cc=conds(s); 'ABCD'.split('').forEach(function(k){ if(cc[k]){ s[k]=1-s[k]; sig[k].push([t,s[k]]); } }); }
+    prev=c; }
+  bd.sigs=[{name:'CLOCK',sig:D.sigFromFn(CK,T,4800),cls:'c1'},{name:'QD',sig:sig.D,cls:'c4'},{name:'QC',sig:sig.C,cls:'c3'},{name:'QB',sig:sig.B,cls:'c0'},{name:'QA',sig:sig.A,cls:'c2'}];
+  var P=D.lanes($('#bc-plot'),{tmax:T,unit:MS,sigs:bd.sigs,tick:1e-3}); P.tmax=T; bd.P=P;
+  D.attachCursor($('#bc-plot'),function(){return bd.P;},$('#bc-read'),function(){return bd.sigs;},function(){return MS;},
+    function(t){ var v=[1,2,3,4].map(function(i){ return D.valAt(bd.sigs[i].sig,t); }); return '   count = '+(8*v[0]+4*v[1]+2*v[2]+v[3]); });
+})();
+})();
+</script>
+</body>
+</html>
